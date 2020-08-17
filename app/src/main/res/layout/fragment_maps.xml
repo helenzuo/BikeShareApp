@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parentLayoutMap">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/activity_horizontal_margin"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="12dp">
+                <RelativeLayout
+                    android:id="@+id/doneScreen"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+                    <RelativeLayout
+                        android:id="@+id/tickAnimation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_centerInParent="true">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/reservationDoneAnimation"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            app:lottie_rawRes="@raw/tick_animation"
+                            app:lottie_autoPlay="false"
+                            app:lottie_loop="false"
+                            app:lottie_speed="0.5"
+                            android:layout_centerHorizontal="true"
+                            app:lottie_colorFilter="@color/colorPrimary"/>
+
+                        <TextView
+                            android:id="@+id/reservationDoneTitle"
+                            android:layout_below="@+id/reservationDoneAnimation"
+                            android:layout_marginTop="32dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="Reservation Made!"
+                            android:textSize="20sp"/>
+
+                        <TextView
+                            android:id="@+id/reservationDoneDetails"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="32dp"
+                            android:layout_below="@id/reservationDoneTitle"
+                            android:paddingHorizontal="30dp"/>
+
+                    </RelativeLayout>
+
+                    <Button
+                        android:id="@+id/OKButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="@dimen/activity_vertical_margin"
+                        android:backgroundTint="@color/buttonColor"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_margin="@dimen/activity_vertical_margin"
+                        android:text="OK"/>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/mapLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <com.google.android.gms.maps.MapView
+                        android:id="@+id/map"
+                        android:layout_width="match_parent"
+                        android:name="com.google.android.gms.maps.MapView"
+                        android:layout_height="match_parent" />
+
+                    <Button
+                        android:id="@+id/selectBorrowStationButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@+id/cardViewRecycler"
+                        android:layout_marginEnd="28dp"
+                        android:layout_marginStart="28dp"
+                        android:layout_marginBottom="0dp"
+                        android:textSize="17sp"
+                        android:paddingVertical="16dp"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/roboto_medium"
+                        android:backgroundTint="@color/black"
+                        android:textAllCaps="false"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/cardViewRecycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
+                        android:paddingStart="28dp"
+                        android:paddingEnd="28dp"/>
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
+
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/closeMapPopUpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="22dp"
+        android:adjustViewBounds="true"
+        android:elevation="30dp"
+        android:background="@color/transparent"
+        android:src="@drawable/close_round" />
+
+
+
+</RelativeLayout>

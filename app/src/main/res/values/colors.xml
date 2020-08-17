@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6B8E23</color>
+    <color name="colorPrimaryDark">#6B8E23</color>
+    <color name="colorAccent">#6495ED</color>
+    <color name="enabled_color">#696969</color>
+    <color name="transparent">#00ff0000</color>
+    <color name="red">#FF6347</color>
+    <color name="redTransparent">#60FF5733</color>
+    <color name="white">#FFFFFF</color>
+    <color name="lightGreen">#DAF7A6</color>
+    <color name="black">#000000</color>
+    <color name="buttonColor">#9BC059</color>
+    <color name="babyGreen">#E9FCC7</color>
+    <color name="seekBarColor">#9BC059</color>
+    <color name="offWhite">#f9f9f9</color>
+    <color name="almostBlack">#282828</color>
+
+
+</resources>
