@@ -127,62 +127,62 @@ public class StationsListFragment extends Fragment implements AdapterView.OnItem
         updateContainerHeight(0);
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // TODO Add your menu entries here
-        menu.findItem(R.id.editProfile).setVisible(false);
-//        menu.findItem(R.id.saveProfileSettings).setVisible(false);
-        MenuItem searchItem = menu.findItem(R.id.search);
-
-        searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    stationClicked = false;
-                    adapter.getFilter().filter(searchView.getQuery(), new Filter.FilterListener() {
-                        public void onFilterComplete(int count) {
-                            updateContainerHeight(adapter.getCount());
-                        }
-                    });
-
-                } else {
-                    updateContainerHeight(0);
-                }
-            }
-        });
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                for (Station station : stations){
-                    if (station.getName().toLowerCase().equals(query.toLowerCase().trim())){
-                        selectStation(station.getName());
-                        break;
-                    }
-                }
-                searchView.setQuery(query, false);
-                return false;
-            }
-            @Override
-            public boolean onQueryTextChange(final String newText) {
-                if (!stationClicked) {
-                    String mNewText = newText.trim();
-                    adapter.getFilter().filter(mNewText, new Filter.FilterListener() {
-                        public void onFilterComplete(int count) {
-                            if (adapter.getCount() > 0) {
-                                updateContainerHeight(adapter.getCount());
-                            } else {
-                                updateContainerHeight(1);
-                            }
-                        }
-                    });
-                }
-                return false;
-            }
-        });
-        searchView.setQueryHint("Search for Station...");
-        updateContainerHeight(0);
-        searchView.clearFocus();
-    }
+//    @Override
+//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//        // TODO Add your menu entries here
+//        menu.findItem(R.id.editProfile).setVisible(false);
+////        menu.findItem(R.id.saveProfileSettings).setVisible(false);
+//        MenuItem searchItem = menu.findItem(R.id.search);
+//
+//        searchView = (SearchView) searchItem.getActionView();
+//        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//                if (hasFocus) {
+//                    stationClicked = false;
+//                    adapter.getFilter().filter(searchView.getQuery(), new Filter.FilterListener() {
+//                        public void onFilterComplete(int count) {
+//                            updateContainerHeight(adapter.getCount());
+//                        }
+//                    });
+//
+//                } else {
+//                    updateContainerHeight(0);
+//                }
+//            }
+//        });
+//        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                for (Station station : stations){
+//                    if (station.getName().toLowerCase().equals(query.toLowerCase().trim())){
+//                        selectStation(station.getName());
+//                        break;
+//                    }
+//                }
+//                searchView.setQuery(query, false);
+//                return false;
+//            }
+//            @Override
+//            public boolean onQueryTextChange(final String newText) {
+//                if (!stationClicked) {
+//                    String mNewText = newText.trim();
+//                    adapter.getFilter().filter(mNewText, new Filter.FilterListener() {
+//                        public void onFilterComplete(int count) {
+//                            if (adapter.getCount() > 0) {
+//                                updateContainerHeight(adapter.getCount());
+//                            } else {
+//                                updateContainerHeight(1);
+//                            }
+//                        }
+//                    });
+//                }
+//                return false;
+//            }
+//        });
+//        searchView.setQueryHint("Search for Station...");
+//        updateContainerHeight(0);
+//        searchView.clearFocus();
+//    }
 
 }

@@ -19,11 +19,8 @@
     <string name="QRScanned">Before you go, please <b>reserve a dock</b>  at your destination. This helps lower the chances of riders arriving at a full station. Don\'t worry if you\'re not sure exactly when you\'ll arrive. Our system can help you estimate it!</string>
 
     <string-array name="values">
-        <item>Item 1</item>
-        <item>Item 2</item>
-        <item>Item 3</item>
-        <item>Item 4 is really long</item>
-        <item>Item 5</item>
-        <item>Item 6</item>
+        <item>  Profile  </item>
+        <item>Reservation</item>
+        <item>Station Map</item>
     </string-array>
 </resources>

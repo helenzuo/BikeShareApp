@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -43,6 +44,7 @@ public class NotificationsFragment extends Fragment {
 
         View root = inflater.inflate(R.layout.fragment_notifications, container, false);
         main = (MainActivity)getActivity();
+
         Bundle bundle = getArguments();
         if (bundle != null) {
             main.firstName = bundle.getString("FirstNameKey", "");
@@ -70,14 +72,14 @@ public class NotificationsFragment extends Fragment {
         return root;
     }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.saveProfileSettings).setVisible(false);
-        menu.findItem(R.id.sort).setVisible(false);
-        menu.findItem(R.id.filter).setVisible(false);
-        menu.findItem(R.id.search).setVisible(false);
-        super.onPrepareOptionsMenu(menu);
-    }
+//    @Override
+//    public void onPrepareOptionsMenu(Menu menu) {
+//        menu.findItem(R.id.saveProfileSettings).setVisible(false);
+//        menu.findItem(R.id.sort).setVisible(false);
+//        menu.findItem(R.id.filter).setVisible(false);
+//        menu.findItem(R.id.search).setVisible(false);
+//        super.onPrepareOptionsMenu(menu);
+//    }
 
 
     @Override

@@ -10,11 +10,12 @@
     <color name="white">#FFFFFF</color>
     <color name="lightGreen">#DAF7A6</color>
     <color name="black">#000000</color>
-    <color name="buttonColor">#9BC059</color>
+    <color name="buttonColor">#74A57F</color>
     <color name="babyGreen">#E9FCC7</color>
     <color name="seekBarColor">#9BC059</color>
     <color name="offWhite">#f9f9f9</color>
     <color name="almostBlack">#282828</color>
+    <color name="backgroundColor">#474935</color>
 
 
 </resources>

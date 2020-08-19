@@ -25,7 +25,6 @@ public class Station {
         mName = name;
         mLocation = new LatLng(latitude, longitude);
         mAddress = latLngToAddress(mLocation, context);
-        System.out.println(mAddress);
         mCapacity = capacity;
         mOccupancy = occupancy;
         fillLevel = (float) occupancy/capacity;
@@ -72,7 +71,6 @@ public class Station {
         stationLocation.setLatitude(mLocation.latitude);
         stationLocation.setLongitude(mLocation.longitude);
         distanceFrom = currentLocation.distanceTo(stationLocation);
-        System.out.println(distanceFrom);
     }
 
     public String getDistanceFrom(){

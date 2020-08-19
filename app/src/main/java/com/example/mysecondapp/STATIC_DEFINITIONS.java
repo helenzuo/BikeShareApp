@@ -1,6 +1,10 @@
 package com.example.mysecondapp;
 
 public class STATIC_DEFINITIONS {
+    public static final int PROFILE_FRAG = 0;
+    public static final int RESERVATION_FRAG = 1;
+    public static final int STATION_MAP_FRAG = 2;
+
     public static final int START_BOOKING_STATE = 0;
     public static final int RESERVE_BIKE_SELECTION_STATE = 1;
     public static final int DEPARTURE_STATION_SELECTED_STATE = 2;

@@ -3,22 +3,16 @@ package com.example.mysecondapp;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.NumberPicker;
+import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
+import androidx.recyclerview.widget.LinearSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -31,9 +25,14 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
+import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
+
 public class MainActivity extends AppCompatActivity {
+    public ViewPager2 viewPager;
+
     private int selectionState;
     public Station reservedDepartureStation;
     public Station selectedDepartureStation;
@@ -59,29 +58,21 @@ public class MainActivity extends AppCompatActivity {
 
     public HashMap<String, Station> stationMap = new HashMap<String, Station>();
 
+
+    private RecyclerView rvNavigationPicker;
+    private PickerAdapter navigationAdapter;
+    private List<String> fragmentTitles;
+    private int currentFrag = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         selectionState = STATIC_DEFINITIONS.START_BOOKING_STATE;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
-                .build();
-        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-        navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
-            @Override
-            public void onDestinationChanged(@NonNull NavController controller, @NonNull NavDestination destination, @Nullable Bundle arguments) {
-                navView.setVisibility(View.VISIBLE);
-            }
-        });
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(navView, navController);
+        getSupportActionBar().hide();
 
         stations = new ArrayList<Station>();
-        Station tempStation = null;
+        Station tempStation;
         try {
             tempStation = new Station("Bourke", 144.96803330048928, -37.81393990463194, 22, 15, this);
             stations.add(tempStation);
@@ -126,7 +117,59 @@ public class MainActivity extends AppCompatActivity {
 
 //        new Connect(this).execute();
 
+        rvNavigationPicker = (RecyclerView) findViewById(R.id.rvNavigationPicker);
+
+        final NoBounceLinearLayoutManager pickerLayoutManager = new NoBounceLinearLayoutManager(this, PickerLayoutManager.HORIZONTAL, false);
+        pickerLayoutManager.setScaleDownBy(0.25f);
+        pickerLayoutManager.setScaleDownDistance(0.7f);
+
+        viewPager = findViewById(R.id.view_pager);
+        viewPager.setOffscreenPageLimit(2);
+        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle()));
+        fragmentTitles = new ArrayList<String>();
+        fragmentTitles.add("Profile");
+        fragmentTitles.add("Reservation");
+        fragmentTitles.add("Stations List");
+        SnapHelper snapHelper = new LinearSnapHelper();
+        navigationAdapter = new PickerAdapter(this, fragmentTitles, rvNavigationPicker, snapHelper, pickerLayoutManager);
+        snapHelper.attachToRecyclerView(rvNavigationPicker);
+        rvNavigationPicker.setLayoutManager(pickerLayoutManager);
+        rvNavigationPicker.setAdapter(navigationAdapter);
+
+
+        pickerLayoutManager.setOnScrollStopListener(new PickerLayoutManager.onScrollStopListener() {
+            @Override
+            public void selectedView(View view) {
+                currentFrag = fragmentTitles.indexOf(((TextView) view).getText().toString());
+                viewPager.setCurrentItem(currentFrag, true);
+            }
+        });
+
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                if (currentFrag != position) {
+                    rvNavigationPicker.smoothScrollToPosition(position);
+                }
+                currentFrag = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                super.onPageScrollStateChanged(state);
+            }
+        });
+
+        viewPager.setCurrentItem(1);
+
     }
+
 
     public void bookingStateTransition(boolean forward){
         if (forward){
@@ -177,19 +220,6 @@ public class MainActivity extends AppCompatActivity {
 
     public ArrayList<Station> getStations(){
         return stations;
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.top_action_bar, menu);
-        MenuItem searchItem = menu.findItem(R.id.search);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        LinearLayout searchEditFrame = (LinearLayout) searchView.findViewById(R.id.search_edit_frame); // Get the Linear Layout
-        // Get the associated LayoutParams and set leftMargin
-        ((LinearLayout.LayoutParams) searchEditFrame.getLayoutParams()).leftMargin = 0;
-        ((LinearLayout.LayoutParams) searchEditFrame.getLayoutParams()).rightMargin = 0;
-        searchView.onActionViewExpanded();
-        return super.onCreateOptionsMenu(menu);
     }
 
     public void appendFavouriteStation(Station station) {

@@ -326,8 +326,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 confirmAlert.show();
             }
         } else if (v == closeMapButton || v == OKButton){
-            main.navController.popBackStack(R.id.navigation_home, true);
-            main.navController.navigate(R.id.navigation_home);
+            getParentFragmentManager().popBackStackImmediate();
+            main.viewPager.getAdapter().notifyDataSetChanged();
         }
     }
 

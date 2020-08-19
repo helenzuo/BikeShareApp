@@ -189,17 +189,17 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback, S
         }
     }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.saveProfileSettings).setVisible(false);
-        menu.findItem(R.id.editProfile).setVisible(false);
+//    @Override
+//    public void onPrepareOptionsMenu(Menu menu) {
+//        menu.findItem(R.id.saveProfileSettings).setVisible(false);
+//        menu.findItem(R.id.editProfile).setVisible(false);
 //        if (fragmentContainer.getId() != R.id.fragment2) {
 //            menu.findItem(R.id.search).setVisible(false);
 //            menu.findItem(R.id.filter).setVisible(false);
 //            menu.findItem(R.id.sort).setVisible(false);
 //        }
-        super.onPrepareOptionsMenu(menu);
-    }
+//        super.onPrepareOptionsMenu(menu);
+//    }
 
     @Override
     public void messageFromChildToParent(String message) {

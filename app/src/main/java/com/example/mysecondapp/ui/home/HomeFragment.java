@@ -133,8 +133,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                              ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_home, container, false);
         main = (MainActivity) getActivity();
-        main.getSupportActionBar().hide();
+
         // Get the relative layout  containers for each state and store into array list
+        relativeLayoutContainers = new ArrayList<>();
         startStateContainer = root.findViewById(R.id.startStateLayoutContainer);
         relativeLayoutContainers.add(startStateContainer);
         bikeReserveDetailsContainer = root.findViewById(R.id.queryDepartureLayoutContainer);
@@ -420,7 +421,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 seekBar.setProgress(Integer.parseInt(main.distanceWalking)/100);
             }
         } else {
-            System.out.println(main.distanceWalking);
             seekBar.setProgress(5);
         }
         customDistanceSwitch.setChecked(main.customDistance);
@@ -642,8 +642,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     public void onClick(View v) {
         if (v == startBookingButton){
             main.bookingStateTransition(true);
-            main.navController.popBackStack(R.id.navigation_home, true);
-            main.navController.navigate(R.id.navigation_home);
+            main.viewPager.getAdapter().notifyDataSetChanged();
         } else if (v == timeEditText) {
             showTimePickerDialog();
         } else if (v == mapSearchButton){
@@ -671,8 +670,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             main.bookingStateTransition(false);
-                            main.navController.popBackStack(R.id.navigation_home, true);
-                            main.navController.navigate(R.id.navigation_home);
+                            main.viewPager.getAdapter().notifyDataSetChanged();
                         }
                     });
             builder.setNegativeButton(
@@ -718,7 +716,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     public void afterTextChanged(Editable s) {
         main.departureTime = timeEditText.getText().toString();
         main.distanceWalking = distanceText.getText().toString();
-        System.out.println(main.distanceWalking);
     }
 
     private class splashPage extends AsyncTask<Void, Void, Void> {
