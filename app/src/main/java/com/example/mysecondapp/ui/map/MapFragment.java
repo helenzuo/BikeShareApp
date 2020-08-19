@@ -61,7 +61,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     private View root;
     private MainActivity main;
     private LocationManager locationManager;
-    private StationsListFragment.OnChildFragmentInteractionListener mParentListener;
+    private MapFragment.updateParentView mParentListener;
     private HashMap<String, Marker> markerMap = new HashMap<String, Marker>();
     private AppCompatImageButton closeMapButton;
     private String allocatedDepartureStationName;
@@ -75,6 +75,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     Location lastKnownLocation;
 
     private int openedFrom;
+
+    public interface updateParentView {
+        void updateParentView();
+    }
+
     public MapFragment(int openedFrom){
         this.openedFrom = openedFrom;
     }
@@ -102,7 +107,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_maps, container, false);
         main = (MainActivity) getActivity();
-        main.getSupportActionBar().hide();
 
         return root;
     }
@@ -120,8 +124,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     public void onAttach(Context context) {
         super.onAttach(context);
         // check if parent Fragment implements listener
-        if (getParentFragment() instanceof StationsListFragment.OnChildFragmentInteractionListener) {
-            mParentListener = (StationsListFragment.OnChildFragmentInteractionListener) getParentFragment();
+        if (getParentFragment() instanceof MapFragment.updateParentView) {
+            mParentListener = (updateParentView) getParentFragment();
         }
     }
 
@@ -294,7 +298,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 ((HomeFragment)getParentFragment()).setDepartureStationFromMap(centredStation);
                 getParentFragmentManager().popBackStackImmediate();
                 main.navView.setVisibility(View.VISIBLE);
-                main.getSupportActionBar().show();
             } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setMessage("Confirm bike reservation?");
@@ -327,7 +330,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
             }
         } else if (v == closeMapButton || v == OKButton){
             getParentFragmentManager().popBackStackImmediate();
-            main.viewPager.getAdapter().notifyDataSetChanged();
+//            main.viewPager.getAdapter().notifyDataSetChanged();
+//            main.updateViewpager();
+//            getParentFragmentManager().beginTransaction().remove(MapFragment.this).commit();
+                mParentListener.updateParentView();
+
         }
     }
 

@@ -4,6 +4,6 @@
     <size android:height="20dp"
         android:width="20dp"/>
 
-    <solid android:color="#9BC059"/>
+    <solid android:color="@color/seekBarColor"/>
 
 </shape>

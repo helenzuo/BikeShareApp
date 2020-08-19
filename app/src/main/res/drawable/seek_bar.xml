@@ -3,7 +3,7 @@
     <item android:id="@android:id/background">
         <shape>
             <solid
-                android:color="@color/babyGreen"/>
+                android:color="@color/seekBarBackgroundColor"/>
             <size
                 android:height="5dp"
                 android:width="5dp" />

@@ -2,6 +2,7 @@ package com.example.mysecondapp;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.content.res.ResourcesCompat;
 
 import java.lang.reflect.Field;
 import java.util.Calendar;
@@ -86,7 +88,8 @@ public class CustomTimePickeerDialog extends TimePickerDialog {
                             amPm = "PM";
                         }
                         String output = String.format(Locale.getDefault(), "%2d:%02d %s", selectedHour, mTimePicker.getMinute(), amPm);
-                        editText.getBackground().mutate().setColorFilter(context.getResources().getColor(android.R.color.holo_green_light), PorterDuff.Mode.SRC_ATOP);
+                        editText.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.edited)));
+                        editText.setTextColor(context.getResources().getColor(R.color.almostBlack));
                         editText.setText(output);
                         distanceRelativeView.setVisibility(View.VISIBLE);
                         nextButton.setVisibility(VISIBLE);

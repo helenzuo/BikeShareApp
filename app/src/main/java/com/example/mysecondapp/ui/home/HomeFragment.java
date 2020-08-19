@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -31,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -51,12 +53,15 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.mysecondapp.CustomTimePickeerDialog;
@@ -66,6 +71,7 @@ import com.example.mysecondapp.OnSwipeTouchListener;
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.STATIC_DEFINITIONS;
 import com.example.mysecondapp.Station;
+import com.example.mysecondapp.ui.dashboard.StationsListFragment;
 import com.example.mysecondapp.ui.map.MapFragment;
 
 import org.w3c.dom.Text;
@@ -79,7 +85,8 @@ import java.util.concurrent.TimeUnit;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-public class HomeFragment extends Fragment implements View.OnClickListener, View.OnTouchListener, TextWatcher {
+public class HomeFragment extends Fragment implements View.OnClickListener, View.OnTouchListener, TextWatcher, MapFragment.updateParentView {
+    private Resources r;
 
     private ArrayList<RelativeLayout> relativeLayoutContainers = new ArrayList<>();
     private RelativeLayout startStateContainer;
@@ -94,6 +101,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private EditText departureStationEditText;
     private ColorFilter standardEditTextLine;
     private Drawable standardEditTextBackground;
+    private int departureStationEditTextHeight;
     private ListView departureStationListView;
     private ImageButton mapSearchButton;
     private EditText timeEditText;
@@ -127,28 +135,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     AlphaAnimation outAnimation;
     FrameLayout progressBarHolder;
 
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        root = inflater.inflate(R.layout.fragment_home, container, false);
-        main = (MainActivity) getActivity();
 
-        // Get the relative layout  containers for each state and store into array list
-        relativeLayoutContainers = new ArrayList<>();
-        startStateContainer = root.findViewById(R.id.startStateLayoutContainer);
-        relativeLayoutContainers.add(startStateContainer);
-        bikeReserveDetailsContainer = root.findViewById(R.id.queryDepartureLayoutContainer);
-        relativeLayoutContainers.add(bikeReserveDetailsContainer);
-        departureStationSelectedContainer = root.findViewById(R.id.departureStationSelectedLayout);
-        relativeLayoutContainers.add(departureStationSelectedContainer);
-        arrivalStationSelectionContainer = root.findViewById(R.id.queryArrivalLayoutContainer);
-        relativeLayoutContainers.add(arrivalStationSelectionContainer);
-
+    private void updateView(){
         // Initialise all layouts as invisible first and then set the relevant one as visible
         for (RelativeLayout relativeLayout : relativeLayoutContainers) {
             relativeLayout.setVisibility(GONE);
         }
+
         relativeLayoutContainers.get(main.getBookingState()).setVisibility(VISIBLE);
 
         switch (main.getBookingState()) {
@@ -166,6 +159,48 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 loadArrivalStationSelectionPage();
                 break;
         }
+    }
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+        root = inflater.inflate(R.layout.fragment_home, container, false);
+        main = (MainActivity) getActivity();
+        this.r = getResources();
+
+        relativeLayoutContainers = new ArrayList<>();
+        startStateContainer = root.findViewById(R.id.startStateLayoutContainer);
+        relativeLayoutContainers.add(startStateContainer);
+        bikeReserveDetailsContainer = root.findViewById(R.id.queryDepartureLayoutContainer);
+        relativeLayoutContainers.add(bikeReserveDetailsContainer);
+        departureStationSelectedContainer = root.findViewById(R.id.departureStationSelectedLayout);
+        relativeLayoutContainers.add(departureStationSelectedContainer);
+        arrivalStationSelectionContainer = root.findViewById(R.id.queryArrivalLayoutContainer);
+        relativeLayoutContainers.add(arrivalStationSelectionContainer);
+
+        updateView();
+//        // Initialise all layouts as invisible first and then set the relevant one as visible
+//        for (RelativeLayout relativeLayout : relativeLayoutContainers) {
+//            relativeLayout.setVisibility(GONE);
+//        }
+//
+//        relativeLayoutContainers.get(main.getBookingState()).setVisibility(VISIBLE);
+
+//        switch (main.getBookingState()) {
+//            case STATIC_DEFINITIONS.START_BOOKING_STATE:
+//                startBookingButton = root.findViewById(R.id.startBookingButton);
+//                startBookingButton.setOnClickListener(this);
+//                break;
+//            case STATIC_DEFINITIONS.RESERVE_BIKE_SELECTION_STATE:
+//                loadDepartureStationSelectionPage();
+//                break;
+//            case STATIC_DEFINITIONS.DEPARTURE_STATION_SELECTED_STATE:
+//                loadQRScannerPage();
+//                break;
+//            case STATIC_DEFINITIONS.QR_SCANNED_STATE:
+//                loadArrivalStationSelectionPage();
+//                break;
+//        }
         return root;
     }
     private void loadArrivalStationSelectionPage(){
@@ -303,6 +338,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         root.setOnTouchListener(this);
     }
 
+
     private void loadDepartureStationSelectionPage(){
         timeSelectLayout = root.findViewById(R.id.departTimePickLayout);
         distanceSelectLayout = root.findViewById(R.id.walkingRelativeLayout);
@@ -322,13 +358,14 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         final MyAdapter departureAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations(), main.getFavouriteStations(), main);
         departureStationListView.setAdapter(departureAdapter);
         departureAdapter.notifyDataSetChanged();
-        standardEditTextBackground = departureStationEditText.getBackground();
         departureStationEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -346,7 +383,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         });
 
-        departureStationEditText.setOnTouchListener(this);
         departureStationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -355,16 +391,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 updateScreenGraphics();
             }
         });
+
         departureStationListView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 updateScreenGraphics();
             }
-
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
             }
         });
+//        departureStationListView.setOnTouchListener(this);
 
         // set listener for button next to "search bar" that allows user to select station from map
         mapSearchButton.setOnClickListener(this);
@@ -458,35 +495,53 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         });
     }
 
-
     private void updateDepartureStationEditGraphics(){
+        if (departureStationEditTextHeight == 0){
+            departureStationEditTextHeight = departureStationEditText.getHeight();
+        }
         if (departureStationEditText.hasFocus()){
             departureStationListView.setVisibility(View.VISIBLE);
-            departureStationEditText.setBackgroundResource(R.drawable.edit_text_focus);
+//            departureStationEditText.setBackgroundResource(R.drawable.edit_text_focus);
             root.findViewById(R.id.departTimePickLayout).setVisibility(GONE);
-            root.findViewById(R.id.walkingRelativeLayout).setVisibility(View.GONE);
+            root.findViewById(R.id.walkingRelativeLayout).setVisibility(GONE);
             searchButton.setVisibility(GONE);
+            mapSearchButton.setVisibility(GONE);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) departureStationEditText.getLayoutParams();
-            params.setMarginStart((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics()));
+            params.setMarginStart(0);
+            params.setMarginEnd(0);
+            params.height = (int) (departureStationEditTextHeight * (6f/5f));
             departureStationEditText.setLayoutParams(params);
-            departureStationEditText.setTextColor(Color.BLACK);
-            if (departureStationEditText.getText().toString().length() > 0)
-                departureStationEditText.setCompoundDrawablesWithIntrinsicBounds(null, null, ResourcesCompat.getDrawable(getResources(), R.drawable.edit_text_clear, main.getTheme()), null);
-        } else if (departureStationEditText.getText().toString().length() == 0 || !departureStationEditText.hasFocus()) {
+            departureStationEditText.setBackgroundTintList(ColorStateList.valueOf(r.getColor(R.color.editTextFocus)));
+            departureStationEditText.setHintTextColor(r.getColor(R.color.darkGray));
+            departureStationEditText.setTextColor(r.getColor(R.color.almostBlack));
+            if (departureStationEditText.getText().toString().length() > 0) {
+                ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()).setTint(r.getColor(R.color.almostBlack));
+                departureStationEditText.setCompoundDrawablesWithIntrinsicBounds(null, null, ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()), null);
+                departureStationEditText.setOnTouchListener(this);
+            } else {
+                ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()).setTint(r.getColor(R.color.transparent));
+                departureStationEditText.setCompoundDrawablesWithIntrinsicBounds(null, null, ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()), null);
+                departureStationEditText.setOnTouchListener(null);
+            }
+        } else {
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) departureStationEditText.getLayoutParams();
-            params.setMarginStart((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, getResources().getDisplayMetrics()));
+            params.setMarginStart(pixelToDp(16));
+            params.setMarginEnd(pixelToDp(5));
+            params.height = departureStationEditTextHeight;
             departureStationEditText.setLayoutParams(params);
-            departureStationEditText.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
-            departureStationEditText.setBackground(standardEditTextBackground);
-            departureStationEditText.setTextColor(getResources().getColor(R.color.offWhite));
+            mapSearchButton.setVisibility(VISIBLE);
+            departureStationEditText.setHintTextColor(r.getColor(R.color.editTextHintColor));
+            ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()).setTint(r.getColor(R.color.transparent));
+            departureStationEditText.setCompoundDrawablesWithIntrinsicBounds(null, null, ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()), null);
+            departureStationEditText.setOnTouchListener(null);
+            //         departureStationEditText.setBackground(standardEditTextBackground);
+//            departureStationEditText.setTextColor(getResources().getColor(R.color.offWhite));
             selectedDepartingStation = checkForStationMatch(departureStationEditText.getText().toString());
             if (selectedDepartingStation != null){
-                departureStationEditText.getBackground().mutate().setColorFilter(getResources().getColor(android.R.color.holo_green_light), PorterDuff.Mode.SRC_ATOP);
-            } else if (departureStationEditText.getText().toString().length() > 0){
-                departureStationEditText.getBackground().mutate().setColorFilter(getResources().getColor(android.R.color.holo_red_light), PorterDuff.Mode.SRC_ATOP);
-                Toast.makeText(getContext(),"Please select a station that exists", Toast.LENGTH_SHORT).show();
+                departureStationEditText.setBackgroundTintList(ColorStateList.valueOf(r.getColor(R.color.edited)));
             } else {
-                departureStationEditText.getBackground().mutate().setColorFilter(standardEditTextLine);
+                departureStationEditText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.editTextNoFocus)));
+                departureStationEditText.setTextColor(getResources().getColor(R.color.offWhite));
             }
             updateScreenGraphics();
         }
@@ -528,10 +583,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                     distanceSelectLayout.setVisibility(VISIBLE);
                     if (customDistanceSwitch.isChecked()) {
                         if (distanceText.getText().toString().trim().length() > 0) {
-                            distanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_green_light)));
+                            distanceText.setBackgroundTintList(ColorStateList.valueOf(r.getColor(R.color.edited)));
+                            distanceText.setTextColor(r.getColor(R.color.almostBlack));
                             searchButton.setVisibility(VISIBLE);
                         } else {
-                            distanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_red_light)));
+                            distanceText.setBackgroundTintList(ColorStateList.valueOf(r.getColor(R.color.editTextNoFocus)));
                             searchButton.setVisibility(GONE);
                         }
                     } else {
@@ -564,10 +620,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                     arrivalDistanceSelectLayout.setVisibility(VISIBLE);
                     if (customArrivalDistanceSwitch.isChecked()) {
                         if (arrivalDistanceText.getText().toString().trim().length() > 0) {
-                            arrivalDistanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_green_light)));
+//                            arrivalDistanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_green_light)));
                             searchArrivalButton.setVisibility(VISIBLE);
                         } else {
-                            arrivalDistanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_red_light)));
+//                            arrivalDistanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_red_light)));
                             searchArrivalButton.setVisibility(GONE);
                         }
                     } else {
@@ -581,6 +637,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         }
     }
+
     private int timeInInt(String s) {
         s = s.trim();
         String[] hourMinAP = s.split(":");
@@ -642,7 +699,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     public void onClick(View v) {
         if (v == startBookingButton){
             main.bookingStateTransition(true);
-            main.viewPager.getAdapter().notifyDataSetChanged();
+            updateView();
         } else if (v == timeEditText) {
             showTimePickerDialog();
         } else if (v == mapSearchButton){
@@ -691,14 +748,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         if (v == departureStationEditText){
             final int DRAWABLE_RIGHT = 2;
             if (departureStationEditText.getCompoundDrawables()[DRAWABLE_RIGHT] != null && event.getAction() == MotionEvent.ACTION_DOWN) {
-                if (event.getRawX() >= (departureStationEditText.getRight() - (departureStationEditText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width()) + 10)) {
+                if (event.getRawX() >= (departureStationEditText.getRight() - (departureStationEditText.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())*2)) {
                     departureStationEditText.playSoundEffect(SoundEffectConstants.CLICK);
                     departureStationEditText.setText("");
-                    departureStationEditText.setCompoundDrawablesWithIntrinsicBounds(null,null, null,null);
+                    ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()).setTint(r.getColor(R.color.transparent));
+                    departureStationEditText.setCompoundDrawablesWithIntrinsicBounds(null, null, ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()), null);
+                    departureStationEditText.setOnTouchListener(null);
                     return true;
                 }
             }
-        } else if (v == root){
+        } else if (v == root || v == departureStationListView){
             updateScreenGraphics();
         }
         return false;
@@ -716,6 +775,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     public void afterTextChanged(Editable s) {
         main.departureTime = timeEditText.getText().toString();
         main.distanceWalking = distanceText.getText().toString();
+    }
+
+    @Override
+    public void updateParentView() {
+        this.updateView();
     }
 
     private class splashPage extends AsyncTask<Void, Void, Void> {
@@ -753,5 +817,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
             return null;
         }
+    }
+
+    private int pixelToDp(int pixel){
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, pixel, getResources().getDisplayMetrics());
     }
 }

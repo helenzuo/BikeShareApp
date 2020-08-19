@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -124,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         pickerLayoutManager.setScaleDownDistance(0.7f);
 
         viewPager = findViewById(R.id.view_pager);
-        viewPager.setOffscreenPageLimit(2);
+        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle()));
         fragmentTitles = new ArrayList<String>();
         fragmentTitles.add("Profile");
@@ -169,7 +170,11 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setCurrentItem(1);
 
     }
-
+//
+//    public void updateViewpager(){
+//        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle()));
+//        viewPager.setCurrentItem(1);
+//    }
 
     public void bookingStateTransition(boolean forward){
         if (forward){

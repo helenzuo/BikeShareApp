@@ -65,20 +65,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/userQueryStation"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_centerHorizontal="true">
             <EditText
                 android:id="@+id/departureStationEditText"
                 android:soundEffectsEnabled="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="5dp"
                 android:singleLine="true"
                 android:imeOptions="actionNext"
                 android:layout_toStartOf="@+id/mapViewButton"
-                android:clickable="false"
                 android:textSize="15sp"
                 android:hint="Search for bike station"
+                android:background="@drawable/edit_text_focus"
+                android:drawableEnd="@drawable/edit_text_clear"
                 android:theme="@style/EditTextTheme"/>
 
             <ImageButton
@@ -90,10 +92,10 @@
                 android:scaleY="1.2"
                 android:layout_alignParentEnd="true"
                 android:layout_alignTop="@id/departureStationEditText"
-                android:paddingTop="3dp"
+                android:paddingTop="5dp"
                 android:background="@color/transparent"
                 android:src="@drawable/map_marker"
-                android:tint="@color/colorAccent"/>
+                android:tint="#a7bea9"/>
         </RelativeLayout>
 
         <ListView
@@ -125,6 +127,7 @@
                 android:fontFamily="@font/roboto_medium"
                 android:focusable="true"
                 android:paddingHorizontal="32dp"
+                android:layout_alignParentEnd="true"
                 android:text="When would you like to depart?"
                 android:textSize="18sp" />
 
@@ -132,14 +135,19 @@
                 android:id="@+id/timeEditText"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_below="@+id/textView2"
-                android:gravity="center"
                 android:inputType="none"
                 android:cursorVisible="false"
                 android:focusable="false"
                 android:hint="Select time"
-                android:textSize="16dp"/>
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/edit_text_focus"
+                android:textSize="15sp"
+                android:gravity="center"
+                android:textColor="@color/offWhite"
+                android:theme="@style/timeSelectThemeText"/>
 
         </RelativeLayout>
 
@@ -159,29 +167,33 @@
                 android:fontFamily="@font/roboto_medium"
                 android:focusable="true"
                 android:paddingHorizontal="32dp"
-                android:text="How far are you willing to walk for an alternative station?"
+                android:text="How far can you walk for an alternative station?"
                 android:textSize="18sp" />
             <RelativeLayout
                 android:id="@+id/progressTextViewContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="32dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_below="@id/textView3">
                 <EditText
                     android:id="@+id/progressTextView"
-                    android:layout_width="50dp"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/transparent"
                     android:enabled="false"
                     android:inputType="number"
                     android:singleLine="true"
                     android:gravity="center"
-                    android:textSize="16dp"/>
+                    android:theme="@style/EditTextTheme"
+                    android:textColor="@color/offWhite"
+                    android:textSize="15dp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="metres"
-                    android:textSize="16dp"
+                    android:textSize="15sp"
                     android:layout_marginStart="1sp"
                     android:layout_alignBaseline="@id/progressTextView"
                     android:layout_toEndOf="@+id/progressTextView"/>
@@ -236,7 +248,7 @@
             android:text="NEXT"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"/>
+            android:layout_margin="@dimen/button_margin"/>
     </RelativeLayout>
 <!--   DEPARTURE STATION SELECTED (WAITING TO QR SCAN) PAGE   -->
     <RelativeLayout
