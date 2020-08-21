@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
 
@@ -63,13 +64,14 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvNavigationPicker;
     private PickerAdapter navigationAdapter;
     private List<String> fragmentTitles;
-    private int currentFrag = 0;
+    private int currentFrag = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         selectionState = STATIC_DEFINITIONS.START_BOOKING_STATE;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         getSupportActionBar().hide();
 
         stations = new ArrayList<Station>();
@@ -119,24 +121,25 @@ public class MainActivity extends AppCompatActivity {
 //        new Connect(this).execute();
 
         rvNavigationPicker = (RecyclerView) findViewById(R.id.rvNavigationPicker);
-
         final NoBounceLinearLayoutManager pickerLayoutManager = new NoBounceLinearLayoutManager(this, PickerLayoutManager.HORIZONTAL, false);
         pickerLayoutManager.setScaleDownBy(0.25f);
         pickerLayoutManager.setScaleDownDistance(0.7f);
-
-        viewPager = findViewById(R.id.view_pager);
-        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle()));
+        SnapHelper snapHelper = new LinearSnapHelper();
         fragmentTitles = new ArrayList<String>();
         fragmentTitles.add("Profile");
         fragmentTitles.add("Reservation");
         fragmentTitles.add("Stations List");
-        SnapHelper snapHelper = new LinearSnapHelper();
         navigationAdapter = new PickerAdapter(this, fragmentTitles, rvNavigationPicker, snapHelper, pickerLayoutManager);
         snapHelper.attachToRecyclerView(rvNavigationPicker);
         rvNavigationPicker.setLayoutManager(pickerLayoutManager);
         rvNavigationPicker.setAdapter(navigationAdapter);
+        rvNavigationPicker.scrollToPosition(1);
+        rvNavigationPicker.smoothScrollBy(-1,0);
 
+        viewPager = findViewById(R.id.view_pager);
+        viewPager.setOffscreenPageLimit(1);
+        viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle()));
 
         pickerLayoutManager.setOnScrollStopListener(new PickerLayoutManager.onScrollStopListener() {
             @Override
@@ -167,14 +170,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        viewPager.setCurrentItem(1);
 
+        viewPager.setCurrentItem(1, false);
     }
-//
-//    public void updateViewpager(){
-//        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle()));
-//        viewPager.setCurrentItem(1);
-//    }
 
     public void bookingStateTransition(boolean forward){
         if (forward){
@@ -197,7 +195,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        getSupportActionBar().show();
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
 //                String result = data.getExtras().getString("QRCode");

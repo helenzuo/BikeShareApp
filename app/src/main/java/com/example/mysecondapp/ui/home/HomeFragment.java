@@ -45,6 +45,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TableLayout;
@@ -97,21 +99,20 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private Button startBookingButton;
 
     private RelativeLayout timeSelectLayout;
+    private RelativeLayout altStationLayout;
     private RelativeLayout distanceSelectLayout;
     private EditText departureStationEditText;
-    private ColorFilter standardEditTextLine;
-    private Drawable standardEditTextBackground;
     private int departureStationEditTextHeight;
     private ListView departureStationListView;
     private ImageButton mapSearchButton;
     private EditText timeEditText;
-    private EditText distanceText;
+    private RadioGroup altDepartureStationRadioGroup;
+    private TextView distanceText;
     private SeekBar seekBar;
-    private SwitchCompat customDistanceSwitch;
     private Button searchButton;
 
-    private ImageButton directionsButton;
-    private Button cancelReservationButton;
+    private TextView directionsButton;
+    private TextView cancelReservationButton;
 
     private RelativeLayout arrivalTimeSelectLayout;
     private RelativeLayout arrivalDistanceSelectLayout;
@@ -179,28 +180,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         relativeLayoutContainers.add(arrivalStationSelectionContainer);
 
         updateView();
-//        // Initialise all layouts as invisible first and then set the relevant one as visible
-//        for (RelativeLayout relativeLayout : relativeLayoutContainers) {
-//            relativeLayout.setVisibility(GONE);
-//        }
-//
-//        relativeLayoutContainers.get(main.getBookingState()).setVisibility(VISIBLE);
-
-//        switch (main.getBookingState()) {
-//            case STATIC_DEFINITIONS.START_BOOKING_STATE:
-//                startBookingButton = root.findViewById(R.id.startBookingButton);
-//                startBookingButton.setOnClickListener(this);
-//                break;
-//            case STATIC_DEFINITIONS.RESERVE_BIKE_SELECTION_STATE:
-//                loadDepartureStationSelectionPage();
-//                break;
-//            case STATIC_DEFINITIONS.DEPARTURE_STATION_SELECTED_STATE:
-//                loadQRScannerPage();
-//                break;
-//            case STATIC_DEFINITIONS.QR_SCANNED_STATE:
-//                loadArrivalStationSelectionPage();
-//                break;
-//        }
         return root;
     }
     private void loadArrivalStationSelectionPage(){
@@ -217,13 +196,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         customArrivalDistanceSwitch = root.findViewById(R.id.customDistanceSwitchArrival);
         searchArrivalButton = root.findViewById(R.id.nextButtonTimeSelectedArrival);
         // Get the standard colour of the edit line colour for future use
-        standardEditTextLine = arrivalStationEditText.getBackground().mutate().getColorFilter();
 
         // Station search with list view filter
         final MyAdapter arrivalAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations(), main.getFavouriteStations(), main);
         arrivalStationListView.setAdapter(arrivalAdapter);
         arrivalAdapter.notifyDataSetChanged();
-        standardEditTextBackground = arrivalStationEditText.getBackground();
         arrivalStationEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -341,19 +318,19 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
     private void loadDepartureStationSelectionPage(){
         timeSelectLayout = root.findViewById(R.id.departTimePickLayout);
-        distanceSelectLayout = root.findViewById(R.id.walkingRelativeLayout);
+        altStationLayout = root.findViewById(R.id.walkingRelativeLayout);
+        distanceSelectLayout = root.findViewById(R.id.distanceSelectLayout);
 
         departureStationEditText = root.findViewById(R.id.departureStationEditText);
         departureStationListView = root.findViewById(R.id.departureStationListView);
         mapSearchButton = root.findViewById(R.id.mapViewButton);
         timeEditText = root.findViewById(R.id.timeEditText);
+        altDepartureStationRadioGroup = root.findViewById(R.id.toggleYesNo);
         distanceText = root.findViewById(R.id.progressTextView);
         seekBar = root.findViewById(R.id.walkingDistanceSeekBar);
-        customDistanceSwitch = root.findViewById(R.id.customDistanceSwitch);
         searchButton = root.findViewById(R.id.nextButtonTimeSelected);
-        // Get the standard colour of the edit line colour for future use
-        standardEditTextLine = departureStationEditText.getBackground().mutate().getColorFilter();
 
+        altDepartureStationRadioGroup.clearCheck();
         // Station search with list view filter
         final MyAdapter departureAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations(), main.getFavouriteStations(), main);
         departureStationListView.setAdapter(departureAdapter);
@@ -409,11 +386,36 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         // Do not show keyboard for time edit text and set listener
         timeEditText.setShowSoftInputOnFocus(false);
         timeEditText.setOnClickListener(this);
+
+        altDepartureStationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(RadioGroup group, int checkedId)
+            {
+                // This will get the radiobutton that has changed in its check state
+                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+                // This puts the value (true/false) into the variable
+                boolean isChecked = checkedRadioButton.isChecked();
+                // If the radiobutton that has changed in check state is now checked...
+                if (isChecked && checkedRadioButton.getId() == R.id.yes)
+                {
+                    distanceSelectLayout.setVisibility(VISIBLE);
+                } else {
+                    distanceSelectLayout.setVisibility(GONE);
+                }
+            }
+        });
+
         // set listener for when seekbar slider is changed, to update the distance text
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                distanceText.setText(String.format(Locale.getDefault(),"%d",progress * 100));
+                if (progress < 10) {
+                    distanceText.setText(String.format(Locale.getDefault(), "%dM", progress * 100));
+                } else if (progress != 20) {
+                    distanceText.setText(String.format(Locale.getDefault(), "%.1fKM", progress * .1));
+                } else {
+                    distanceText.setText("2KM+");
+                }
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
@@ -425,23 +427,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         });
 
-        // set listener to toggle between using the slider and entering distance with keyboard
-        customDistanceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
-                    main.customDistance = true;
-                    distanceText.setEnabled(true);
-                    seekBar.setVisibility(View.INVISIBLE);
-                } else {
-                    main.customDistance = false;
-                    distanceText.setEnabled(false);
-                    seekBar.setVisibility(VISIBLE);
-                    seekBar.setProgress(Integer.min(Integer.parseInt(distanceText.getText().toString())/100,15));
-                }
-                updateScreenGraphics();
-            }
-        });
 
         searchButton.setVisibility(GONE);
         searchButton.setOnClickListener(this);
@@ -460,7 +445,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         } else {
             seekBar.setProgress(5);
         }
-        customDistanceSwitch.setChecked(main.customDistance);
         updateScreenGraphics();
 
         distanceText.addTextChangedListener(this);
@@ -478,15 +462,21 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         anim.setRepeatMode(Animation.REVERSE);
         anim.setRepeatCount(Animation.INFINITE);
         textView.startAnimation(anim);
-        ((TextView)root.findViewById(R.id.bookedDepartureStationNameTextView)).setText(main.reservedDepartureStation.getName());
-        ((TextView)root.findViewById(R.id.reservedTimeDetails)).setText(main.departureTime);
-        ((TextView)root.findViewById(R.id.reservedAddressDetails)).setText(main.reservedDepartureStation.getAddress());
+        ((TextView)root.findViewById(R.id.bookedDepartureStationNameTextView)).setText(String.format(Locale.getDefault(), "Station Name: %s",  main.reservedDepartureStation.getName()));
+        ((TextView)root.findViewById(R.id.reservedAddressDetails)).setText(String.format(Locale.getDefault(), "Address: %s",  main.reservedDepartureStation.getAddress()));
+        ((TextView)root.findViewById(R.id.reservedTimeDetails)).setText(String.format(Locale.getDefault(), "Reserved Time: %s",  main.departureTime));
+        ((TextView)root.findViewById(R.id.textView5)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main.startQRScanner();
+            }
+        });
         directionsButton = root.findViewById(R.id.directionsButton);
         cancelReservationButton = root.findViewById(R.id.cancelReservationButton);
         directionsButton.setOnClickListener(this);
         cancelReservationButton.setOnClickListener(this);
         root.setOnTouchListener(new OnSwipeTouchListener(getContext()){
-            public void onSwipeBottom() {
+            public void onSwipeTop() {
                 main.startQRScanner();
             }
             public boolean onTouch(View v, MotionEvent event) {
@@ -569,7 +559,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         selectedDepartingStation = checkForStationMatch(departureStationEditText.getText().toString());
         if (selectedDepartingStation == null){
             timeSelectLayout.setVisibility(GONE);
-            distanceSelectLayout.setVisibility(GONE);
+            altStationLayout.setVisibility(GONE);
             searchButton.setVisibility(GONE);
         }
         if (selectedDepartingStation != null) {
@@ -580,22 +570,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 Calendar now = Calendar.getInstance();
                 int minutes = now.get(Calendar.HOUR_OF_DAY)*60 + now.get(Calendar.MINUTE);
                 if (timeInInt(timeEditText.getText().toString()) > minutes) {
-                    distanceSelectLayout.setVisibility(VISIBLE);
-                    if (customDistanceSwitch.isChecked()) {
-                        if (distanceText.getText().toString().trim().length() > 0) {
-                            distanceText.setBackgroundTintList(ColorStateList.valueOf(r.getColor(R.color.edited)));
-                            distanceText.setTextColor(r.getColor(R.color.almostBlack));
-                            searchButton.setVisibility(VISIBLE);
-                        } else {
-                            distanceText.setBackgroundTintList(ColorStateList.valueOf(r.getColor(R.color.editTextNoFocus)));
-                            searchButton.setVisibility(GONE);
-                        }
-                    } else {
-                        searchButton.setVisibility(VISIBLE);
-                        distanceText.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));
-                    }
+                    altStationLayout.setVisibility(VISIBLE);
+                    searchButton.setVisibility(VISIBLE);
                 } else {
-                    distanceSelectLayout.setVisibility(GONE);
+                    altStationLayout.setVisibility(GONE);
                     timeEditText.setText("");
                 }
             }
@@ -688,7 +666,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
 
             }
-        }, hour, minute, false, timeEditText, distanceSelectLayout, searchButton);
+        }, hour, minute, false, timeEditText, altStationLayout, searchButton);
         mTimePicker.show();
         Objects.requireNonNull(mTimePicker.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corners);
         mTimePicker.getButton(DatePickerDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE);

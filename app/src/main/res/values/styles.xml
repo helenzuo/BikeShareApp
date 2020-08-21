@@ -10,6 +10,7 @@
         <item name="android:fontFamily">@font/lato</item>
         <item name="android:textColor">@color/offWhite</item>
         <item name="editTextStyle">@style/EditTextTheme</item>
+        <item name="alertDialogTheme">@style/AlertDialogCustom</item>
 
     </style>
 
@@ -63,6 +64,12 @@
         <item name="colorControlActivated">#cbdfbd</item>
         <item name="colorSwitchThumbNormal">#f1f1f1</item>
         <item name="android:colorForeground">@color/okEditText</item>
+    </style>
+
+    <style name="AlertDialogCustom" parent="Base.Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/buttonColor</item>
+        <item name="android:textColorPrimary">@color/almostBlack</item>
+        <item name="fontFamily">@font/lato</item>
     </style>
 
 </resources>

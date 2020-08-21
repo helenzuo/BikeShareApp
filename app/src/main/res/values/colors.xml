@@ -11,11 +11,12 @@
     <color name="white">#FFFFFF</color>
     <color name="lightGreen">#DAF7A6</color>
     <color name="black">#000000</color>
-    <color name="buttonColor">#A6BC86</color>
     <color name="babyGreen">#E9FCC7</color>
 
-    <color name="seekBarColor">#A6BC86</color>
-    <color name="seekBarBackgroundColor">#B9C8B7</color>
+    <color name="buttonColor">#84A98C</color>
+
+    <color name="seekBarColor">#AA5551</color>
+    <color name="seekBarBackgroundColor">#CAF8C495</color>
     <color name="offWhite">#f9f9f9</color>
     <color name="almostBlack">#282828</color>
     <color name="backgroundColor">#2f3e46</color>
@@ -25,7 +26,7 @@
     <color name="editTextFocus">#e07a5f</color>
     <color name="editTextHintColor">#90B4BAC0</color>
     <color name="timePickerColor">#e07a5f</color>
-    <color name="edited">#A6BC86</color>
+    <color name="edited">#EA8A6F</color>
 
 
 </resources>

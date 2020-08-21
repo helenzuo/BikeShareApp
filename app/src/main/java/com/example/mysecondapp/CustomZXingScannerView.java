@@ -37,7 +37,7 @@ public class CustomZXingScannerView extends View implements IViewFinder {
 
     private final int mDefaultLaserColor = getResources().getColor(R.color.viewfinder_laser, getContext().getTheme());
     private final int mDefaultMaskColor = getResources().getColor(R.color.viewfinder_mask, getContext().getTheme());
-    private final int mDefaultBorderColor = getResources().getColor(R.color.white, getContext().getTheme());
+    private final int mDefaultBorderColor = getResources().getColor(R.color.offWhite, getContext().getTheme());
     private final int mDefaultBorderStrokeWidth = (int) (getResources().getInteger(R.integer.viewfinder_border_width) * 3);
     private final int mDefaultBorderLineLength = (int) (getResources().getInteger(R.integer.viewfinder_border_length)*1.5);
 

@@ -1,6 +1,7 @@
 package com.example.mysecondapp;
 
 import android.content.Context;
+import android.view.View;
 
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,4 +25,8 @@ public class NoBounceLinearLayoutManager extends PickerLayoutManager {
         linearSmoothScroller.setTargetPosition(position);
         startSmoothScroll(linearSmoothScroller);
     }
+
+
+
+
 }

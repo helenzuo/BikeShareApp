@@ -51,7 +51,7 @@ public class QRScanner extends AppCompatActivity implements ZXingScannerView.Res
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        overridePendingTransition( 0,R.anim.slide_down);
+        overridePendingTransition( R.anim.slide_up,0);
         setContentView(R.layout.activity_q_r_scanner);
         getSupportActionBar().hide();
         // Check if camera allowed on device. If not, ask for permission
@@ -79,7 +79,7 @@ public class QRScanner extends AppCompatActivity implements ZXingScannerView.Res
         flashToggle.setOnClickListener(this);
 
         relativeLayout.setOnTouchListener(new OnSwipeTouchListener(this){
-            public void onSwipeTop() {
+            public void onSwipeBottom() {
                 closeQRScanner();
             }
             public boolean onTouch(View v, MotionEvent event) {
@@ -91,7 +91,7 @@ public class QRScanner extends AppCompatActivity implements ZXingScannerView.Res
     private void closeQRScanner(){
         setResult(RESULT_CANCELED, null);
         finish();
-        overridePendingTransition( R.anim.slide_up,0);
+        overridePendingTransition( 0, R.anim.slide_down);
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

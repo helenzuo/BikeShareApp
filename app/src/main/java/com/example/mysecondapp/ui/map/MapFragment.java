@@ -1,6 +1,7 @@
 package com.example.mysecondapp.ui.map;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,6 +13,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -32,16 +34,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.example.mysecondapp.IgnorePageViewSwipe;
 import com.example.mysecondapp.MainActivity;
+import com.example.mysecondapp.MapViewInScroll;
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.STATIC_DEFINITIONS;
 import com.example.mysecondapp.Station;
 import com.example.mysecondapp.StationCardAdapter;
-import com.example.mysecondapp.ui.dashboard.StationsListFragment;
 import com.example.mysecondapp.ui.home.HomeFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -56,7 +58,7 @@ import static android.content.Context.LOCATION_SERVICE;
 import static android.view.View.GONE;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
-    private MapView mapView;
+    private MapViewInScroll mapView;
     private GoogleMap googleMap;
     private View root;
     private MainActivity main;
@@ -71,7 +73,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     private StationCardAdapter stationCardAdapter;
     private Button selectButton;
     private Station centredStation;
-    private Button OKButton;
     Location lastKnownLocation;
 
     private int openedFrom;
@@ -114,7 +115,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mapView = (MapView) view.findViewById(R.id.map);
+        mapView = (MapViewInScroll) view.findViewById(R.id.map);
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
         mapView.getMapAsync(this);
@@ -168,11 +169,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         recyclerView = (RecyclerView) root.findViewById(R.id.cardViewRecycler);
         selectButton = root.findViewById(R.id.selectBorrowStationButton);
         closeMapButton = root.findViewById(R.id.closeMapPopUpButton);
-        OKButton = root.findViewById(R.id.OKButton);
 
         selectButton.setOnClickListener(this);
+        selectButton.setOnTouchListener(new IgnorePageViewSwipe(main));
         closeMapButton.setOnClickListener(this);
-        OKButton.setOnClickListener(this);
 
         Intent intent = getActivity().getIntent();
         if (intent.getIntExtra("Place Number", 0) == 0) {
@@ -254,6 +254,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                         selectButton.setClickable(false);
                         selectButton.animate().alpha(0.0f).setDuration(200).start();
                     }
+                    if (newState == 0){
+                        main.viewPager.setUserInputEnabled(true);
+                    }
                     super.onScrollStateChanged(recyclerView, newState);
                 }
             });
@@ -297,7 +300,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
             if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP){
                 ((HomeFragment)getParentFragment()).setDepartureStationFromMap(centredStation);
                 getParentFragmentManager().popBackStackImmediate();
-                main.navView.setVisibility(View.VISIBLE);
+                mParentListener.updateParentView();
             } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setMessage("Confirm bike reservation?");
@@ -308,12 +311,30 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                             public void onClick(DialogInterface dialog, int id) {
                                 main.bookingStateTransition(true);
                                 main.reservedDepartureStation = centredStation;
-                                root.findViewById(R.id.mapLayout).setVisibility(GONE);
                                 root.findViewById(R.id.doneScreen).setVisibility(View.VISIBLE);
                                 final LottieAnimationView doneAnimation = root.findViewById(R.id.reservationDoneAnimation);
                                 doneAnimation.playAnimation();
-                                String detailsText = "Reservation Station: " + centredStation.getName() + "\nReservation Time: " + main.departureTime + "\nStation Address: " + centredStation.getAddress();
-                                ((TextView)root.findViewById(R.id.reservationDoneDetails)).setText(detailsText);
+                                doneAnimation.addAnimatorListener(new Animator.AnimatorListener() {
+                                    @Override
+                                    public void onAnimationStart(Animator animation) {
+
+                                    }
+
+                                    @Override
+                                    public void onAnimationEnd(Animator animation) {
+                                        closeMapButton.callOnClick();
+                                    }
+
+                                    @Override
+                                    public void onAnimationCancel(Animator animation) {
+
+                                    }
+
+                                    @Override
+                                    public void onAnimationRepeat(Animator animation) {
+
+                                    }
+                                });
 
                             }
                         });
@@ -328,13 +349,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 AlertDialog confirmAlert = builder.create();
                 confirmAlert.show();
             }
-        } else if (v == closeMapButton || v == OKButton){
+        } else if (v == closeMapButton){
             getParentFragmentManager().popBackStackImmediate();
-//            main.viewPager.getAdapter().notifyDataSetChanged();
-//            main.updateViewpager();
-//            getParentFragmentManager().beginTransaction().remove(MapFragment.this).commit();
-                mParentListener.updateParentView();
-
+            mParentListener.updateParentView();
         }
     }
 
