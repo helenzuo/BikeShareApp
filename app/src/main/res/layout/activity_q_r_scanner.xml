@@ -5,68 +5,49 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
-    <androidx.cardview.widget.CardView
+    <RelativeLayout
         android:id="@+id/QRScannedLayoutContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginVertical="100dp"
-        android:layout_marginHorizontal="32dp"
-        app:cardCornerRadius="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:elevation="6dp"
         android:visibility="gone">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="15dp">
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/rounded_corners"
+                android:backgroundTint="@color/offWhite"
+                android:layout_gravity="center"
+                android:padding="50dp"
                 android:layout_centerInParent="true">
                 <com.airbnb.lottie.LottieAnimationView
-                    android:id="@+id/bikeAnimation"
+                    android:id="@+id/unlockAnimation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     app:lottie_rawRes="@raw/unlock_ani"
-                    app:lottie_autoPlay="true"
+                    app:lottie_autoPlay="false"
                     app:lottie_loop="false"
+                    app:lottie_speed="1.2"
+                    app:lottie_colorFilter="@color/buttonColor"
                     app:lottie_scale=".35"/>
                 <TextView
                     android:id="@+id/dockUnlockText"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:layout_below="@+id/bikeAnimation"
-                    android:gravity="center"
-                    android:textSize="22sp"
-                    android:text="Dock unlocked!"
-                    android:fontFamily="@font/roboto_medium"/>
-
-                <TextView
-                    android:id="@+id/detailsTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="50dp"
-                    android:layout_below="@+id/dockUnlockText"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:gravity="center"
-                    android:textSize="15sp"
-                    android:text="@string/QRScanned"/>
+                    android:layout_below="@+id/unlockAnimation"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="20sp"
+                    android:textColor="@color/almostBlack"
+                    android:text="Dock unlocked!"/>
             </RelativeLayout>
-            <Button
-                android:id="@+id/confirmButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="16dp"
-                android:text="OK"
-                android:backgroundTint="@color/buttonColor"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true"
-                android:layout_margin="25dp"/>
-
-        </RelativeLayout>
-    </androidx.cardview.widget.CardView>
-
+        </androidx.cardview.widget.CardView>
+    </RelativeLayout>
     <RelativeLayout
         android:id="@+id/cameraContainer"
         android:layout_width="match_parent"

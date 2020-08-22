@@ -14,6 +14,76 @@
 
     </style>
 
+    <style name="incomingMessageStyle" parent="@style/EditTextTheme">
+        <item name="android:background">@drawable/shape_bg_incoming_bubble</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:paddingStart">32dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginEnd">46dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+    </style>
+
+    <style name="outgoingMessageStyle" parent="@style/EditTextTheme">
+        <item name="android:background">@drawable/shape_bg_outgoing_bubble</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">32dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:layout_marginStart">46dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:gravity">end</item>
+        <item name="android:layout_alignParentEnd">true</item>
+    </style>
+
+    <style name="yesNoRadioGroupStyle" parent="@style/AppTheme">
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:background">@drawable/yes_no_toggle_outline</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="noRadioButtonStyle" parent="@style/AppTheme">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:layout_marginStart">2dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:background">@drawable/toggle_widget_background_yes_no</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:text">NO</item>
+        <item name="android:textColor">@drawable/yes_no_text_colour</item>
+    </style>
+
+    <style name="yesRadioButtonStyle" parent="@style/AppTheme">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:layout_marginEnd">2dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:background">@drawable/toggle_widget_background_yes_no</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:text">YES</item>
+        <item name="android:textColor">@drawable/yes_no_text_colour</item>
+    </style>
+
     <style name="EditTextTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorControlNormal">@color/offWhite</item>
         <item name="colorControlActivated">@color/default_blue_light</item>
@@ -27,8 +97,7 @@
 
     <style name="timeSelectThemeText" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorControlNormal">@color/offWhite</item>
-        <item name="colorControlActivated">@color/default_blue_light</item>
-        <item name="colorControlHighlight">@color/lightGreen</item>
+        <item name="colorControlActivated">@color/buttonColor</item>
         <item name="android:textColor">@color/offWhite</item>
         <item name="android:textColorHint">#90B4BAC0</item>
         <item name="android:padding">16dp</item>

@@ -2,8 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <corners android:radius="4dp" />
-    <solid android:color="@color/backgroundColor" />
+    <solid android:color="@color/editTextNoFocus" />
     <stroke
         android:width="2dp"
-        android:color="@color/editTextFocus" />
+        android:color="@color/edited" />
 </shape>

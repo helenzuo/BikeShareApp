@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.mysecondapp.ui.home.HomeFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.BufferedWriter;
@@ -68,7 +69,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        selectionState = STATIC_DEFINITIONS.START_BOOKING_STATE;
+//        selectionState = STATIC_DEFINITIONS.START_BOOKING_STATE;
+        selectionState = STATIC_DEFINITIONS.QR_SCANNED_STATE;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -199,11 +202,11 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
 //                String result = data.getExtras().getString("QRCode");
                 bookingStateTransition(true);
-                navController.popBackStack(R.id.navigation_home, true);
-                navController.navigate(R.id.navigation_home);
+                ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1)).updateParentView();
+//                navController.navigate(R.id.navigation_home);
             }
             else if (resultCode == RESULT_CANCELED) {
-                //Write your code if there's no result
+                //Write your code if there's no_radio_button result
             }
         }
     }

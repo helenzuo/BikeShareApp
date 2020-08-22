@@ -87,7 +87,7 @@ import java.util.concurrent.TimeUnit;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-public class HomeFragment extends Fragment implements View.OnClickListener, View.OnTouchListener, TextWatcher, MapFragment.updateParentView {
+public class HomeFragment extends Fragment implements View.OnClickListener, View.OnTouchListener, TextWatcher, MapFragment.updateParentView, RadioGroup.OnCheckedChangeListener {
     private Resources r;
 
     private ArrayList<RelativeLayout> relativeLayoutContainers = new ArrayList<>();
@@ -114,17 +114,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private TextView directionsButton;
     private TextView cancelReservationButton;
 
-    private RelativeLayout arrivalTimeSelectLayout;
-    private RelativeLayout arrivalDistanceSelectLayout;
-    private EditText arrivalStationEditText;
-    private ListView arrivalStationListView;
-    private ImageButton mapArrivalSearchButton;
-    private EditText arrivalTimeEditText;
+    private RelativeLayout firstQuestionAnsweredContainer;
+    private RadioGroup toggleKnownArrivalStationRadioGroup;
+    private TextView knownArrivalStationResponseTextView;
+    private TextView incomingResponseKnownArrival;
+    private RadioGroup toggleDirectTravelRadioGroup;
+    private TextView directTravelResponseTextView;
+    private TextView incomingResponseKnownArrivalTime;
+    private TextView borrowLengthProgressTextView;
     private SeekBar borrowLengthSeekBar;
-    private EditText arrivalDistanceText;
-    private SeekBar arrivalDistanceSeekBar;
-    private SwitchCompat customArrivalDistanceSwitch;
-    private Button searchArrivalButton;
+
 
     private MainActivity main;
     private View root;
@@ -182,277 +181,223 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         updateView();
         return root;
     }
+
+
+
     private void loadArrivalStationSelectionPage(){
-        arrivalTimeSelectLayout = root.findViewById(R.id.arriveTimePickLayout);
-        arrivalDistanceSelectLayout = root.findViewById(R.id.walkingRelativeLayoutArrival);
+        firstQuestionAnsweredContainer = root.findViewById(R.id.firstQuestionAnsweredContainer);
 
-        arrivalStationEditText = root.findViewById(R.id.arrivalStationEditText);
-        arrivalStationListView = root.findViewById(R.id.arrivalStationListView);
-        mapArrivalSearchButton = root.findViewById(R.id.mapViewButtonArrival);
-        arrivalTimeEditText = root.findViewById(R.id.progressBorrowLengthTextView);
+        toggleKnownArrivalStationRadioGroup = root.findViewById(R.id.toggleKnownArrivalStation);
+        knownArrivalStationResponseTextView = root.findViewById(R.id.knownArrivalStationResponse);
+        incomingResponseKnownArrival = root.findViewById(R.id.incomingMessage3);
+        toggleDirectTravelRadioGroup = root.findViewById(R.id.toggleDirectTravel);
+        directTravelResponseTextView = root.findViewById(R.id.directTravelResponse);
+        incomingResponseKnownArrivalTime = root.findViewById(R.id.incomingMessage4);
+        borrowLengthProgressTextView = root.findViewById(R.id.borrowLengthProgressText);
         borrowLengthSeekBar = root.findViewById(R.id.borrowLengthSeekBar);
-        arrivalDistanceText = root.findViewById(R.id.progressTextViewArrival);
-        arrivalDistanceSeekBar = root.findViewById(R.id.walkingDistanceSeekBarArrival);
-        customArrivalDistanceSwitch = root.findViewById(R.id.customDistanceSwitchArrival);
-        searchArrivalButton = root.findViewById(R.id.nextButtonTimeSelectedArrival);
-        // Get the standard colour of the edit line colour for future use
 
-        // Station search with list view filter
-        final MyAdapter arrivalAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations(), main.getFavouriteStations(), main);
-        arrivalStationListView.setAdapter(arrivalAdapter);
-        arrivalAdapter.notifyDataSetChanged();
-        arrivalStationEditText.addTextChangedListener(new TextWatcher() {
+        toggleKnownArrivalStationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                // make the clear text drawable visible depending on if text has been entered
-//                updateDepartureStationEditGraphics();
-                // Filter the listview depending on text entered
-                arrivalAdapter.getFilter().filter(s.toString().toLowerCase().trim());
-            }
-        });
-        arrivalStationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-//                updateDepartureStationEditGraphics();
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
+                boolean isChecked = checkedRadioButton.isChecked();
+                if (isChecked && checkedRadioButton.getId() == R.id.known) {
+                    knownArrivalStationResponseTextView.setText("Yes");
+                    incomingResponseKnownArrival.setText(r.getString(R.string.knownArrivalStation));
+                } else {
+                    knownArrivalStationResponseTextView.setText("No");
+                    incomingResponseKnownArrival.setText(r.getString(R.string.unknownArrivalStation));
+                }
+                firstQuestionAnsweredContainer.setVisibility(VISIBLE);
+                toggleDirectTravelRadioGroup.setVisibility(VISIBLE);
             }
         });
 
-        arrivalStationEditText.setOnTouchListener(this);
-        arrivalStationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        toggleDirectTravelRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                arrivalStationEditText.setText(((Station) arrivalAdapter.getItem(position)).getName());
-                selectedArrivalStation = (Station) arrivalAdapter.getItem(position);
-                updateScreenGraphics();
-            }
-        });
-        // set listener for button next to "search bar" that allows user to select station from map
-        mapArrivalSearchButton.setOnClickListener(this);
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
+                boolean isChecked = checkedRadioButton.isChecked();
+                if (isChecked && checkedRadioButton.getId() == R.id.direct) {
+                    directTravelResponseTextView.setText("Yes");
+                    incomingResponseKnownArrivalTime.setText(r.getString(R.string.directTravel));
+                    root.findViewById(R.id.progressBorrowLengthContainer).setVisibility(GONE);
+                } else {
+                    directTravelResponseTextView.setText("No");
+                    incomingResponseKnownArrivalTime.setText(r.getString(R.string.indirectTravel));
+                    root.findViewById(R.id.progressBorrowLengthContainer).setVisibility(VISIBLE);
+                    borrowLengthSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                        @Override
+                        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                            if (progress < 12)
+                                borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dmin until %s", progress * 5, timeInString(progress*5)));
+                            else if (progress < 36)
+                                borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dh %dmin until %s", progress*5/60, (progress*5)%60, timeInString(progress*5)));
+                            else
+                                borrowLengthProgressTextView.setText("Not too sure");
+                        }
 
-        // Do not show keyboard for time edit text and set listener
-//        arrivalTimeEditText.setShowSoftInputOnFocus(false);
-        borrowLengthSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                arrivalTimeEditText.setText(String.format(Locale.getDefault(),"%d",progress * 5));
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
 
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+                        }
 
-            }
-        });
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
 
-        // set listener for when seekbar slider is changed, to update the distance text
-        arrivalDistanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                arrivalDistanceText.setText(String.format(Locale.getDefault(),"%d",progress * 100));
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
+                        }
+                    });
+                    borrowLengthSeekBar.setProgress(6);
+                }
+                incomingResponseKnownArrivalTime.setVisibility(VISIBLE);
+                directTravelResponseTextView.setVisibility(VISIBLE);
             }
         });
 
-        // set listener to toggle between using the slider and entering distance with keyboard
-//        customDistanceSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if (isChecked){
-//                    main.customDistance = true;
-//                    distanceText.setEnabled(true);
-//                    seekBar.setVisibility(View.INVISIBLE);
-//                } else {
-//                    main.customDistance = false;
-//                    distanceText.setEnabled(false);
-//                    seekBar.setVisibility(VISIBLE);
-//                    seekBar.setProgress(Integer.min(Integer.parseInt(distanceText.getText().toString())/100,15));
-//                }
-//                hideKeyboardState1();
-//            }
-//        });
-
-        searchArrivalButton.setVisibility(GONE);
-        searchArrivalButton.setOnClickListener(this);
-
-//        if (main.selectedDepartureStation != null)
-//            departureStationEditText.setText(main.selectedDepartureStation.getName());
-//        if (!main.departureTime.isEmpty())
-//            timeEditText.setText(main.departureTime);
-//        if (!main.distanceWalking.isEmpty()) {
-//            distanceText.setText(main.distanceWalking);
-//            if (main.customDistance){
-//                seekBar.setVisibility(View.INVISIBLE);
-//            } else {
-//                seekBar.setProgress(Integer.parseInt(main.distanceWalking)/100);
-//            }
-//        } else {
-//            System.out.println(main.distanceWalking);
-//            seekBar.setProgress(5);
-//        }
-//        customDistanceSwitch.setChecked(main.customDistance);
-        updateScreenGraphics();
-
-//        distanceText.addTextChangedListener(this);
-//        timeEditText.addTextChangedListener(this);
-
-        // set touch listener to background so that focus is removed when touching it
         root.setOnTouchListener(this);
     }
 
 
     private void loadDepartureStationSelectionPage(){
-        timeSelectLayout = root.findViewById(R.id.departTimePickLayout);
-        altStationLayout = root.findViewById(R.id.walkingRelativeLayout);
-        distanceSelectLayout = root.findViewById(R.id.distanceSelectLayout);
+        if (timeSelectLayout == null) {
+            timeSelectLayout = root.findViewById(R.id.departTimePickLayout);
+            altStationLayout = root.findViewById(R.id.walkingRelativeLayout);
+            distanceSelectLayout = root.findViewById(R.id.distanceSelectLayout);
 
-        departureStationEditText = root.findViewById(R.id.departureStationEditText);
-        departureStationListView = root.findViewById(R.id.departureStationListView);
-        mapSearchButton = root.findViewById(R.id.mapViewButton);
-        timeEditText = root.findViewById(R.id.timeEditText);
-        altDepartureStationRadioGroup = root.findViewById(R.id.toggleYesNo);
-        distanceText = root.findViewById(R.id.progressTextView);
-        seekBar = root.findViewById(R.id.walkingDistanceSeekBar);
-        searchButton = root.findViewById(R.id.nextButtonTimeSelected);
+            departureStationEditText = root.findViewById(R.id.departureStationEditText);
+            departureStationListView = root.findViewById(R.id.departureStationListView);
+            mapSearchButton = root.findViewById(R.id.mapViewButton);
+            timeEditText = root.findViewById(R.id.timeEditText);
+            altDepartureStationRadioGroup = root.findViewById(R.id.toggleYesNo);
+            distanceText = root.findViewById(R.id.progressTextView);
+            seekBar = root.findViewById(R.id.walkingDistanceSeekBar);
+            searchButton = root.findViewById(R.id.nextButtonTimeSelected);
 
-        altDepartureStationRadioGroup.clearCheck();
-        // Station search with list view filter
-        final MyAdapter departureAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations(), main.getFavouriteStations(), main);
-        departureStationListView.setAdapter(departureAdapter);
-        departureAdapter.notifyDataSetChanged();
-        departureStationEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            // Station search with list view filter
+            final MyAdapter departureAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations(), main.getFavouriteStations(), main);
+            departureStationListView.setAdapter(departureAdapter);
+            departureAdapter.notifyDataSetChanged();
+            departureStationEditText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-            }
+                }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                // make the clear text drawable visible depending on if text has been entered
-                updateDepartureStationEditGraphics();
-                // Filter the listview depending on text entered
-                departureAdapter.getFilter().filter(s.toString().toLowerCase().trim());
-            }
-        });
-        departureStationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                updateDepartureStationEditGraphics();
-            }
-        });
+                @Override
+                public void afterTextChanged(Editable s) {
+                    // make the clear text drawable visible depending on if text has been entered
+                    updateDepartureStationEditGraphics();
+                    // Filter the listview depending on text entered
+                    departureAdapter.getFilter().filter(s.toString().toLowerCase().trim());
+                }
+            });
+            departureStationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    updateDepartureStationEditGraphics();
+                }
+            });
 
-        departureStationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                departureStationEditText.setText(((Station) departureAdapter.getItem(position)).getName());
-                selectedDepartingStation = (Station) departureAdapter.getItem(position);
-                updateScreenGraphics();
-            }
-        });
+            departureStationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    departureStationEditText.setText(((Station) departureAdapter.getItem(position)).getName());
+                    selectedDepartingStation = (Station) departureAdapter.getItem(position);
+                    updateScreenGraphics();
+                }
+            });
 
-        departureStationListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                updateScreenGraphics();
-            }
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            }
-        });
+            departureStationListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(AbsListView view, int scrollState) {
+                    updateScreenGraphics();
+                }
+
+                @Override
+                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                }
+            });
 //        departureStationListView.setOnTouchListener(this);
 
-        // set listener for button next to "search bar" that allows user to select station from map
-        mapSearchButton.setOnClickListener(this);
+            // set listener for button next to "search bar" that allows user to select station from map
+            mapSearchButton.setOnClickListener(this);
 
-        // Do not show keyboard for time edit text and set listener
-        timeEditText.setShowSoftInputOnFocus(false);
-        timeEditText.setOnClickListener(this);
+            // Do not show keyboard for time edit text and set listener
+            timeEditText.setShowSoftInputOnFocus(false);
+            timeEditText.setOnClickListener(this);
 
-        altDepartureStationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(RadioGroup group, int checkedId)
-            {
-                // This will get the radiobutton that has changed in its check state
-                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
-                // This puts the value (true/false) into the variable
-                boolean isChecked = checkedRadioButton.isChecked();
-                // If the radiobutton that has changed in check state is now checked...
-                if (isChecked && checkedRadioButton.getId() == R.id.yes)
-                {
-                    distanceSelectLayout.setVisibility(VISIBLE);
-                } else {
-                    distanceSelectLayout.setVisibility(GONE);
+            altDepartureStationRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    // This will get the radiobutton that has changed in its check state
+                    RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
+                    // This puts the value (true/false) into the variable
+                    boolean isChecked = checkedRadioButton.isChecked();
+                    // If the radiobutton that has changed in check state is now checked...
+                    if (isChecked && checkedRadioButton.getId() == R.id.yes) {
+                        distanceSelectLayout.setVisibility(VISIBLE);
+                    } else {
+                        distanceSelectLayout.setVisibility(GONE);
+                    }
+                    searchButton.setVisibility(VISIBLE);
                 }
-            }
-        });
+            });
 
-        // set listener for when seekbar slider is changed, to update the distance text
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (progress < 10) {
-                    distanceText.setText(String.format(Locale.getDefault(), "%dM", progress * 100));
-                } else if (progress != 20) {
-                    distanceText.setText(String.format(Locale.getDefault(), "%.1fKM", progress * .1));
-                } else {
-                    distanceText.setText("2KM+");
+            // set listener for when seekbar slider is changed, to update the distance text
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (progress < 10) {
+                        distanceText.setText(String.format(Locale.getDefault(), "%dM", progress * 100));
+                    } else if (progress != 20) {
+                        distanceText.setText(String.format(Locale.getDefault(), "%.1fKM", progress * .1));
+                    } else {
+                        distanceText.setText("2KM+");
+                    }
                 }
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
 
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
 
-            }
-        });
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+            });
 
 
-        searchButton.setVisibility(GONE);
-        searchButton.setOnClickListener(this);
+            searchButton.setVisibility(GONE);
+            searchButton.setOnClickListener(this);
 
-        if (main.selectedDepartureStation != null)
-            departureStationEditText.setText(main.selectedDepartureStation.getName());
-        if (!main.departureTime.isEmpty())
-            timeEditText.setText(main.departureTime);
-        if (!main.distanceWalking.isEmpty()) {
-            distanceText.setText(main.distanceWalking);
-            if (main.customDistance){
-                seekBar.setVisibility(View.INVISIBLE);
+            if (main.selectedDepartureStation != null)
+                departureStationEditText.setText(main.selectedDepartureStation.getName());
+            if (!main.departureTime.isEmpty())
+                timeEditText.setText(main.departureTime);
+            if (!main.distanceWalking.isEmpty()) {
+                distanceText.setText(main.distanceWalking);
+                if (main.customDistance) {
+                    seekBar.setVisibility(View.INVISIBLE);
+                } else {
+                    seekBar.setProgress(Integer.parseInt(main.distanceWalking) / 100);
+                }
             } else {
-                seekBar.setProgress(Integer.parseInt(main.distanceWalking)/100);
+                seekBar.setProgress(5);
             }
-        } else {
-            seekBar.setProgress(5);
+
+            distanceText.addTextChangedListener(this);
+            timeEditText.addTextChangedListener(this);
+
+            // set touch listener to background so that focus is removed when touching it
+            root.setOnTouchListener(this);
         }
         updateScreenGraphics();
-
-        distanceText.addTextChangedListener(this);
-        timeEditText.addTextChangedListener(this);
-
-        // set touch listener to background so that focus is removed when touching it
-        root.setOnTouchListener(this);
-    }
+        }
 
     private void loadQRScannerPage(){
         TextView textView = root.findViewById(R.id.textViewSlideDown);
@@ -571,50 +516,29 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 int minutes = now.get(Calendar.HOUR_OF_DAY)*60 + now.get(Calendar.MINUTE);
                 if (timeInInt(timeEditText.getText().toString()) > minutes) {
                     altStationLayout.setVisibility(VISIBLE);
-                    searchButton.setVisibility(VISIBLE);
+//                    searchButton.setVisibility(VISIBLE);
                 } else {
                     altStationLayout.setVisibility(GONE);
+                    searchButton.setVisibility(GONE);
                     timeEditText.setText("");
                 }
             }
         }
     }
 
-    private void updateDockReserveDetailsContainerVisibility() {
-        selectedArrivalStation = checkForStationMatch(arrivalStationEditText.getText().toString());
-        if (selectedArrivalStation == null){
-            arrivalTimeSelectLayout.setVisibility(GONE);
-            arrivalDistanceSelectLayout.setVisibility(GONE);
-            searchArrivalButton.setVisibility(GONE);
+    private String timeInString(int plusMinutes){
+        Calendar now = Calendar.getInstance();
+        int minutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
+        minutes += plusMinutes;
+        int hours = minutes/60;
+        minutes = minutes % 60;
+        if (hours > 12 && hours != 12) {
+            hours -= 12;
+            return String.format(Locale.getDefault(), "%d:%02d%s", hours, minutes, "PM" );
         }
-        if (selectedArrivalStation != null) {
-            main.selectedArrivalStation = selectedArrivalStation;
-            arrivalStationListView.setVisibility(GONE);
-            arrivalTimeSelectLayout.setVisibility(View.VISIBLE);
-            if (arrivalTimeEditText.getText().toString().length() > 0){
-//                Calendar now = Calendar.getInstance();
-//                int minutes = now.get(Calendar.HOUR_OF_DAY)*60 + now.get(Calendar.MINUTE);
-                if (Integer.parseInt(arrivalTimeEditText.getText().toString()) < 180) {
-                    arrivalDistanceSelectLayout.setVisibility(VISIBLE);
-                    if (customArrivalDistanceSwitch.isChecked()) {
-                        if (arrivalDistanceText.getText().toString().trim().length() > 0) {
-//                            arrivalDistanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_green_light)));
-                            searchArrivalButton.setVisibility(VISIBLE);
-                        } else {
-//                            arrivalDistanceText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(android.R.color.holo_red_light)));
-                            searchArrivalButton.setVisibility(GONE);
-                        }
-                    } else {
-                        searchArrivalButton.setVisibility(VISIBLE);
-                        arrivalDistanceText.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));
-                    }
-                } else {
-                    arrivalDistanceSelectLayout.setVisibility(GONE);
-//                    arrivalTimeEditText.setText("");
-                }
-            }
-        }
+        return String.format(Locale.getDefault(), "%d:%02d%s", hours, minutes, "AM" );
     }
+
 
     private int timeInInt(String s) {
         s = s.trim();
@@ -638,10 +562,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 distanceText.clearFocus();
                 break;
             case STATIC_DEFINITIONS.QR_SCANNED_STATE:
-                updateDockReserveDetailsContainerVisibility();
-                arrivalTimeEditText.clearFocus();
-                arrivalTimeEditText.clearFocus();
-                arrivalDistanceText.clearFocus();
+
         }
 
     }
@@ -666,7 +587,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
 
             }
-        }, hour, minute, false, timeEditText, altStationLayout, searchButton);
+        }, hour, minute, false, timeEditText, altStationLayout);
         mTimePicker.show();
         Objects.requireNonNull(mTimePicker.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corners);
         mTimePicker.getButton(DatePickerDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE);
@@ -758,6 +679,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     @Override
     public void updateParentView() {
         this.updateView();
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+
     }
 
     private class splashPage extends AsyncTask<Void, Void, Void> {

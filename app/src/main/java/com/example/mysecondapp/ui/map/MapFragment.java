@@ -317,7 +317,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                                 doneAnimation.addAnimatorListener(new Animator.AnimatorListener() {
                                     @Override
                                     public void onAnimationStart(Animator animation) {
-
                                     }
 
                                     @Override
@@ -335,7 +334,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
 
                                     }
                                 });
-
                             }
                         });
                 builder.setNegativeButton(

@@ -7,6 +7,7 @@ import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -23,6 +24,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
@@ -132,28 +134,47 @@ public class QRScanner extends AppCompatActivity implements ZXingScannerView.Res
     }
 
     @Override
-    public void handleResult(Result rawResult) {
+    public void handleResult(final Result rawResult) {
         this.rawResult = rawResult;
         scanned = true;
         findViewById(R.id.QRScannedLayoutContainer).setVisibility(View.VISIBLE);
         flashToggle.setVisibility(View.GONE);
         closeButton.setVisibility(View.GONE);
-        OKbutton = findViewById(R.id.confirmButton);
-        OKbutton.setOnClickListener(this);
+        LottieAnimationView unlockAnimation = findViewById(R.id.unlockAnimation);
+        unlockAnimation.playAnimation();
+        unlockAnimation.addAnimatorListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                Intent intent = new Intent();
+                intent.putExtra("QRCode", rawResult.getText());
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
     }
 
     @Override
     public void onClick(View v) {
         if (v == closeButton){
             closeQRScanner();
-        } else if (v == flashToggle){
+        } else {
             mScannerView.toggleFlash();
             flash = !flash;
-        } else if (v == OKbutton){
-            Intent intent = new Intent();
-            intent.putExtra("QRCode", rawResult.getText());
-            setResult(RESULT_OK, intent);
-            finish();
         }
     }
 }

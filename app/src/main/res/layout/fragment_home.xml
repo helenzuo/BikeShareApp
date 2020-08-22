@@ -24,17 +24,17 @@
             android:backgroundTintMode="src_over"
             android:layout_alignParentBottom="true"/>
 
-            <TextView
-                android:id="@+id/bookAheadTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="@font/roboto_medium"
-                android:gravity="center"
-                android:paddingHorizontal="40dp"
-                android:layout_above="@id/startBookingButton"
-                android:text="To help us keep track of our dock occupancy, book ahead!"
-                android:textSize="24sp" />
+        <TextView
+            android:id="@+id/bookAheadTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/startBookingButton"
+            android:layout_centerHorizontal="true"
+            android:fontFamily="@font/lato_bold"
+            android:gravity="center"
+            android:paddingHorizontal="40dp"
+            android:text="To help us keep track of our dock occupancy, book ahead!"
+            android:textSize="24sp" />
 
             <Button
                 android:id="@+id/startBookingButton"
@@ -45,7 +45,8 @@
                 android:paddingHorizontal="@dimen/button_margin"
                 android:layout_centerInParent="true"
                 android:layout_marginTop="25dp"
-                android:background="@color/buttonColor"
+                android:background="@drawable/edit_text_focus"
+                android:backgroundTint="@color/buttonColor"
                 android:fontFamily="@font/roboto_light"
                 android:text="START BOOKING"
                 android:textSize="18sp" />
@@ -191,94 +192,66 @@
 
             <RadioGroup
                 android:id="@+id/toggleYesNo"
-                android:checkedButton="@+id/yes"
-                android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_centerHorizontal="true"
-                android:background="@drawable/yes_no_toggle_outline"
-                android:layout_below="@id/textView3b"
-                android:orientation="horizontal">
-
+                style="@style/yesNoRadioGroupStyle"
+                android:layout_below="@id/textView3b">
                 <RadioButton
                     android:id="@+id/no"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginBottom="1dp"
-                    android:layout_marginLeft="1dp"
-                    android:background="@drawable/toggle_widget_background_yes_no"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:textSize="15sp"
-                    android:button="@null"
-                    android:gravity="center"
-                    android:text="NO"
-                    android:textColor="@drawable/yes_no_text_colour"/>
+                    style="@style/noRadioButtonStyle"/>
 
                 <RadioButton
                     android:id="@+id/yes"
-                    android:layout_marginRight="1dp"
-                    android:layout_marginTop="1dp"
-                    android:layout_marginBottom="1dp"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/toggle_widget_background_yes_no"
-                    android:button="@null"
-                    android:gravity="center"
-                    android:textSize="15sp"
-                    android:text="YES"
-                    android:textColor="@drawable/yes_no_text_colour"/>
+                    style="@style/yesRadioButtonStyle"/>
             </RadioGroup>
 
             <RelativeLayout
                 android:id="@+id/distanceSelectLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/toggleYesNo">
+                android:layout_below="@id/toggleYesNo"
+                android:visibility="gone">
 
-            <TextView
-                android:id="@+id/distanceTitleText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto_medium"
-                android:layout_marginTop="50dp"
-                android:focusable="true"
-                android:paddingHorizontal="32dp"
-                android:layout_alignParentEnd="true"
-                android:text="How far are you willing to walk?"
-                android:textSize="18sp" />
+                <TextView
+                    android:id="@+id/distanceTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto_medium"
+                    android:layout_marginTop="50dp"
+                    android:focusable="true"
+                    android:paddingHorizontal="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:text="How far are you willing to walk?"
+                    android:textSize="18sp" />
 
-            <TextView
-                android:id="@+id/progressTextView"
-                android:layout_width="120dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginVertical="@dimen/activity_vertical_margin"
-                android:layout_alignParentEnd="true"
-                android:paddingVertical="16dp"
-                android:gravity="center"
-                android:textSize="15sp"
-                android:layout_below="@+id/distanceTitleText"
-                android:background="@drawable/edit_text_focus"
-                android:backgroundTint="@color/edited"
-                android:textColor="@color/almostBlack"/>
+                <TextView
+                    android:id="@+id/progressTextView"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginVertical="@dimen/activity_vertical_margin"
+                    android:layout_alignParentEnd="true"
+                    android:paddingVertical="16dp"
+                    android:gravity="center"
+                    android:textSize="15sp"
+                    android:layout_below="@+id/distanceTitleText"
+                    android:background="@drawable/edit_text_focus"
+                    android:backgroundTint="@color/edited"
+                    android:textColor="@color/almostBlack"/>
 
-            <SeekBar
-                android:id="@+id/walkingDistanceSeekBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="-42dp"
-                android:paddingVertical="50dp"
-                android:layout_below="@id/progressTextView"
-                android:progressDrawable="@drawable/seek_bar"
-                android:splitTrack="false"
-                android:maxHeight="8dp"
-                android:minHeight="8dp"
-                android:thumb="@drawable/seek_bar_thumb"
-                android:theme="@style/SeekBarWithoutSteps"
-                android:max="20"/>
+                <SeekBar
+                    android:id="@+id/walkingDistanceSeekBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="-42dp"
+                    android:paddingVertical="50dp"
+                    android:layout_below="@id/progressTextView"
+                    android:progressDrawable="@drawable/seek_bar"
+                    android:splitTrack="false"
+                    android:maxHeight="8dp"
+                    android:minHeight="8dp"
+                    android:thumb="@drawable/seek_bar_thumb"
+                    android:theme="@style/SeekBarWithoutSteps"
+                    android:max="20"/>
             </RelativeLayout>
         </RelativeLayout>
         <Button
@@ -286,12 +259,14 @@
             android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/buttonColor"
+            android:paddingHorizontal="@dimen/button_margin"
             android:fontFamily="@font/roboto_light"
             android:textSize="18sp"
-            android:text="NEXT"
+            android:text="SEARCH"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
+            android:background="@drawable/edit_text_focus"
+            android:backgroundTint="@color/buttonColor"
             android:layout_margin="@dimen/button_margin"/>
     </RelativeLayout>
 <!--   DEPARTURE STATION SELECTED (WAITING TO QR SCAN) PAGE   -->
@@ -349,8 +324,7 @@
                 android:paddingStart="32dp"
                 android:paddingEnd="16dp"
                 android:paddingVertical="15sp"
-                android:background="@drawable/shape_bg_incoming_bubble"
-                android:gravity="left"/>
+                android:background="@drawable/shape_bg_incoming_bubble"/>
             <TextView
                 android:id="@+id/bookedDepartureStationNameTextView"
                 android:layout_width="wrap_content"
@@ -361,8 +335,7 @@
                 android:paddingStart="32dp"
                 android:paddingEnd="16dp"
                 android:paddingVertical="15sp"
-                android:background="@drawable/shape_bg_incoming_bubble"
-                android:gravity="left"/>
+                android:background="@drawable/shape_bg_incoming_bubble"/>
 
             <TextView
                 android:id="@+id/reservedAddressDetails"
@@ -371,7 +344,6 @@
                 android:layout_marginEnd="24dp"
                 android:layout_below="@id/bookedDepartureStationNameTextView"
                 android:layout_marginVertical="@dimen/activity_vertical_margin"
-                android:gravity="left"
                 android:paddingStart="32dp"
                 android:paddingEnd="16dp"
                 android:paddingVertical="15sp"
@@ -407,8 +379,7 @@
                 android:paddingEnd="16dp"
                 android:paddingVertical="15sp"
                 android:background="@drawable/shape_bg_incoming_bubble"
-                android:layout_below="@+id/directionsButton"
-                android:gravity="left"/>
+                android:layout_below="@+id/directionsButton"/>
             <TextView
                 android:id="@+id/reservedTimeDetails"
                 android:layout_width="wrap_content"
@@ -419,7 +390,6 @@
                 android:paddingEnd="16dp"
                 android:paddingVertical="15sp"
                 android:layout_below="@id/textView5"
-                android:gravity="left"
                 android:background="@drawable/shape_bg_incoming_bubble"/>
 
             <TextView
@@ -450,227 +420,106 @@
         android:focusableInTouchMode="true">
 
         <TextView
-            android:id="@+id/userQueryStationArrival"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginVertical="@dimen/activity_vertical_margin"
-            android:fontFamily="@font/roboto_medium"
-            android:gravity="center"
-            android:focusable="true"
-            android:paddingHorizontal="32dp"
-            android:text="@string/userQueryStationArrive"
-            android:textSize="18sp" />
+            android:id="@+id/incomingMessage1"
+            style="@style/incomingMessageStyle"
+            android:text="@string/QRScanned"/>
+
+        <TextView
+            android:id="@+id/incomingMessage2"
+            android:layout_below="@id/incomingMessage1"
+            android:text="Do you know where you'll be returning this bike?"
+            style="@style/incomingMessageStyle"/>
+
+        <RadioGroup
+            android:id="@+id/toggleKnownArrivalStation"
+            android:layout_below="@id/incomingMessage2"
+            style="@style/yesNoRadioGroupStyle">
+            <RadioButton
+                android:id="@+id/unknown"
+                style="@style/noRadioButtonStyle"/>
+            <RadioButton
+                android:id="@+id/known"
+                style="@style/yesRadioButtonStyle"/>
+        </RadioGroup>
 
         <RelativeLayout
-            android:id="@+id/stationSearchBarArrival"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/userQueryStationArrival"
-            android:layout_centerHorizontal="true">
-            <EditText
-                android:id="@+id/arrivalStationEditText"
-                android:soundEffectsEnabled="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="10dp"
-                android:textSize="15sp"
-                android:singleLine="true"
-                android:imeOptions="actionNext"
-                android:layout_toStartOf="@+id/mapViewButtonArrival"
-                android:clickable="false"
-                android:hint="Search for bike station"/>
+            android:id="@+id/firstQuestionAnsweredContainer"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/toggleKnownArrivalStation"
+            android:visibility="gone"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/knownArrivalStationResponse"
+                style="@style/outgoingMessageStyle"/>
 
-            <ImageButton
-                android:id="@+id/mapViewButtonArrival"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:scaleX="1.2"
-                android:scaleY="1.2"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:background="@color/transparent"
-                android:src="@drawable/map_marker"
-                android:tint="@color/colorAccent"/>
+            <TextView
+                android:id="@+id/incomingMessage3"
+                android:layout_below="@id/knownArrivalStationResponse"
+                style="@style/incomingMessageStyle"/>
+
         </RelativeLayout>
+        <RadioGroup
+            android:id="@+id/toggleDirectTravel"
+            style="@style/yesNoRadioGroupStyle"
+            android:layout_below="@id/firstQuestionAnsweredContainer"
+            android:visibility="gone">
+            <RadioButton
+                android:id="@+id/indirect"
+                style="@style/noRadioButtonStyle"/>
 
-        <ListView
-            android:id="@+id/arrivalStationListView"
-            android:layout_below="@id/stationSearchBarArrival"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:contextClickable="false"
-            android:divider="@null"
-            android:dividerHeight="5dp"
-            android:cacheColorHint="@color/transparent"
-            android:listSelector="@color/transparent"
-            android:background="@color/transparent"/>
+            <RadioButton
+                android:id="@+id/direct"
+                style="@style/yesRadioButtonStyle"/>
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/directTravelResponse"
+            android:layout_below="@id/toggleDirectTravel"
+            android:visibility="gone"
+            style="@style/outgoingMessageStyle"/>
+
+        <TextView
+            android:id="@+id/incomingMessage4"
+            android:layout_below="@id/directTravelResponse"
+            android:visibility="gone"
+            style="@style/incomingMessageStyle"/>
 
         <RelativeLayout
-            android:id="@+id/arriveTimePickLayout"
-            android:layout_below="@+id/arrivalStationListView"
-            android:layout_centerHorizontal="true"
+            android:id="@+id/progressBorrowLengthContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_below="@id/incomingMessage4"
+            android:layout_centerHorizontal="true"
             android:visibility="gone">
 
             <TextView
-                android:id="@+id/arriveTimeTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="@font/roboto_medium"
-                android:gravity="center"
-                android:focusable="true"
-                android:paddingHorizontal="32dp"
-                android:text="How long do you want to borrow the bike for?"
-                android:textSize="18sp" />
-
-            <RelativeLayout
-                android:id="@+id/progressBorrowLengthTextViewContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/arriveTimeTextView"
-                android:layout_centerHorizontal="true">
-                <EditText
-                    android:id="@+id/progressBorrowLengthTextView"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/transparent"
-                    android:gravity="center"
-                    android:inputType="number"
-                    android:singleLine="true"
-                    android:textColor="@color/mdtp_numbers_text_color"
-                    android:textSize="15dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="minutes"
-                    android:textSize="15dp"
-                    android:layout_marginStart="2sp"
-                    android:layout_alignBaseline="@id/progressBorrowLengthTextView"
-                    android:layout_toEndOf="@+id/progressBorrowLengthTextView"/>
-            </RelativeLayout>
+                android:id="@+id/borrowLengthProgressText"
+                style="@style/outgoingMessageStyle"/>
 
             <SeekBar
                 android:id="@+id/borrowLengthSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
-                android:paddingVertical="@dimen/activity_vertical_margin"
-                android:layout_below="@id/progressBorrowLengthTextViewContainer"
+                android:layout_marginVertical="-42dp"
+                android:paddingVertical="50dp"
+                android:layout_below="@id/borrowLengthProgressText"
                 android:progressDrawable="@drawable/seek_bar"
                 android:splitTrack="false"
                 android:maxHeight="8dp"
                 android:minHeight="8dp"
                 android:thumb="@drawable/seek_bar_thumb"
                 android:theme="@style/SeekBarWithoutSteps"
+                android:min="1"
                 android:max="36"/>
 
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/walkingRelativeLayoutArrival"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/arriveTimePickLayout"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_centerHorizontal="true"
-            android:visibility="gone">
-
             <TextView
-                android:id="@+id/textView6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginVertical="@dimen/activity_vertical_margin"
-                android:fontFamily="@font/roboto_medium"
-                android:gravity="center"
-                android:focusable="true"
-                android:paddingHorizontal="32dp"
-                android:text="How far are you willing to walk to an alternative station?"
-                android:textSize="18sp" />
-            <RelativeLayout
-                android:id="@+id/progressTextViewContainerArrival"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/textView6"
-                android:layout_centerHorizontal="true">
-                <EditText
-                    android:id="@+id/progressTextViewArrival"
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/transparent"
-                    android:gravity="center"
-                    android:enabled="false"
-                    android:inputType="number"
-                    android:singleLine="true"
-                    android:textColor="@color/mdtp_numbers_text_color"
-                    android:textSize="15dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="metres"
-                    android:textSize="15dp"
-                    android:layout_marginStart="5dp"
-                    android:layout_alignBaseline="@id/progressTextViewArrival"
-                    android:layout_toEndOf="@+id/progressTextViewArrival"/>
-            </RelativeLayout>
+                android:text="Click 'NEXT' to select your arrival station"
+                style="@style/incomingMessageStyle"
+                android:layout_below="@id/borrowLengthSeekBar"/>
 
-            <SeekBar
-                android:id="@+id/walkingDistanceSeekBarArrival"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_below="@id/progressTextViewContainerArrival"
-                android:progressDrawable="@drawable/seek_bar"
-                android:splitTrack="false"
-                android:maxHeight="8dp"
-                android:minHeight="8dp"
-                android:thumb="@drawable/seek_bar_thumb"
-                android:theme="@style/SeekBarWithoutSteps"
-                android:max="15"/>
-
-            <RelativeLayout
-                android:id="@+id/toggleDistanceEnterStyleArrival"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_below="@id/walkingDistanceSeekBarArrival">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Enter custom distance:"
-                    android:textSize="13sp"
-                    android:layout_toStartOf="@+id/customDistanceSwitchArrival"
-                    android:layout_marginEnd="16dp"
-                    android:layout_alignBaseline="@+id/customDistanceSwitchArrival"/>
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/customDistanceSwitchArrival"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:theme="@style/ThemeOverlay.MySwitchCompat"/>
-            </RelativeLayout>
         </RelativeLayout>
-        <Button
-            android:id="@+id/nextButtonTimeSelectedArrival"
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/buttonColor"
-            android:fontFamily="@font/roboto_light"
-            android:textSize="18sp"
-            android:text="NEXT"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"/>
+
+
     </RelativeLayout>
 
     <FrameLayout

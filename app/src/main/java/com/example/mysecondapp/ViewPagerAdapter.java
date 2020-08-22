@@ -41,5 +41,8 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
         return childFragments[position];
     }
 
+    public Fragment getFragment(int position){
+        return childFragments[position];
+    }
 
 }

@@ -29,14 +29,12 @@ public class CustomTimePickeerDialog extends TimePickerDialog {
     TimePicker mTimePicker;
     EditText editText;
     Context context;
-    Button nextButton;
     RelativeLayout distanceRelativeView;
-    public CustomTimePickeerDialog(Context context, int themeResId, OnTimeSetListener listener, int hourOfDay, int minute, boolean is24HourView, EditText editText, RelativeLayout distanceRelativeView, Button nextButton) {
+    public CustomTimePickeerDialog(Context context, int themeResId, OnTimeSetListener listener, int hourOfDay, int minute, boolean is24HourView, EditText editText, RelativeLayout distanceRelativeView) {
         super(context, themeResId, listener, hourOfDay, minute, is24HourView);
         this.editText = editText;
         this.context = context;
         this.distanceRelativeView = distanceRelativeView;
-        this.nextButton = nextButton;
     }
 
     @Override
@@ -92,7 +90,6 @@ public class CustomTimePickeerDialog extends TimePickerDialog {
                         editText.setTextColor(context.getResources().getColor(R.color.almostBlack));
                         editText.setText(output);
                         distanceRelativeView.setVisibility(View.VISIBLE);
-                        nextButton.setVisibility(VISIBLE);
                         mTimePicker.clearFocus();
                         dismiss();
                     }
