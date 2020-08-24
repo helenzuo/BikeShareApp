@@ -14,17 +14,21 @@
     <string name="search">search</string>
 
     <string name="userQueryStationDepart">Where would you like to depart from?</string>
-    <string name="userQueryStationArrive">Where is your destination?</string>
+    <string name="userQueryStationArrive">Where would you like to return this bike?</string>
     <string name="bikeReserved">"You have reserved a bike! "&#127881;&#127881;</string>
 
     <string name="QRInstruction">When you arrive, use the <b>QR SCANNER</b>  to scan the code located on a dock  <i>(with a bike docked in it!)</i></string>
+
     <string name="QRScanned">Before you start cycling, please <b>RESERVE A DOCK</b>  at your destination. This helps lower the chances of you (and others) arriving at a full station.</string>
+    <string name="QRScanned2">Please choose where you want to return this bike. If you aren\'t sure yet, come back and update us when you decide!</string>
 
     <string name="unknownArrivalStation">"That's fine. Please come back and update us when you decide! (Just re-select 'YES' for the response above \u261D\u261D)"</string>
     <string name="knownArrivalStation">"That's great! Will you be directly travelling there?  If so, we can help you estimate the arrival time."</string>
     <string name="indirectTravel">"Use the slider to adjust how long you\'ll be borrowing the bike for. If you're not sure, just set it at the max."</string>
     <string name="directTravel">"Click 'NEXT' to select your arrival station"</string>
 
+    <string name="dockReserved">"Dock has been reserved.</string>
+    <string name="bikeReturnInstructions">When you arrive at your destination, just slot this bike in at any available dock. If there aren\'t any spare docks, wait a couple minutes before heading off to another station!</string>
     <string-array name="values">
         <item>  Profile  </item>
         <item>Reservation</item>

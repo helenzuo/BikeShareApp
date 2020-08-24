@@ -309,6 +309,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                         "Confirm",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+                                selectButton.setEnabled(false);
                                 main.bookingStateTransition(true);
                                 main.reservedDepartureStation = centredStation;
                                 root.findViewById(R.id.doneScreen).setVisibility(View.VISIBLE);
@@ -322,6 +323,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                                     @Override
                                     public void onAnimationEnd(Animator animation) {
                                         closeMapButton.callOnClick();
+                                        selectButton.setEnabled(true);
                                     }
 
                                     @Override

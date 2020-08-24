@@ -66,7 +66,7 @@ public class StationsListFragment extends Fragment implements AdapterView.OnItem
         stationListView = root.findViewById(R.id.stationListView);
         TextView empty=(TextView)root.findViewById(R.id.empty);
         stationListView.setEmptyView(empty);
-        adapter= new MyAdapter(getActivity(), R.layout.station_list_design, stations, main.getFavouriteStations(), main);
+        adapter= new MyAdapter(getActivity(), R.layout.station_list_design);
         stationListView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
         View item = adapter.getView(0, null, stationListView);

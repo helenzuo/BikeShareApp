@@ -64,9 +64,9 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback, S
         main = (MainActivity) getActivity();
         setHasOptionsMenu(true);
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-        stationListFragment = new StationsListFragment();
-        transaction.add(R.id.listViewFragment, stationListFragment, "stationsList"); // give your fragment container id in first parameter
-        transaction.commit();
+//        stationListFragment = new StationsListFragment();
+//        transaction.add(R.id.listViewFragment, stationListFragment, "stationsList"); // give your fragment container id in first parameter
+//        transaction.commit();
         return root;
     }
 
@@ -175,7 +175,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback, S
     public void setupUI(View view) {
         view.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                stationListFragment.collapseSearchView();
+//                stationListFragment.collapseSearchView();
                 return false;
             }
         });

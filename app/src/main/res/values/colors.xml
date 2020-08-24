@@ -14,6 +14,7 @@
     <color name="babyGreen">#E9FCC7</color>
 
     <color name="buttonColor">#84A98C</color>
+    <color name="choiceButton">#ABdee2ff</color>
 
     <color name="seekBarColor">#AA5551</color>
     <color name="seekBarBackgroundColor">#CAF8C495</color>

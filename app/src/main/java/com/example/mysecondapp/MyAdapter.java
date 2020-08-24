@@ -16,19 +16,15 @@ import java.util.ArrayList;
 
 public class MyAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Station> arr;
-    private ArrayList<Station> fav;
     private ArrayList<Station> orig; // Original Values
     private int resourceLayout;
     private Context context;
     private View rowView;
-    private MainActivity main;
 
-    public MyAdapter(Context context, int resource, ArrayList<Station> arr, ArrayList<Station> fav, MainActivity main) {
+    public MyAdapter(Context context, int resource) {
         this.resourceLayout = resource;
         this.context = context;
-        this.arr = arr;
-        this.fav = fav;
-        this.main = main;
+        this.arr = ((MainActivity)context).getStations();
     }
 
     @Override
@@ -51,8 +47,10 @@ public class MyAdapter extends BaseAdapter implements Filterable {
     }
 
 
-    public class StationNameHolder{
+    public static class StationNameHolder{
         TextView stationName;
+        TextView stationAddress;
+        TextView stationDistance;
         ToggleButton favToggle;
     }
 
@@ -64,35 +62,32 @@ public class MyAdapter extends BaseAdapter implements Filterable {
                 convertView = LayoutInflater.from(context).inflate(resourceLayout, parent, false);
                 holder = new StationNameHolder();
                 holder.stationName = (TextView) convertView.findViewById(R.id.stationName);
+                holder.stationAddress = convertView.findViewById(R.id.stationAddress);
+                holder.stationDistance = convertView.findViewById(R.id.stationDistance);
                 holder.favToggle = (ToggleButton) convertView.findViewById(R.id.favouritesToggle);
                 convertView.setTag(holder);
-
                 rowView = convertView;
-
             } else {
                 holder = (StationNameHolder) convertView.getTag();
                 rowView = convertView;
             }
+
             // Set data into textviews
             holder.stationName.setText(arr.get(position).getName());
-            if (fav.contains(arr.get(position))){
+            holder.stationAddress.setText(arr.get(position).getAddress());
+            holder.stationDistance.setText(arr.get(position).getDistanceFrom());
+            if (arr.get(position).getFavourite()){
                 holder.favToggle.setChecked(true);
             } else {
                 holder.favToggle.setChecked(false);
             }
-
             holder.favToggle.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (fav.contains(arr.get(position))){
-                        main.removeFavouriteStation(arr.get(position));
-                    } else {
-                        main.appendFavouriteStation(arr.get(position));
-                    }
+                    arr.get(position).toggleFavourite();
                 }
 
             });
-//        }
         return rowView;
     }
 

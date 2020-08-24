@@ -13,18 +13,43 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="80dp">
 
         <TextView
             android:id="@+id/stationName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:paddingVertical="32dp"
+            android:paddingStart="50dp"
+            android:layout_marginTop="24dp"
+            android:textColor="@color/backgroundColor"
+            android:focusable="false"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:textAllCaps="true"/>
+
+        <TextView
+            android:id="@+id/stationAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:layout_marginEnd="26dp"
+            android:textColor="@color/enabled_color"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="6dp"
+            android:focusable="false"
+            android:textSize="12sp"/>
+
+        <TextView
+            android:id="@+id/stationDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:gravity="center|start"
-            android:fontFamily="100"
-            android:textColor="#000000"
-            android:focusable="false"/>
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/enabled_color"
+            android:paddingTop="6dp"
+            android:focusable="false"
+            android:textSize="12sp"/>
 
         <ToggleButton
             android:id="@+id/favouritesToggle"
@@ -34,7 +59,8 @@
             android:textOn=""
             android:textOff=""
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="@dimen/activity_horizontal_margin"
             android:background="@drawable/favourite_toggle"
             android:focusable="false"/>
     </RelativeLayout>

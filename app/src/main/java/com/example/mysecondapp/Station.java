@@ -12,7 +12,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
 
-public class Station {
+public class Station implements Comparable<Station>{
      private String mName;
      private LatLng mLocation;
      private int mCapacity;
@@ -20,6 +20,7 @@ public class Station {
      private float fillLevel;
      private float distanceFrom;
      private String mAddress;
+     private boolean favourite;
 
      public Station(String name, double longitude, double latitude, int capacity, int occupancy, Context context) throws IOException {
         mName = name;
@@ -44,6 +45,15 @@ public class Station {
     public int getOccupancy(){
         return mOccupancy;
     }
+
+    public void toggleFavourite(){
+         favourite = !favourite;
+    }
+
+    public boolean getFavourite(){
+         return favourite;
+    }
+
 
     public void setOccupancy(int newOcc){
          mOccupancy = newOcc;
@@ -83,4 +93,14 @@ public class Station {
          }
     }
 
+    @Override
+    public int compareTo(Station station) {
+        if (favourite && !station.getFavourite()){
+            return -1;
+        } else if (!favourite && station.getFavourite()) {
+            return 1;
+        } else {
+            return mName.compareToIgnoreCase(station.getName());
+        }
+    }
 }

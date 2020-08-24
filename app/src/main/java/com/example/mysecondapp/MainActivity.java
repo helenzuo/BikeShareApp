@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     public String departureTime = "";
     public String distanceWalking = "";
     public boolean customDistance = false;
-    public String reservationTime;
+    public String arrivalTime;
 
     public String firstName;
     public String surname;
@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     public NavController navController;
     public BottomNavigationView navView;
     private ArrayList<Station> stations;
-    private ArrayList<Station> favouriteStations;
 
     private Socket clientSocket;
     private BufferedWriter out;
@@ -118,8 +117,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-        favouriteStations = new ArrayList<>();
-        appendFavouriteStation(stations.get(1));
 
 //        new Connect(this).execute();
 
@@ -225,18 +222,6 @@ public class MainActivity extends AppCompatActivity {
 
     public ArrayList<Station> getStations(){
         return stations;
-    }
-
-    public void appendFavouriteStation(Station station) {
-        favouriteStations.add(station);
-    }
-
-    public void removeFavouriteStation(Station station) {
-        favouriteStations.remove(station);
-    }
-
-    public ArrayList<Station> getFavouriteStations(){
-        return favouriteStations;
     }
 
 
