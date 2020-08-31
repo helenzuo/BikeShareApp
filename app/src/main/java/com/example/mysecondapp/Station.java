@@ -93,6 +93,11 @@ public class Station implements Comparable<Station>{
          }
     }
 
+    public float getDistanceFloat(){
+         return distanceFrom;
+    }
+
+    // default sort
     @Override
     public int compareTo(Station station) {
         if (favourite && !station.getFavourite()){

@@ -54,44 +54,43 @@ public class MyAdapter extends BaseAdapter implements Filterable {
         ToggleButton favToggle;
     }
 
-    @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
-//        if (resourceLayout == R.layout.station_list_design) {
-            final StationNameHolder holder;
-            if (convertView == null) {
-                convertView = LayoutInflater.from(context).inflate(resourceLayout, parent, false);
-                holder = new StationNameHolder();
-                holder.stationName = (TextView) convertView.findViewById(R.id.stationName);
-                holder.stationAddress = convertView.findViewById(R.id.stationAddress);
-                holder.stationDistance = convertView.findViewById(R.id.stationDistance);
-                holder.favToggle = (ToggleButton) convertView.findViewById(R.id.favouritesToggle);
-                convertView.setTag(holder);
-                rowView = convertView;
-            } else {
-                holder = (StationNameHolder) convertView.getTag();
-                rowView = convertView;
-            }
-
-            // Set data into textviews
-            holder.stationName.setText(arr.get(position).getName());
-            holder.stationAddress.setText(arr.get(position).getAddress());
-            holder.stationDistance.setText(arr.get(position).getDistanceFrom());
-            if (arr.get(position).getFavourite()){
-                holder.favToggle.setChecked(true);
-            } else {
-                holder.favToggle.setChecked(false);
-            }
-            holder.favToggle.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    arr.get(position).toggleFavourite();
-                }
-
-            });
-        return rowView;
+    public StationNameHolder getHolder(View convertView){
+        return (StationNameHolder) convertView.getTag();
     }
 
+    @Override
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        final StationNameHolder holder;
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context).inflate(resourceLayout, parent, false);
+            holder = new StationNameHolder();
+            holder.stationName = (TextView) convertView.findViewById(R.id.stationName);
+            holder.stationAddress = convertView.findViewById(R.id.stationAddress);
+            holder.stationDistance = convertView.findViewById(R.id.stationDistance);
+            holder.favToggle = (ToggleButton) convertView.findViewById(R.id.favouritesToggle);
+            convertView.setTag(holder);
+        } else {
+            holder = (StationNameHolder) convertView.getTag();
+        }
 
+        // Set data into textviews
+        holder.stationName.setText(arr.get(position).getName());
+        holder.stationAddress.setText(arr.get(position).getAddress());
+        holder.stationDistance.setText(arr.get(position).getDistanceFrom());
+        if (arr.get(position).getFavourite()){
+            holder.favToggle.setChecked(true);
+        } else {
+            holder.favToggle.setChecked(false);
+        }
+        holder.favToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                arr.get(position).toggleFavourite();
+            }
+
+        });
+        return convertView;
+    }
 
     @Override
     public Filter getFilter() {

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/alpha"
+        android:title="A to Z"/>
+
+    <item
+        android:id="@+id/alphaRev"
+        android:title="Z to A"/>
+
+    <item
+        android:id="@+id/distance"
+        android:title="Distance"/>
+
+    <item
+        android:id="@+id/bike"
+        android:title="Occupancy (Low to High)"/>
+
+    <item
+        android:id="@+id/bikeDown"
+        android:title="Occupancy (High to Low)"/>
+
+    <item
+        android:id="@+id/favs"
+        android:title="Favourites"/>
+
+</menu>

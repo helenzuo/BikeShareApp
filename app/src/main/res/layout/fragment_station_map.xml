@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/fragment_dashboard">
+    <RelativeLayout
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/toggleMapList">
+
+
+        <com.example.mysecondapp.StationSearchBar
+            android:id="@+id/stationSearchBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:imeOptions="actionNext"
+            android:textSize="15sp"
+            android:paddingStart="24dp"
+            android:hint="Search for bike station by name"
+            android:theme="@style/EditTextTheme" />
+
+
+        <Button
+            android:id="@+id/sortButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SORT"
+            android:layout_alignBaseline="@id/stationSearchBar"
+            android:includeFontPadding="false"
+            android:paddingHorizontal="8dp"
+            android:minWidth="0dp"
+            android:layout_alignParentEnd="true"
+            android:background="@color/transparent"/>
+
+        <ListView
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:id="@+id/stationsListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="0dp"
+            android:layout_below="@+id/stationSearchBar"
+            android:contextClickable="false"
+            android:divider="@null"
+            android:dividerHeight="2dp"
+            android:cacheColorHint="@color/transparent"
+            android:listSelector="@color/transparent"
+            android:background="@color/transparent" />
+
+    </RelativeLayout>
+
+    <com.example.mysecondapp.MapViewInScroll
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/toggleMapList"
+        android:name="com.google.android.gms.maps.MapView"
+        android:layout_marginStart="6dp"
+        android:visibility="gone"/>
+
+    <RadioGroup
+        android:id="@+id/toggleMapList"
+        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:checkedButton="@id/listToggle"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/map_list_toggle_outline" >
+        <RadioButton
+            android:id="@+id/listToggle"
+            android:text="LIST"
+            android:fontFamily="@font/lato_bold"
+            style="@style/noRadioButtonStyle"/>
+
+        <RadioButton
+            android:id="@+id/mapToggle"
+            android:text="MAP"
+            android:fontFamily="@font/lato_bold"
+            style="@style/yesRadioButtonStyle"/>
+    </RadioGroup>
+
+</RelativeLayout>

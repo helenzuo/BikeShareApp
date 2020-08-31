@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:app2="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="3dp"
+    app:cardBackgroundColor="@color/cardViewColor"
+    app2:cardPreventCornerOverlap="false"
+    app2:cardUseCompatPadding="true"
+    android:orientation="horizontal"
+    android:elevation="8dp">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <RelativeLayout
+            android:id="@+id/top_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="16dp">
+
+            <TextView
+                android:id="@+id/stationName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:textColor="#3d5a80"
+                android:focusable="false"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:layout_centerVertical="true"
+                android:textAllCaps="true"/>
+
+            <ToggleButton
+                android:id="@+id/favouritesToggle"
+                android:layout_width="@dimen/favourite_icon"
+                android:layout_height="@dimen/favourite_icon"
+                android:text=""
+                android:textOn=""
+                android:textOff=""
+                android:background="@drawable/favourite_toggle"
+                android:layout_toStartOf="@id/moreButton"
+                android:layout_alignBaseline="@id/moreButton"
+                android:focusable="false"/>
+
+            <ImageButton
+                android:id="@+id/moreButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginHorizontal="8dp"
+                android:background="@drawable/drop_down_more"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/bottomView"
+            android:layout_below="@id/top_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#F3F4F2"
+            android:visibility="gone">
+            <View
+                android:id="@+id/separator"
+                android:layout_width="match_parent"
+                android:layout_height="1.5dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@drawable/choice_button"
+                android:backgroundTint="#50354F52"/>
+
+            <TextView
+                android:id="@+id/stationAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingVertical="4dp"
+                android:paddingStart="16dp"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/separator"
+                android:textColor="@color/enabled_color"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="60dp"
+                android:focusable="false"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/stationDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="20dp"
+                android:layout_below="@id/stationAddress"
+                android:textColor="@color/enabled_color"
+                android:layout_marginEnd="60dp"
+                android:focusable="false"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/bikeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="18dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/buttonColor"
+                android:textSize="12sp"
+                android:layout_below="@id/stationDistance"/>
+
+            <TextView
+                android:id="@+id/dockText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingVertical="4dp"
+                android:paddingEnd="18dp"
+                android:layout_alignParentEnd="true"
+                android:textColor="@color/edited"
+                android:textSize="12sp"
+                android:layout_below="@id/stationDistance"/>
+            <SeekBar
+                android:id="@+id/fillLevelSeekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/dockText"
+                android:progressDrawable="@drawable/fill_level_seek_bar"
+                android:splitTrack="false"
+                android:maxHeight="3.5dp"
+                android:minHeight="3.5dp"
+                android:thumb="@null"
+                android:paddingBottom="12dp"
+                android:theme="@style/SeekBarWithoutSteps"
+                android:max="100"/>
+
+            <RelativeLayout
+                android:layout_width="60dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true">
+
+                <Button
+                    android:id="@+id/mapButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/map_icon"
+                    android:backgroundTint="@color/mapColor"
+                    android:text="map"
+                    android:textColor="#679a93"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:layout_alignParentEnd="true"/>
+
+            </RelativeLayout>
+        </RelativeLayout>
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

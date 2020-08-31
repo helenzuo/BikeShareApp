@@ -2,18 +2,13 @@ package com.example.mysecondapp;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.adapter.FragmentViewHolder;
 
-import com.example.mysecondapp.ui.dashboard.DashboardFragment;
+import com.example.mysecondapp.ui.stationSearch.DashboardFragment;
 import com.example.mysecondapp.ui.home.HomeFragment;
 import com.example.mysecondapp.ui.notifications.NotificationsFragment;
-
-import java.util.List;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
 
@@ -33,7 +28,6 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     public int getItemCount() {
         return childFragments.length; //3 items
     }
-
 
     @NonNull
     @Override

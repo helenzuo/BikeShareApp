@@ -1,13 +1,23 @@
 package com.example.mysecondapp;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.recyclerview.widget.LinearSnapHelper;
@@ -45,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean customDistance = false;
     public String arrivalTime;
 
+    public LocationManager locationManager;
+    public Location lastKnownLocation;
     public String firstName;
     public String surname;
     public String email;
@@ -66,10 +78,11 @@ public class MainActivity extends AppCompatActivity {
     private List<String> fragmentTitles;
     private int currentFrag = 1;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        selectionState = STATIC_DEFINITIONS.START_BOOKING_STATE;
-        selectionState = STATIC_DEFINITIONS.QR_SCANNED_STATE;
+        selectionState = STATIC_DEFINITIONS.START_BOOKING_STATE;
+//        selectionState = STATIC_DEFINITIONS.QR_SCANNED_STATE;
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -134,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         rvNavigationPicker.setLayoutManager(pickerLayoutManager);
         rvNavigationPicker.setAdapter(navigationAdapter);
         rvNavigationPicker.scrollToPosition(1);
-        rvNavigationPicker.smoothScrollBy(-1,0);
+        rvNavigationPicker.smoothScrollBy(-1, 0);
 
         viewPager = findViewById(R.id.view_pager);
         viewPager.setOffscreenPageLimit(1);
@@ -170,26 +183,72 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         viewPager.setCurrentItem(1, false);
+
+        Intent intent = getIntent();
+        if (intent.getIntExtra("Place Number", 0) == 0) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    updateUserLocation();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }
+        }
     }
 
-    public void bookingStateTransition(boolean forward){
-        if (forward){
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                updateUserLocation();
+            }
+        }
+    }
+
+    public void bookingStateTransition(boolean forward) {
+        if (forward) {
             selectionState++;
         } else {
             selectionState--;
         }
     }
 
-    public int getBookingState(){
+    public int getBookingState() {
         return selectionState;
+    }
+
+    public void setBookingState(int state){
+        selectionState = state;
     }
 
     public void startQRScanner() {
         Intent myIntent = new Intent(MainActivity.this, QRScanner.class);
         MainActivity.this.startActivityForResult(myIntent, 1);
 
+    }
+
+    private Location getLastKnownLocation() {
+        locationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = locationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            @SuppressLint("MissingPermission") Location l = locationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        return bestLocation;
+    }
+
+    public void updateUserLocation() {
+        lastKnownLocation = getLastKnownLocation();
+        for (Station station : getStations()){
+            station.updateDistanceFrom(lastKnownLocation);
+        }
     }
 
     @Override

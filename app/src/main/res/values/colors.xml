@@ -29,5 +29,10 @@
     <color name="timePickerColor">#e07a5f</color>
     <color name="edited">#EA8A6F</color>
 
+    <color name="textGreen">#80b918</color>
+    <color name="textRed">#bf0603</color>
+
+    <color name="mapColor">#B6CECB</color>
+
 
 </resources>

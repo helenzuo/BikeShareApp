@@ -174,105 +174,69 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         selectButton.setOnTouchListener(new IgnorePageViewSwipe(main));
         closeMapButton.setOnClickListener(this);
 
-        Intent intent = getActivity().getIntent();
-        if (intent.getIntExtra("Place Number", 0) == 0) {
+        main.updateUserLocation();
+        centreOnCurrentLocation(main.lastKnownLocation);
 
-            // Zoom into users location
-            locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
-
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                final boolean[] done = {false};
-                lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if (lastKnownLocation == null) {
-                    locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, new LocationListener() {
-                        @Override
-                        public void onLocationChanged(Location location) {
-                            done[0] = true;
-                        }
-                        @Override
-                        public void onStatusChanged(String provider, int status, Bundle extras) {
-                        }
-                        @Override
-                        public void onProviderEnabled(String provider) {
-                        }
-                        @Override
-                        public void onProviderDisabled(String provider) {
-                        }
-                    }, null);
-                    while (!done[0]) {
-                    }
-                    lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                }
-                centreOnCurrentLocation(lastKnownLocation);
-                for (Station station : main.getStations()){
-                    station.updateDistanceFrom(lastKnownLocation);
-                }
-            } else {
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        // update centre current location button to bottom right
+        View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+        RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+        rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+        rlp.setMargins(0, 0, 30, 30);
+        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get(marker.getTitle())));
+                centreOnStation(marker.getTitle());
+                return true;
             }
+        });
 
-            // update centre current location button to bottom right
-            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-            RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
-            rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-            rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-            rlp.setMargins(0, 0, 30, 30);
-            googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker) {
-                    layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get(marker.getTitle())));
-                    centreOnStation(marker.getTitle());
-                    return true;
-                }
-            });
-
-            // Bottom card view of stations (horizontal scroll)
-            stationCardAdapter = new StationCardAdapter(getContext(), main.getStations());
-            recyclerView.setAdapter(stationCardAdapter);
-            layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-            recyclerView.setLayoutManager(layoutManager);
-            SnapHelper helper = new LinearSnapHelper();
-            helper.attachToRecyclerView(recyclerView);
-            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                    int position = layoutManager.findFirstCompletelyVisibleItemPosition();
-                    if (position != -1) {
-                        Station station = main.getStations().get(position);
-                        centreOnStation(station.getName());
-                        layoutManager.findViewByPosition(position).requestFocus();
-                        String buttonText = "";
-                        if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP) {
-                            buttonText = "Select "+ station.getName() + " as departure station";
-                        } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
-                            buttonText = "Reserve Bike at " + station.getName();
-                        }
-                        selectButton.setText(buttonText);
-                        selectButton.setClickable(true);
-                        selectButton.animate().alpha(1.0f).setDuration(200).start();
-                    } else {
-                        selectButton.setClickable(false);
-                        selectButton.animate().alpha(0.0f).setDuration(200).start();
+        // Bottom card view of stations (horizontal scroll)
+        stationCardAdapter = new StationCardAdapter(getContext(), main.getStations());
+        recyclerView.setAdapter(stationCardAdapter);
+        layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        SnapHelper helper = new LinearSnapHelper();
+        helper.attachToRecyclerView(recyclerView);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                int position = layoutManager.findFirstCompletelyVisibleItemPosition();
+                if (position != -1) {
+                    Station station = main.getStations().get(position);
+                    centreOnStation(station.getName());
+                    layoutManager.findViewByPosition(position).requestFocus();
+                    String buttonText = "";
+                    if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP) {
+                        buttonText = "Select "+ station.getName() + " as departure station";
+                    } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+                        buttonText = "Reserve Bike at " + station.getName();
                     }
-                    if (newState == 0){
-                        main.viewPager.setUserInputEnabled(true);
-                    }
-                    super.onScrollStateChanged(recyclerView, newState);
+                    selectButton.setText(buttonText);
+                    selectButton.setClickable(true);
+                    selectButton.animate().alpha(1.0f).setDuration(200).start();
+                } else {
+                    selectButton.setClickable(false);
+                    selectButton.animate().alpha(0.0f).setDuration(200).start();
                 }
-            });
-
-            if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP){
-                layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
-                String buttonText = "Select Flinders as departure station";
-                selectButton.setText(buttonText);
-            } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
-                //            new RetrieveMessage(main, this).execute();
-                layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
-                allocatedDepartureStationName = "Flinders";
-                String buttonText = "Reserve Bike at " + allocatedDepartureStationName;
-                selectButton.setText(buttonText);
+                if (newState == 0){
+                    main.viewPager.setUserInputEnabled(true);
+                }
+                super.onScrollStateChanged(recyclerView, newState);
             }
+        });
 
+        if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP){
+            layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
+            String buttonText = "Select Flinders as departure station";
+            selectButton.setText(buttonText);
+        } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+            //            new RetrieveMessage(main, this).execute();
+            layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
+            allocatedDepartureStationName = "Flinders";
+            String buttonText = "Reserve Bike at " + allocatedDepartureStationName;
+            selectButton.setText(buttonText);
         }
     }
 

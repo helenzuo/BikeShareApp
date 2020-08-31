@@ -9,9 +9,13 @@
         <item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
         <item name="android:fontFamily">@font/lato</item>
         <item name="android:textColor">@color/offWhite</item>
-        <item name="editTextStyle">@style/EditTextTheme</item>
         <item name="alertDialogTheme">@style/AlertDialogCustom</item>
+        <item name="android:itemTextAppearance">@style/myCustomMenuTextAppearance</item>
 
+    </style>
+
+    <style name="myCustomMenuTextAppearance" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
+        <item name="android:textColor">@color/almostBlack</item>
     </style>
 
     <style name="incomingMessageStyle" parent="@style/EditTextTheme">
@@ -78,6 +82,20 @@
         <item name="android:layout_marginEnd">2dp</item>
         <item name="android:layout_marginTop">2dp</item>
         <item name="android:background">@drawable/toggle_widget_background_yes_no</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:text">YES</item>
+        <item name="android:textColor">@drawable/yes_no_text_colour</item>
+    </style>
+
+    <style name="neutralRadioButtonStyle" parent="@style/AppTheme">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginBottom">2dp</item>
+        <item name="android:layout_marginEnd">2dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:background">@drawable/toggle_gender_background</item>
         <item name="android:button">@null</item>
         <item name="android:gravity">center</item>
         <item name="android:text">YES</item>

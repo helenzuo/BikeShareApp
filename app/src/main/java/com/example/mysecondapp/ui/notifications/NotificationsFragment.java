@@ -1,31 +1,28 @@
 package com.example.mysecondapp.ui.notifications;
 
-import android.app.SearchManager;
+import android.animation.LayoutTransition;
+import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.RadioButton;
-import android.widget.Toast;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.SearchView;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
+import com.example.mysecondapp.FlipListener;
 import com.example.mysecondapp.MainActivity;
+import com.example.mysecondapp.MyAdapter;
+import com.example.mysecondapp.OnSwipeTouchListener;
 import com.example.mysecondapp.R;
-import com.example.mysecondapp.ui.profile.ProfileSettings;
-
-import static android.content.Context.SEARCH_SERVICE;
 
 public class NotificationsFragment extends Fragment {
 
@@ -36,76 +33,61 @@ public class NotificationsFragment extends Fragment {
     private RadioButton femaleDisplay;
     private RadioButton maleDisplay;
 
-    private FragmentTransaction fragmentTransaction;
-    private FragmentManager fragmentManager;
-
+    boolean isBackVisible = false;
+    @SuppressLint("ClickableViewAccessibility")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.fragment_notifications, container, false);
+        final View root = inflater.inflate(R.layout.fragment_profile, container, false);
         main = (MainActivity)getActivity();
+        ImageButton button = root.findViewById(R.id.editProfileButton);
+        Button save = root.findViewById(R.id.saveButton);
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            main.firstName = bundle.getString("FirstNameKey", "");
-            main.surname = bundle.getString("SurnameKey", "");
-            main.email = bundle.getString("EmailKey", "");
-            main.gender = bundle.getString("genderKey", null);
-        }
-        setHasOptionsMenu(true);
+                RelativeLayout imgFront = root.findViewById(R.id.frontCard);
+                RelativeLayout imgBack = root.findViewById(R.id.backCard);
 
-        firstNameDisplay = (EditText) root.findViewById(R.id.display_first_name);
-        firstNameDisplay.setText(main.firstName);
-        surnameDisplay = (EditText) root.findViewById(R.id.display_surname);
-        surnameDisplay.setText(main.surname);
-        emailDisplay = (EditText) root.findViewById(R.id.display_email);
-        emailDisplay.setText(main.email);
-        femaleDisplay = root.findViewById(R.id.display_female);
-        maleDisplay = root.findViewById(R.id.display_male);
-        if (main.gender != null){
-            if (main.gender == "Female"){
-                femaleDisplay.setChecked(true);
-            } else {
-                maleDisplay.setChecked(true);
+                ValueAnimator mFlipAnimator = ValueAnimator.ofFloat(0f, 1f);
+                mFlipAnimator.addUpdateListener(new FlipListener(imgFront, imgBack));
+                mFlipAnimator.setDuration(700);
+                mFlipAnimator.reverse();
             }
-        }
+        });
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RelativeLayout imgFront = root.findViewById(R.id.frontCard);
+                RelativeLayout imgBack = root.findViewById(R.id.backCard);
+
+                ValueAnimator mFlipAnimator = ValueAnimator.ofFloat(0f, 1f);
+                mFlipAnimator.addUpdateListener(new FlipListener(imgFront, imgBack));
+                mFlipAnimator.setDuration(700);
+                mFlipAnimator.start();
+            }
+        });
+
+        ListView tripListView = root.findViewById(R.id.tripListView);
+        final MyAdapter stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design);
+        tripListView.setAdapter(stationListAdapter);
+
+        tripListView.setOnTouchListener(new OnSwipeTouchListener(getContext()){
+            public void onSwipeTop() {
+                ((RelativeLayout)root).setLayoutTransition(new LayoutTransition());
+                root.findViewById(R.id.cardLayout).setVisibility(View.GONE);
+
+            }
+            public void onSwipeBottom() {
+                ((RelativeLayout)root).setLayoutTransition(null);
+                root.findViewById(R.id.cardLayout).setVisibility(View.VISIBLE);
+            }
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
         return root;
     }
 
-//    @Override
-//    public void onPrepareOptionsMenu(Menu menu) {
-//        menu.findItem(R.id.saveProfileSettings).setVisible(false);
-//        menu.findItem(R.id.sort).setVisible(false);
-//        menu.findItem(R.id.filter).setVisible(false);
-//        menu.findItem(R.id.search).setVisible(false);
-//        super.onPrepareOptionsMenu(menu);
-//    }
 
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.editProfile:
-                Bundle args = new Bundle();
-                args.putString("SurnameKey", main.surname);
-                args.putString("FirstNameKey", main.firstName);
-                args.putString("EmailKey", main.email);
-                replaceFragment(new ProfileSettings(), new Bundle());
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void replaceFragment(Fragment fragment, Bundle bundle) {
-        try {
-            fragment.setArguments(bundle);
-            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-            transaction.replace(R.id.profileSettingsFragmentContainer, fragment); // give your fragment container id in first parameter
-            transaction.addToBackStack(null);
-            transaction.commit();
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-    }
 }

@@ -80,33 +80,6 @@ public class ProfileSettings extends Fragment {
     }
 
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        this.menu = menu;
-        menu.findItem(R.id.editProfile).setVisible(false);
-        menu.findItem(R.id.saveProfileSettings).setVisible(true);
-        super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.saveProfileSettings:
-                Bundle args = new Bundle();
-                args.putString("SurnameKey", editTextSurname.getText().toString());
-                args.putString("FirstNameKey", editTextFirstName.getText().toString());
-                args.putString("EmailKey", editTextEmail.getText().toString());
-                if (female.isChecked()){
-                    args.putString("genderKey", "Female");
-                } else if (male.isChecked()) {
-                    args.putString("genderKey", "Male");
-                }
-                getParentFragmentManager().popBackStackImmediate();
-                main.navView.setVisibility(View.VISIBLE);
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
     private void replaceFragment(Fragment fragment, Bundle bundle) {
         try {

@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -54,6 +52,7 @@ import com.example.mysecondapp.OnSwipeTouchListener;
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.STATIC_DEFINITIONS;
 import com.example.mysecondapp.Station;
+import com.example.mysecondapp.StationSearchBar;
 import com.example.mysecondapp.ui.map.MapFragment;
 
 import java.util.ArrayList;
@@ -63,7 +62,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static android.content.Context.LOCATION_SERVICE;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
@@ -249,32 +247,20 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
                 }
             });
+            seekBar.setProgress(5);
 
             searchButton.setOnClickListener(this);
-
-//            if (main.selectedDepartureStation != null)
-//                stationEditText.setText(main.selectedDepartureStation.getName());
-//            if (!main.departureTime.isEmpty())
-//                timeEditText.setText(main.departureTime);
-//            if (!main.distanceWalking.isEmpty()) {
-//                distanceText.setText(main.distanceWalking);
-//                if (main.customDistance) {
-//                    seekBar.setVisibility(View.INVISIBLE);
-//                } else {
-//                    seekBar.setProgress(Integer.parseInt(main.distanceWalking) / 100);
-//                }
-//            } else {
-//                seekBar.setProgress(5);
-//            }
-//
-//            distanceText.addTextChangedListener(this);
-//            timeEditText.addTextChangedListener(this);
 
             // set touch listener to background so that focus is removed when touching it
             root.setOnTouchListener(this);
         }
-        updateScreenGraphics();
+
+        if (main.selectedDepartureStation != null) {
+            stationEditText.setText(main.selectedDepartureStation.getName());
+            updateStationEditTextGraphics(stationEditText);
         }
+        updateScreenGraphics();
+    }
 
     private void loadQRScannerPage(){
         TextView textView = root.findViewById(R.id.textViewSlideUp);
@@ -341,11 +327,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     }
 
     private void loadArrivalStationSelectionPage(){
-
-        @SuppressLint("MissingPermission") Location lastKnownLocation = ((LocationManager) getActivity().getSystemService(LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        for (Station station : main.getStations()){
-            station.updateDistanceFrom(lastKnownLocation);
-        }
 
         timeSelectLayout = root.findViewById(R.id.arriveTimePickLayout);
         altStationLayout = root.findViewById(R.id.walkingArrivalRelativeLayout);
@@ -508,12 +489,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             stationEditTextHeight = editText.getHeight();
         }
         if (editText.hasFocus()){
-            editText.setVisibility(View.VISIBLE);
-            if (main.getBookingState() == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
-                root.findViewById(R.id.departTimePickLayout).setVisibility(GONE);
-                root.findViewById(R.id.walkingRelativeLayout).setVisibility(GONE);
-                searchButton.setVisibility(GONE);
-            }
             mapSearchButton.setVisibility(GONE);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) editText.getLayoutParams();
             params.setMarginStart(0);
@@ -534,10 +509,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         } else {
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) editText.getLayoutParams();
-            params.setMarginStart(pixelToDp(16));
-            params.setMarginEnd(pixelToDp(5));
-            params.height = stationEditTextHeight;
-            editText.setLayoutParams(params);
+            if (stationEditTextHeight!= 0) {
+                params.setMarginStart(pixelToDp(16));
+                params.setMarginEnd(pixelToDp(5));
+                params.height = stationEditTextHeight;
+                editText.setLayoutParams(params);
+            }
             mapSearchButton.setVisibility(VISIBLE);
             editText.setHintTextColor(r.getColor(R.color.editTextHintColor));
             ResourcesCompat.getDrawable(r, R.drawable.edit_text_clear, main.getTheme()).setTint(r.getColor(R.color.transparent));
@@ -546,6 +523,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             Station selectedStation = checkForStationMatch(editText.getText().toString());
             if (selectedStation != null){
                 editText.setBackgroundTintList(ColorStateList.valueOf(r.getColor(R.color.edited)));
+                editText.setTextColor(r.getColor(R.color.almostBlack));
             } else {
                 editText.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.editTextNoFocus)));
                 editText.setTextColor(getResources().getColor(R.color.offWhite));
@@ -590,7 +568,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                     int minutes = now.get(Calendar.HOUR_OF_DAY)*60 + now.get(Calendar.MINUTE);
                     if (timeInInt(timeEditText.getText().toString()) > minutes) {
                         altStationLayout.setVisibility(VISIBLE);
-//                    searchButton.setVisibility(VISIBLE);
                     } else {
                         altStationLayout.setVisibility(GONE);
                         searchButton.setVisibility(GONE);
@@ -601,7 +578,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 main.selectedArrivalStation = selectedStation;
         }
     }
-
 
     private String timeInString(int plusMinutes){
         Calendar now = Calendar.getInstance();
@@ -761,8 +737,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         stationListAdapter.getFilter().filter(s.toString().toLowerCase().trim());
         updateContainerVisibility();
         updateStationEditTextGraphics(stationEditText);
-//        main.departureTime = timeEditText.getText().toString();
-//        main.distanceWalking = distanceText.getText().toString();
     }
 
     @Override

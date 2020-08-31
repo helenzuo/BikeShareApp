@@ -19,9 +19,9 @@
             android:id="@+id/stationName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="50dp"
+            android:paddingStart="16dp"
             android:layout_marginTop="24dp"
-            android:textColor="@color/backgroundColor"
+            android:textColor="#3d5a80"
             android:focusable="false"
             android:textStyle="bold"
             android:textSize="15sp"
@@ -44,10 +44,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center|start"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="8dp"
+            android:layout_alignBaseline="@id/stationName"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/stationName"
             android:textColor="@color/enabled_color"
-            android:paddingTop="6dp"
             android:focusable="false"
             android:textSize="12sp"/>
 
@@ -59,8 +59,8 @@
             android:textOn=""
             android:textOff=""
             android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:layout_centerVertical="true"
+            android:layout_margin="@dimen/button_margin"
             android:background="@drawable/favourite_toggle"
             android:focusable="false"/>
     </RelativeLayout>
