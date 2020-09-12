@@ -3,6 +3,7 @@ package com.example.mysecondapp;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -27,6 +28,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.mysecondapp.ui.home.HomeFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.Gson;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -44,25 +46,14 @@ import java.util.concurrent.TimeUnit;
 import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
 
 public class MainActivity extends AppCompatActivity {
-    public ViewPager2 viewPager;
 
-    private int selectionState;
-    public Station reservedDepartureStation;
-    public Station selectedDepartureStation;
-    public Station selectedArrivalStation;
-    public String departureTime = "";
-    public String distanceWalking = "";
-    public boolean customDistance = false;
-    public String arrivalTime;
+    public State state;
+
+    public User user;
 
     public LocationManager locationManager;
     public Location lastKnownLocation;
-    public String firstName;
-    public String surname;
-    public String email;
-    public String gender;
-    public NavController navController;
-    public BottomNavigationView navView;
+
     private ArrayList<Station> stations;
 
     private Socket clientSocket;
@@ -72,22 +63,44 @@ public class MainActivity extends AppCompatActivity {
 
     public HashMap<String, Station> stationMap = new HashMap<String, Station>();
 
-
+    public ViewPager2 viewPager;
     private RecyclerView rvNavigationPicker;
     private PickerAdapter navigationAdapter;
     private List<String> fragmentTitles;
     private int currentFrag = 1;
 
+    SharedPreferences mPrefs;
+    @Override
+    protected void onDestroy() {
+        SharedPreferences.Editor prefsEditor = mPrefs.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(user);
+        prefsEditor.putString("user", json);
+        json = gson.toJson(state);
+        prefsEditor.putString("state", json);
+        prefsEditor.apply();
+        super.onDestroy();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        selectionState = STATIC_DEFINITIONS.START_BOOKING_STATE;
-//        selectionState = STATIC_DEFINITIONS.QR_SCANNED_STATE;
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         getSupportActionBar().hide();
+
+        mPrefs = getPreferences(MODE_PRIVATE);
+        Gson gson = new Gson();
+        String json = mPrefs.getString("user", "");
+        user = gson.fromJson(json, User.class);
+        if (user == null){
+            user = new User("","", "" ,"helenzuo123");
+        }
+
+        json = mPrefs.getString("state", "");
+        state = gson.fromJson(json, State.class);
+        if (state == null){
+            state = new State();
+        }
 
         stations = new ArrayList<Station>();
         Station tempStation;
@@ -205,21 +218,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void bookingStateTransition(boolean forward) {
-        if (forward) {
-            selectionState++;
-        } else {
-            selectionState--;
-        }
-    }
 
-    public int getBookingState() {
-        return selectionState;
-    }
 
-    public void setBookingState(int state){
-        selectionState = state;
-    }
+
 
     public void startQRScanner() {
         Intent myIntent = new Intent(MainActivity.this, QRScanner.class);
@@ -257,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
 //                String result = data.getExtras().getString("QRCode");
-                bookingStateTransition(true);
+                state.bookingStateTransition(true);
                 ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1)).updateParentView();
 //                navController.navigate(R.id.navigation_home);
             }
@@ -285,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override public void onBackPressed() {
-        navView.setVisibility(View.VISIBLE);
         Objects.requireNonNull(getSupportActionBar()).show();
         super.onBackPressed();
     }

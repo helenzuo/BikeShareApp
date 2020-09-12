@@ -5,27 +5,20 @@ import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -53,9 +46,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-
-import static android.content.Context.LOCATION_SERVICE;
-import static android.view.View.GONE;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
     private MapViewInScroll mapView;
@@ -85,22 +75,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         this.openedFrom = openedFrom;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // This callback will only be called when MyFragment is at least Started.
-        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
-            @Override
-            public void handleOnBackPressed() {
-                // Handle the back button event
-                main.navController.popBackStack(R.id.navigation_home, true);
-                main.navController.navigate(R.id.navigation_home);
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
-
-        // The callback can be enabled or disabled here or in handleOnBackPressed()
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -274,8 +248,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 selectButton.setEnabled(false);
-                                main.bookingStateTransition(true);
-                                main.reservedDepartureStation = centredStation;
+                                main.state.bookingStateTransition(true);
+                                main.state.setDepartingStation(centredStation);
                                 root.findViewById(R.id.doneScreen).setVisibility(View.VISIBLE);
                                 final LottieAnimationView doneAnimation = root.findViewById(R.id.reservationDoneAnimation);
                                 doneAnimation.playAnimation();

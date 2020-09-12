@@ -104,7 +104,6 @@
 
     <style name="EditTextTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorControlNormal">@color/offWhite</item>
-        <item name="colorControlActivated">@color/default_blue_light</item>
         <item name="colorControlHighlight">@color/lightGreen</item>
         <item name="android:textColor">@color/offWhite</item>
         <item name="android:textColorHint">#90B4BAC0</item>

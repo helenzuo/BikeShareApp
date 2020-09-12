@@ -51,6 +51,7 @@ import com.example.mysecondapp.MyAdapter;
 import com.example.mysecondapp.OnSwipeTouchListener;
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.STATIC_DEFINITIONS;
+import com.example.mysecondapp.State;
 import com.example.mysecondapp.Station;
 import com.example.mysecondapp.StationSearchBar;
 import com.example.mysecondapp.ui.map.MapFragment;
@@ -69,18 +70,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private Resources r;
 
     private ArrayList<RelativeLayout> relativeLayoutContainers = new ArrayList<>();
-    private RelativeLayout startStateContainer;
-    private RelativeLayout bikeReserveDetailsContainer;
-    private RelativeLayout departureStationSelectedContainer;
-    private RelativeLayout qrScannedLayoutContainer;
-    private RelativeLayout dockReserveDetailsContainer;
-    private RelativeLayout arrivalStationSelectedContainer;
+    private RelativeLayout startStateContainer, bikeReserveDetailsContainer,
+            departureStationSelectedContainer, qrScannedLayoutContainer,
+            dockReserveDetailsContainer, arrivalStationSelectedContainer;
 
     private Button startBookingButton;
 
-    private RelativeLayout timeSelectLayout;
-    private RelativeLayout altStationLayout;
-    private RelativeLayout distanceSelectLayout;
+    private RelativeLayout timeSelectLayout, altStationLayout, distanceSelectLayout;
     private EditText stationEditText;
     private ListView stationListView;
     private MyAdapter stationListAdapter;
@@ -90,6 +86,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private TextView distanceText;
     private SeekBar seekBar;
     private Button searchButton;
+    private Station selectedDepartureStation;
 
     private Button choice1Button;
     private Button choice2Button;
@@ -100,6 +97,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private RadioGroup directTravelRadioGroup;
     private TextView borrowLengthProgressTextView;
     private SeekBar borrowLengthSeekBar;
+    private Station selectedArrivalStation;
 
     private MainActivity main;
     private View root;
@@ -117,26 +115,26 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             relativeLayout.setVisibility(GONE);
         }
 
-        relativeLayoutContainers.get(main.getBookingState()).setVisibility(VISIBLE);
+        relativeLayoutContainers.get(main.state.getBookingState()).setVisibility(VISIBLE);
 
-        switch (main.getBookingState()) {
-            case STATIC_DEFINITIONS.START_BOOKING_STATE:
+        switch (main.state.getBookingState()) {
+            case State.START_BOOKING_STATE:
                 startBookingButton = root.findViewById(R.id.startBookingButton);
                 startBookingButton.setOnClickListener(this);
                 break;
-            case STATIC_DEFINITIONS.RESERVE_BIKE_SELECTION_STATE:
+            case State.RESERVE_BIKE_SELECTION_STATE:
                 loadDepartureStationSelectionPage();
                 break;
-            case STATIC_DEFINITIONS.DEPARTURE_STATION_SELECTED_STATE:
+            case State.DEPARTURE_STATION_SELECTED_STATE:
                 loadQRScannerPage();
                 break;
-            case STATIC_DEFINITIONS.QR_SCANNED_STATE:
+            case State.QR_SCANNED_STATE:
                 loadQRScannedPage();
                 break;
-            case STATIC_DEFINITIONS.RESERVE_DOCK_SELECTION_STATE:
+            case State.RESERVE_DOCK_SELECTION_STATE:
                 loadArrivalStationSelectionPage();
                 break;
-            case STATIC_DEFINITIONS.ARRIVAL_STATION_SELECTED_STATE:
+            case State.ARRIVAL_STATION_SELECTED_STATE:
                 loadDockReservedPage();
         }
     }
@@ -255,10 +253,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             root.setOnTouchListener(this);
         }
 
-        if (main.selectedDepartureStation != null) {
-            stationEditText.setText(main.selectedDepartureStation.getName());
-            updateStationEditTextGraphics(stationEditText);
-        }
         updateScreenGraphics();
     }
 
@@ -276,16 +270,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         final MessageListAdapter msgAdapter;
 
         QRScanWaitMsgList.add(new Message("in", r.getString(R.string.bikeReserved)));
-        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s",  main.reservedDepartureStation.getName())));
-        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s",  main.reservedDepartureStation.getAddress())));
-        QRScanWaitMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Reserved Time: %s",  main.departureTime))));
+        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s",  main.state.getDepartingStation().getName())));
+        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s",  main.state.getDepartingStation().getAddress())));
+        QRScanWaitMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Reserved Time: %s",  main.state.getDepartureTime()))));
         QRScanWaitMsgList.add(new Message("in", r.getString(R.string.QRInstruction)));
 
         msgAdapter = new MessageListAdapter(getContext(), QRScanWaitMsgList);
         QRScanWaitList.setAdapter(msgAdapter);
 
         choice1Button = root.findViewById(R.id.choice1Button);
-        choice1Button.setText(String.format(Locale.getDefault(),"Get directions to %s", main.reservedDepartureStation.getName()));
+        choice1Button.setText(String.format(Locale.getDefault(),"Get directions to %s",  main.state.getDepartingStation().getName()));
         choice2Button = root.findViewById(R.id.choice2Button);
         choice3Button = root.findViewById(R.id.choice3Button);
 
@@ -320,7 +314,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         startDockSelectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                main.bookingStateTransition(true);
+                main.state.bookingStateTransition(true);
                 updateView();
             }
         });
@@ -437,9 +431,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         final MessageListAdapter msgAdapter;
 
         waitToDockMsgList.add(new Message("in", r.getString(R.string.dockReserved)));
-        waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s",  main.selectedArrivalStation.getName())));
-        waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s",  main.selectedArrivalStation.getAddress())));
-        waitToDockMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Bike reserved until: %s",  main.arrivalTime))));
+        waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s",  main.state.getArrivalStation().getName())));
+        waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s",  main.state.getArrivalStation().getAddress())));
+        waitToDockMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Bike reserved until: %s",  main.state.getArrivalStation()))));
         waitToDockMsgList.add(new Message("in", r.getString(R.string.bikeReturnInstructions)));
 
         msgAdapter = new MessageListAdapter(getContext(), waitToDockMsgList);
@@ -469,7 +463,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             public void onClick(View v) {
                 waitToDockMsgList.add(new Message("out", (String) button2.getText()));
                 if (button2.getText().equals("Yes")) {
-                    main.bookingStateTransition(false);
+                    main.state.bookingStateTransition(false);
                     main.viewPager.getAdapter().notifyDataSetChanged();
                     updateView();
                     button1.setText("Change my reservation");
@@ -561,8 +555,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         if (selectedStation != null) {
             stationListView.setVisibility(GONE);
             timeSelectLayout.setVisibility(View.VISIBLE);
-            if (main.getBookingState() == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
-                main.selectedDepartureStation = selectedStation;
+            if (main.state.getBookingState() == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+                selectedDepartureStation = selectedStation;
                 if (timeEditText.getText().toString().length() > 0){
                     Calendar now = Calendar.getInstance();
                     int minutes = now.get(Calendar.HOUR_OF_DAY)*60 + now.get(Calendar.MINUTE);
@@ -575,7 +569,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                     }
                 }
             } else
-                main.selectedArrivalStation = selectedStation;
+                selectedArrivalStation = selectedStation;
         }
     }
 
@@ -608,13 +602,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private void updateScreenGraphics(){
         hideKeyboard();
         updateContainerVisibility();
-        switch (main.getBookingState()){
+        switch (main.state.getBookingState()){
             case STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY:
                 stationEditText.clearFocus();
                 timeEditText.clearFocus();
                 distanceText.clearFocus();
                 break;
-            case STATIC_DEFINITIONS.RESERVE_DOCK_SELECTION_STATE:
+            case State.RESERVE_DOCK_SELECTION_STATE:
                 stationEditText.clearFocus();
                 break;
         }
@@ -651,7 +645,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     @Override
     public void onClick(View v) {
         if (v == startBookingButton){
-            main.bookingStateTransition(true);
+            main.state.bookingStateTransition(true);
             updateView();
         } else if (v == timeEditText) {
             showTimePickerDialog();
@@ -672,7 +666,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 choice1Button.setText("No");
                 choice2Button.setVisibility(GONE);
             } else {
-                main.bookingStateTransition(false);
+                main.state.bookingStateTransition(false);
                 main.viewPager.getAdapter().notifyDataSetChanged();
                 updateView();
                 choice2Button.setVisibility(VISIBLE);
@@ -682,16 +676,16 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         } else if (v == choice1Button){
             QRScanWaitMsgList.add(new Message("out", (String) choice1Button.getText()));
             if (choice1Button.getText().equals("No")){
-                choice1Button.setText(String.format(Locale.getDefault(),"Directions to %s", main.reservedDepartureStation.getName()));
+                choice1Button.setText(String.format(Locale.getDefault(),"Directions to %s", main.state.getDepartingStation().getName()));
                 choice3Button.setText("Cancel Reservation");
                 choice2Button.setVisibility(VISIBLE);
             }
             else {
                 QRScanWaitMsgList.add(new Message("in", "Searching for directions."));
-                double latitude = main.reservedDepartureStation.getLocation().latitude;
-                double longitude = main.reservedDepartureStation.getLocation().longitude;
+                double latitude =  main.state.getDepartingStation().getLocation().latitude;
+                double longitude =  main.state.getDepartingStation().getLocation().longitude;
                 String uriBegin = "geo:" + latitude + "," + longitude;
-                String query = latitude + "," + longitude + "(" + main.reservedDepartureStation.getName() + ")";
+                String query = latitude + "," + longitude + "(" +  main.state.getDepartingStation().getName() + ")";
                 String encodedQuery = Uri.encode(query);
                 String uriString = uriBegin + "?q=" + encodedQuery + "&z=16";
                 Uri uri = Uri.parse(uriString);
@@ -774,7 +768,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            main.navView.setVisibility(GONE);
             searchButton.setEnabled(false);
             inAnimation = new AlphaAnimation(0f, 1f);
             inAnimation.setDuration(200);

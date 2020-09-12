@@ -126,9 +126,10 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap map) {
         googleMap = map;
-
-        main.updateUserLocation();
-        centreOnCurrentLocation(main.lastKnownLocation);
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            main.updateUserLocation();
+            centreOnCurrentLocation(main.lastKnownLocation);
+        }
 
 
         for (Station station : main.getStations()) {
