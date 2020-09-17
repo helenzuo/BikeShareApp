@@ -6,13 +6,16 @@ import android.location.Geocoder;
 import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.zxing.common.StringUtils;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 public class Station implements Comparable<Station>{
+     private String id;
      private String mName;
      private LatLng mLocation;
      private int mCapacity;
@@ -21,15 +24,45 @@ public class Station implements Comparable<Station>{
      private float distanceFrom;
      private String mAddress;
      private boolean favourite;
+     private Context context;
+     private float prob;
 
-     public Station(String name, double longitude, double latitude, int capacity, int occupancy, Context context) throws IOException {
-        mName = name;
-        mLocation = new LatLng(latitude, longitude);
-        mAddress = latLngToAddress(mLocation, context);
-        mCapacity = capacity;
-        mOccupancy = occupancy;
-        fillLevel = (float) occupancy/capacity;
-     }
+//     public Station(String name, double longitude, double latitude, int capacity, int occupancy, Context context) throws IOException {
+//        mName = name;
+//        mLocation = new LatLng(latitude, longitude);
+//        mAddress = latLngToAddress(mLocation, context);
+//        mCapacity = capacity;
+//        mOccupancy = occupancy;
+//        fillLevel = (float) occupancy/capacity;
+//     }
+
+    public Station(Context context, double lat, double lon, int cap, int occ, String id) throws IOException {
+        this.context = context;
+        this.id = id;
+        mLocation = new LatLng(lat, lon);
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(context, Locale.getDefault());
+        addresses = geocoder.getFromLocation(lat, lon, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+        mName = addresses.get(0).getThoroughfare();
+        if (mName == null){
+            mName = addresses.get(0).getFeatureName();
+        }
+        System.out.println("Address :" + mName);
+        String tempName = mName;
+        int i = 1;
+        while (((MainActivity)context).stationMap.containsKey(tempName)){
+            char[] repeat = new char[i-1];
+            tempName  = mName + " " + i;
+            i++;
+        }
+        mName = tempName;
+        mAddress = addresses.get(0).getAddressLine(0);
+        setOccupancy(occ);
+        mCapacity = cap;
+        fillLevel = (float) occ/mCapacity;
+    }
+
     public String getName(){
          return mName;
      }
@@ -64,17 +97,11 @@ public class Station implements Comparable<Station>{
         return fillLevel;
     }
 
-    private String latLngToAddress(LatLng latLng, Context context) throws IOException {
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(context, Locale.getDefault());
-        addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-        return addresses.get(0).getAddressLine(0);
-    }
-
     public String getAddress(){
          return mAddress;
     }
+
+    public String getId(){ return id; }
 
     public void updateDistanceFrom(Location currentLocation){
         Location stationLocation = new Location("");
@@ -96,6 +123,10 @@ public class Station implements Comparable<Station>{
     public float getDistanceFloat(){
          return distanceFrom;
     }
+
+    public void setProb(float prob){ this.prob = prob;}
+
+    public float getProb(){ return prob; }
 
     // default sort
     @Override

@@ -6,42 +6,43 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
-import androidx.navigation.NavController;
 import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.mysecondapp.ui.home.HomeFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
 
@@ -67,7 +68,11 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvNavigationPicker;
     private PickerAdapter navigationAdapter;
     private List<String> fragmentTitles;
+    private NoBounceLinearLayoutManager pickerLayoutManager;
     private int currentFrag = 1;
+
+    public ArrayList<Station> interchangeables = new ArrayList<>();
+    public Station assigned;
 
     SharedPreferences mPrefs;
     @Override
@@ -96,58 +101,20 @@ public class MainActivity extends AppCompatActivity {
             user = new User("","", "" ,"helenzuo123");
         }
 
-        json = mPrefs.getString("state", "");
-        state = gson.fromJson(json, State.class);
-        if (state == null){
-            state = new State();
-        }
+//        json = mPrefs.getString("state", "");
+//        state = gson.fromJson(json, State.class);
+//        if (state == null){
+//            state = new State();
+//        }
+
+        state = new State();
 
         stations = new ArrayList<Station>();
-        Station tempStation;
-        try {
-            tempStation = new Station("Bourke", 144.96803330048928, -37.81393990463194, 22, 15, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Collins", 144.97192836840318, -37.815022142571, 22, 8, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Flagstaff", 144.9606810878229, -37.81493656474232, 22, 20, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Flinders", 144.9699301383418, -37.81673328727038, 22, 20, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Lcollins", 144.97003459169014, -37.81451269649511, 22, 8, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Lygon", 144.96766165512835, -37.81182608904015, 22, 15, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("mc", 144.9647403339459, -37.81155259053488, 22, 16, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Parliament", 144.97304788833318, -37.811337130250315, 22, 16, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Queens", 144.96316335849318, -37.81421830705699, 22, 10, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Rmit", 144.96381831022302, -37.80956830069795, 22, 13, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-            tempStation = new Station("Yarra", 144.97239159357775, -37.81601925202357, 22, 20, this);
-            stations.add(tempStation);
-            stationMap.put(tempStation.getName(), tempStation);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-
-//        new Connect(this).execute();
-
         rvNavigationPicker = (RecyclerView) findViewById(R.id.rvNavigationPicker);
-        final NoBounceLinearLayoutManager pickerLayoutManager = new NoBounceLinearLayoutManager(this, PickerLayoutManager.HORIZONTAL, false);
+        viewPager = findViewById(R.id.view_pager);
+        pickerLayoutManager = new NoBounceLinearLayoutManager(this, PickerLayoutManager.HORIZONTAL, false);
         pickerLayoutManager.setScaleDownBy(0.25f);
         pickerLayoutManager.setScaleDownDistance(0.7f);
         SnapHelper snapHelper = new LinearSnapHelper();
@@ -161,8 +128,11 @@ public class MainActivity extends AppCompatActivity {
         rvNavigationPicker.setAdapter(navigationAdapter);
         rvNavigationPicker.scrollToPosition(1);
         rvNavigationPicker.smoothScrollBy(-1, 0);
+        new Connect(this).execute();
+        new GetStationInfo(this).execute();
+    }
 
-        viewPager = findViewById(R.id.view_pager);
+    private void setUpScreen(){
         viewPager.setOffscreenPageLimit(1);
         viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle()));
@@ -201,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent.getIntExtra("Place Number", 0) == 0) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    updateUserLocation();
+                updateUserLocation();
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
@@ -217,9 +187,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-
-
 
 
     public void startQRScanner() {
@@ -260,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
 //                String result = data.getExtras().getString("QRCode");
                 state.bookingStateTransition(true);
                 ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1)).updateParentView();
-//                navController.navigate(R.id.navigation_home);
             }
             else if (resultCode == RESULT_CANCELED) {
                 //Write your code if there's no_radio_button result
@@ -271,13 +237,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-//        new CloseSocket(this).execute();
+        new CloseSocket(this).execute();
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-//        new Connect(this).execute();
+        new Connect(this).execute();
     }
 
     public ArrayList<Station> getStations(){
@@ -290,34 +256,40 @@ public class MainActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    public void queryDepartureStation(int minutesUntilBorrow, Station departingStation, Station arrivingStation){
-        new SendMessage(this).execute(Integer.toString(minutesUntilBorrow), departingStation.getName(), arrivingStation.getName());
+    public void queryServerStation(BookingMessageToServer msg){
+        System.out.println(new Gson().toJson(msg));
+        new SendMessage(this).execute(new Gson().toJson(msg));
     }
 
-    private static class Connect extends AsyncTask<Void, Void, Boolean> {
+    private static class Connect extends AsyncTask<Void, Void, Void> {
         private WeakReference<MainActivity> activityReference;
+
         // only retain a weak reference to the activity
         Connect(MainActivity context) {
             activityReference = new WeakReference<>(context);
         }
 
         @Override
-        protected Boolean doInBackground(Void... voids) {
+        protected Void doInBackground(Void... voids) {
             MainActivity activity = activityReference.get();
             if (!activity.ping) {
                 try {
-                    activity.clientSocket = new Socket("10.0.2.2", 8080);
+                    activity.clientSocket = new Socket("192.168.20.11", 8080);
                     activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                     activity.in = new DataInputStream(activity.clientSocket.getInputStream());
+                    activity.out.write(new Gson().toJson(activity.user));
+                    activity.out.flush();
                     activity.ping = true;
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
-            return activity.ping;
+            return null;
         }
+
     }
+
     // Called to perform work in a worker thread.
     private static class SendMessage extends AsyncTask<String, Void, Void> {
         private WeakReference<MainActivity> activityReference;
@@ -325,16 +297,21 @@ public class MainActivity extends AppCompatActivity {
         SendMessage(MainActivity context) {
             activityReference = new WeakReference<>(context);
         }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            new GetMsg(activityReference.get()).execute();
+        }
+
         protected Void doInBackground(String... strings) {
             MainActivity activity = activityReference.get();
             if (activity.ping) {
                 try {
-                    String outputMessage = "QUERY START";
-                    for (String string : strings) {
-                        outputMessage += "#" + string;
-                    }
-                    outputMessage += "#QUERY END" ;
-                    activity.out.write(outputMessage);
+                    if (!activity.clientSocket.isClosed()) activity.clientSocket.close();
+                    activity.clientSocket = new Socket("192.168.20.11", 8080);
+                    activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
+                    activity.in = new DataInputStream(activity.clientSocket.getInputStream());
+                    activity.out.write(strings[0]);
                     activity.out.flush();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
@@ -344,7 +321,6 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
-
 
     // Called to perform work in a worker thread.
     private static class CloseSocket extends AsyncTask<Void, Void, Void> {
@@ -357,7 +333,11 @@ public class MainActivity extends AppCompatActivity {
             MainActivity activity = activityReference.get();
             if (activity.ping) {
                 try {
-                    activity.out.write("quit");
+                    if (!activity.clientSocket.isClosed()) activity.clientSocket.close();
+                    activity.clientSocket = new Socket("192.168.20.11", 8080);
+                    activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
+                    activity.in = new DataInputStream(activity.clientSocket.getInputStream());
+                    activity.out.write(new Gson().toJson(new BookingMessageToServer("quit", "", -1, -1)));
                     activity.out.flush();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
@@ -382,17 +362,98 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public String readUTF8() throws IOException {
-        String msg = "";
-        if (ping) {
-            if (in.available() > 0) {
-                int length = in.readInt();
-                byte[] encoded = new byte[length];
-                in.readFully(encoded);
-                msg = new String(encoded, StandardCharsets.UTF_8);
+    private static class GetMsg extends AsyncTask<Void, Void, String> {
+        private WeakReference<MainActivity> activityReference;
+        // only retain a weak reference to the activity
+        GetMsg(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            MainActivity activity = activityReference.get();
+            return activity.readUTF8();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            MainActivity activity = activityReference.get();
+            System.out.println(s);
+            try {
+                JSONArray jsonArr  = new JSONArray(s);
+                activity.interchangeables = new ArrayList<>();
+                for (int i = 0; i < jsonArr.length(); i++) {
+                    JSONObject jsonObj = jsonArr.getJSONObject(i);
+                    Station station = activity.stationMap.get(jsonObj.getString("id"));
+                    station.setProb((float) jsonObj.getDouble("prob"));
+                    activity.interchangeables.add(activity.stationMap.get(jsonObj.getString("id")));
+                    if (jsonObj.getInt("assigned") == 1) {
+                        activity.assigned = station;
+                    }
+                }
+                for (Station station : activity.interchangeables){
+                    System.out.println(station.getId());
+                }
+            }catch (JSONException e){
+                System.out.println(e);
             }
         }
-        return msg;
+    }
+
+    private static class GetStationInfo extends AsyncTask<Void, Void, String> {
+        private WeakReference<MainActivity> activityReference;
+        // only retain a weak reference to the activity
+        GetStationInfo(MainActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            MainActivity activity = activityReference.get();
+            return activity.readUTF8();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            MainActivity activity = activityReference.get();
+            try {
+                JSONArray jsonArr  = new JSONArray(s);
+                for (int i = 0; i < jsonArr.length(); i++) {
+                    JSONObject jsonObj = jsonArr.getJSONObject(i);
+                    Station station = new Station(activity, jsonObj.getDouble("lat"), jsonObj.getDouble("long"), jsonObj.getInt("cap"), jsonObj.getInt("occ"), jsonObj.getString("id"));
+                    activity.stations.add(station);
+                    activity.stationMap.put(station.getId(), station);
+                }
+            }catch (JSONException | IOException e){
+                System.out.println(e);
+            }
+            Collections.sort(activity.stations);
+            activity.setUpScreen();
+        }
+    }
+
+    private String readUTF8(){
+        int n;
+        char[] buffer = new char[1024 * 4];
+        InputStreamReader reader = null;
+        try {
+            reader = new InputStreamReader(in, "UTF8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        StringWriter writer = new StringWriter();
+        while (ping){
+            try {
+                n = reader.read(buffer);
+                if (n == -1){
+                    return writer.toString();
+                }
+                writer.write(buffer, 0, n);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
     }
 
     public boolean getPing(){

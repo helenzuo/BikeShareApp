@@ -31,9 +31,7 @@ public class User {
         this.dob = dob;
     }
 
-    public void setGender(int gender) {
-        this.gender = gender;
-    }
+    public void setGender(int gender) { this.gender = gender; }
 
     public void setMobile(String mobile) {
         this.mobile = mobile;
@@ -42,6 +40,7 @@ public class User {
     public String getDob() {
         return dob;
     }
+
     public String getEmail() {
         return email;
     }

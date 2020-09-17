@@ -45,6 +45,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
@@ -66,6 +67,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     Location lastKnownLocation;
 
     private int openedFrom;
+
+    private ArrayList<Station> stationList;
 
     public interface updateParentView {
         void updateParentView();
@@ -111,9 +114,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 16F));
     }
 
-    public void centreOnStation(String stationName){
-        Marker marker = (Marker)markerMap.get(stationName);
-        centredStation = main.stationMap.get(stationName);
+    public void centreOnStation(Station station){
+        Marker marker = (Marker)markerMap.get(station.getId());
+        centredStation = station;
         if (prevSelectedStation != null){
             prevSelectedStation.setAlpha((float) 0.5);
         }
@@ -139,11 +142,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     @Override
     public void onMapReady(GoogleMap map) {
         googleMap = map;
-        markerMap = loadNMarkers();
         recyclerView = (RecyclerView) root.findViewById(R.id.cardViewRecycler);
         selectButton = root.findViewById(R.id.selectBorrowStationButton);
         closeMapButton = root.findViewById(R.id.closeMapPopUpButton);
 
+        if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP){
+            stationList = main.getStations();
+            markerMap = loadNMarkers();
+            setUpCardView();
+//            layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
+            String buttonText = "Select Flinders as departure station";
+            selectButton.setText(buttonText);
+        } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+
+            stationList = main.interchangeables;
+            markerMap = loadNMarkers();
+            setUpCardView();
+//            layoutManager.smoothScrollToPosition(recyclerView, null, stationList.indexOf(main.assigned));
+            String buttonText = "Reserve Bike at " + main.assigned.getName();
+            selectButton.setText(buttonText);
+        }
+
+
+    }
+
+    private void setUpCardView(){
         selectButton.setOnClickListener(this);
         selectButton.setOnTouchListener(new IgnorePageViewSwipe(main));
         closeMapButton.setOnClickListener(this);
@@ -160,14 +183,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get(marker.getTitle())));
-                centreOnStation(marker.getTitle());
+                layoutManager.smoothScrollToPosition(recyclerView, null, stationList.indexOf(main.stationMap.get(marker.getTitle())));
+                centreOnStation(main.stationMap.get(marker.getTitle()));
                 return true;
             }
         });
 
         // Bottom card view of stations (horizontal scroll)
-        stationCardAdapter = new StationCardAdapter(getContext(), main.getStations());
+        stationCardAdapter = new StationCardAdapter(getContext(), stationList);
         recyclerView.setAdapter(stationCardAdapter);
         layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(layoutManager);
@@ -178,8 +201,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 int position = layoutManager.findFirstCompletelyVisibleItemPosition();
                 if (position != -1) {
-                    Station station = main.getStations().get(position);
-                    centreOnStation(station.getName());
+                    Station station = stationList.get(position);
+                    centreOnStation(station);
                     layoutManager.findViewByPosition(position).requestFocus();
                     String buttonText = "";
                     if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP) {
@@ -200,20 +223,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 super.onScrollStateChanged(recyclerView, newState);
             }
         });
-
-        if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP){
-            layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
-            String buttonText = "Select Flinders as departure station";
-            selectButton.setText(buttonText);
-        } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
-            //            new RetrieveMessage(main, this).execute();
-            layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
-            allocatedDepartureStationName = "Flinders";
-            String buttonText = "Reserve Bike at " + allocatedDepartureStationName;
-            selectButton.setText(buttonText);
-        }
     }
-
     private HashMap<String, Marker> loadNMarkers(){
         HashMap<String, Marker> map = new HashMap<String, Marker>();
         if (googleMap != null) {
@@ -223,11 +233,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP){
             alpha = 1;
         }
-        for (Station station : main.getStations()) {
+        for (Station station : stationList) {
             float fillLevel = station.getFillLevel();
             float colour = fillLevel * 120;
             Marker marker = googleMap.addMarker(new MarkerOptions().position(station.getLocation()).title(station.getName()).snippet(Integer.toString(station.getOccupancy())).icon(BitmapDescriptorFactory.defaultMarker(colour)).alpha(alpha));
-            map.put(station.getName(), marker);
+            map.put(station.getId(), marker);
         }
         return map;
     }
@@ -294,35 +304,35 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     }
 
 
-    private static class RetrieveMessage extends AsyncTask<Void, Void, Void> {
-        private WeakReference<MainActivity> activityReference;
-        private WeakReference<MapFragment> fragmentReference;
-        // only retain a weak reference to the activity
-        RetrieveMessage(MainActivity context1, MapFragment context2) {
-            activityReference = new WeakReference<>(context1);
-            fragmentReference = new WeakReference<>(context2);
-        }
-        @Override
-        protected Void doInBackground(Void... params) {
-            MainActivity main = activityReference.get();
-            MapFragment mapFragment = fragmentReference.get();
-            while (true) {
-                try {
-                    String msg = main.readUTF8() ;
-                    if (msg != null){
-                        String[] message = msg.split("#");
-                        for (int i = 0; i < message.length-2; i = i + 2){
-                            main.stationMap.get(message[i]).setOccupancy(Integer.parseInt(message[i+1]));
-                        }
-                        mapFragment.allocatedDepartureStationName = message[message.length-1];
-                        break;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
-        }
-    }
+//    private static class RetrieveMessage extends AsyncTask<Void, Void, Void> {
+//        private WeakReference<MainActivity> activityReference;
+//        private WeakReference<MapFragment> fragmentReference;
+//        // only retain a weak reference to the activity
+//        RetrieveMessage(MainActivity context1, MapFragment context2) {
+//            activityReference = new WeakReference<>(context1);
+//            fragmentReference = new WeakReference<>(context2);
+//        }
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            MainActivity main = activityReference.get();
+//            MapFragment mapFragment = fragmentReference.get();
+//            while (true) {
+//                try {
+//                    String msg = main.readUTF8() ;
+//                    if (msg != null){
+//                        String[] message = msg.split("#");
+//                        for (int i = 0; i < message.length-2; i = i + 2){
+//                            main.stationMap.get(message[i]).setOccupancy(Integer.parseInt(message[i+1]));
+//                        }
+//                        mapFragment.allocatedDepartureStationName = message[message.length-1];
+//                        break;
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            return null;
+//        }
+//    }
 }
 

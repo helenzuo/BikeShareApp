@@ -43,6 +43,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.mysecondapp.BookingMessageToServer;
 import com.example.mysecondapp.CustomTimePickeerDialog;
 import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.Message;
@@ -53,7 +54,6 @@ import com.example.mysecondapp.R;
 import com.example.mysecondapp.STATIC_DEFINITIONS;
 import com.example.mysecondapp.State;
 import com.example.mysecondapp.Station;
-import com.example.mysecondapp.StationSearchBar;
 import com.example.mysecondapp.ui.map.MapFragment;
 
 import java.util.ArrayList;
@@ -87,6 +87,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private SeekBar seekBar;
     private Button searchButton;
     private Station selectedDepartureStation;
+    private int walkDist = 0;
 
     private Button choice1Button;
     private Button choice2Button;
@@ -164,13 +165,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         return root;
     }
 
-
     private void loadDepartureStationSelectionPage(){
         if (timeSelectLayout == null) {
+            progressBarHolder = root.findViewById(R.id.progressBarHolder);
             timeSelectLayout = root.findViewById(R.id.departTimePickLayout);
             altStationLayout = root.findViewById(R.id.walkingRelativeLayout);
             distanceSelectLayout = root.findViewById(R.id.distanceSelectLayout);
-
             stationEditText = root.findViewById(R.id.departureStationEditText);
             stationListView = root.findViewById(R.id.departureStationListView);
             mapSearchButton = root.findViewById(R.id.mapViewButton);
@@ -226,6 +226,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    walkDist = progress * 100;
                     if (progress < 10) {
                         distanceText.setText(String.format(Locale.getDefault(), "%dM", progress * 100));
                     } else if (progress != 20) {
@@ -246,6 +247,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 }
             });
             seekBar.setProgress(5);
+            walkDist = 0;
 
             searchButton.setOnClickListener(this);
 
@@ -477,7 +479,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
     }
 
-
     private void updateStationEditTextGraphics(EditText editText){
         if (stationEditTextHeight == 0){
             stationEditTextHeight = editText.getHeight();
@@ -653,8 +654,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             bikeReserveDetailsContainer.setVisibility(GONE);
             replaceFragment(new MapFragment(STATIC_DEFINITIONS.STATION_LOOK_UP));
         } else if (v == searchButton){
+            updateContainerVisibility();
             bikeReserveDetailsContainer.setVisibility(GONE);
-            replaceFragment(new MapFragment(STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY));
+            new SplashPage().execute();
         } else if(v == choice2Button) {
             main.startQRScanner();
         } else if (v == choice3Button){
@@ -754,8 +756,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             altStationLayout.setVisibility(VISIBLE);
         } else {
             if (isChecked && checkedRadioButton.getId() == R.id.yes) {
+                walkDist = seekBar.getProgress() * 100;
                 distanceSelectLayout.setVisibility(VISIBLE);
             } else {
+                walkDist = 0;
                 distanceSelectLayout.setVisibility(GONE);
             }
             searchButton.setVisibility(VISIBLE);
@@ -763,8 +767,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
     }
 
-    private class splashPage extends AsyncTask<Void, Void, Void> {
-
+    private class SplashPage extends AsyncTask<Void, Void, Void> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -773,8 +776,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             inAnimation.setDuration(200);
             progressBarHolder.setAnimation(inAnimation);
             progressBarHolder.setVisibility(View.VISIBLE);
+            System.out.println(selectedDepartureStation.getId());
+            main.queryServerStation(new BookingMessageToServer("queryDepart", selectedDepartureStation.getId(), timeInInt(timeEditText.getText().toString()), walkDist));
         }
-
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -785,13 +789,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             searchButton.setEnabled(true);
             replaceFragment(new MapFragment(STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY));
         }
-
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                for (int i = 0; i < 2; i++) {
-                    TimeUnit.SECONDS.sleep(1);
-                }
+                TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
