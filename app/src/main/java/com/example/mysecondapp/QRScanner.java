@@ -138,34 +138,10 @@ public class QRScanner extends AppCompatActivity implements ZXingScannerView.Res
         this.rawResult = rawResult;
         scanned = true;
         findViewById(R.id.QRScannedLayoutContainer).setVisibility(View.VISIBLE);
-        flashToggle.setVisibility(View.GONE);
-        closeButton.setVisibility(View.GONE);
-        LottieAnimationView unlockAnimation = findViewById(R.id.unlockAnimation);
-        unlockAnimation.playAnimation();
-        unlockAnimation.addAnimatorListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                Intent intent = new Intent();
-                intent.putExtra("QRCode", rawResult.getText());
-                setResult(RESULT_OK, intent);
-                finish();
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
+        Intent intent = new Intent();
+        intent.putExtra("QRCode", rawResult.getText());
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
     @Override

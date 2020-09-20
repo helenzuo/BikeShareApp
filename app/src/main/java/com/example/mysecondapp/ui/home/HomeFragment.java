@@ -1,5 +1,6 @@
 package com.example.mysecondapp.ui.home;
 
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -39,10 +40,12 @@ import android.widget.TimePicker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.mysecondapp.BookingMessageToServer;
 import com.example.mysecondapp.CustomTimePickeerDialog;
 import com.example.mysecondapp.MainActivity;
@@ -54,8 +57,10 @@ import com.example.mysecondapp.R;
 import com.example.mysecondapp.STATIC_DEFINITIONS;
 import com.example.mysecondapp.State;
 import com.example.mysecondapp.Station;
+import com.example.mysecondapp.TimeFormat;
 import com.example.mysecondapp.ui.map.MapFragment;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -95,6 +100,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private ListView QRScanWaitList;
     private ArrayList<Message> QRScanWaitMsgList;
 
+    private int borrowLength = -1;
     private RadioGroup directTravelRadioGroup;
     private TextView borrowLengthProgressTextView;
     private SeekBar borrowLengthSeekBar;
@@ -259,46 +265,49 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     }
 
     private void loadQRScannerPage(){
-        TextView textView = root.findViewById(R.id.textViewSlideUp);
-        Animation anim = new AlphaAnimation(0.0f, 1.0f);
-        anim.setDuration(500);
-        anim.setStartOffset(500);
-        anim.setRepeatMode(Animation.REVERSE);
-        anim.setRepeatCount(Animation.INFINITE);
-        textView.startAnimation(anim);
+        if (QRScanWaitList == null) {
+            TextView textView = root.findViewById(R.id.textViewSlideUp);
+            Animation anim = new AlphaAnimation(0.0f, 1.0f);
+            anim.setDuration(500);
+            anim.setStartOffset(500);
+            anim.setRepeatMode(Animation.REVERSE);
+            anim.setRepeatCount(Animation.INFINITE);
+            textView.startAnimation(anim);
 
-        QRScanWaitList = root.findViewById(R.id.waitQRListView);
-        QRScanWaitMsgList = new ArrayList<>();
-        final MessageListAdapter msgAdapter;
+            QRScanWaitList = root.findViewById(R.id.waitQRListView);
+            QRScanWaitMsgList = new ArrayList<>();
+            final MessageListAdapter msgAdapter;
 
-        QRScanWaitMsgList.add(new Message("in", r.getString(R.string.bikeReserved)));
-        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s",  main.state.getDepartingStation().getName())));
-        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s",  main.state.getDepartingStation().getAddress())));
-        QRScanWaitMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Reserved Time: %s",  main.state.getDepartureTime()))));
-        QRScanWaitMsgList.add(new Message("in", r.getString(R.string.QRInstruction)));
+            QRScanWaitMsgList.add(new Message("in", r.getString(R.string.bikeReserved)));
+            QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s", main.state.getDepartingStation().getName())));
+            QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s", main.state.getDepartingStation().getAddress())));
+            QRScanWaitMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Reserved Time: %s", main.state.getDepartureTime()))));
+            QRScanWaitMsgList.add(new Message("in", r.getString(R.string.QRInstruction)));
 
-        msgAdapter = new MessageListAdapter(getContext(), QRScanWaitMsgList);
-        QRScanWaitList.setAdapter(msgAdapter);
+            msgAdapter = new MessageListAdapter(getContext(), QRScanWaitMsgList);
+            QRScanWaitList.setAdapter(msgAdapter);
 
-        choice1Button = root.findViewById(R.id.choice1Button);
-        choice1Button.setText(String.format(Locale.getDefault(),"Get directions to %s",  main.state.getDepartingStation().getName()));
-        choice2Button = root.findViewById(R.id.choice2Button);
-        choice3Button = root.findViewById(R.id.choice3Button);
+            choice1Button = root.findViewById(R.id.choice1Button);
+            choice1Button.setText(String.format(Locale.getDefault(), "Get directions to %s", main.state.getDepartingStation().getName()));
+            choice2Button = root.findViewById(R.id.choice2Button);
+            choice3Button = root.findViewById(R.id.choice3Button);
 
-        choice2Button.setOnClickListener(this);
+            choice2Button.setOnClickListener(this);
 
-        choice3Button.setOnClickListener(this);
+            choice3Button.setOnClickListener(this);
 
-        choice1Button.setOnClickListener(this);
+            choice1Button.setOnClickListener(this);
 
-        root.setOnTouchListener(new OnSwipeTouchListener(getContext()){
-            public void onSwipeTop() {
-                main.startQRScanner();
-            }
-            public boolean onTouch(View v, MotionEvent event) {
-                return gestureDetector.onTouchEvent(event);
-            }
-        });
+            root.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
+                public void onSwipeTop() {
+                    main.startQRScanner();
+                }
+
+                public boolean onTouch(View v, MotionEvent event) {
+                    return gestureDetector.onTouchEvent(event);
+                }
+            });
+        }
     }
 
     private void loadQRScannedPage(){
@@ -377,10 +386,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         borrowLengthSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                borrowLength = progress * 5;
                 if (progress < 12)
-                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dmin   (%s)", progress * 5, timeInString(progress*5)));
+                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dmin   (%s)", progress * 5, new TimeFormat().timeInString(progress*5)));
                 else if (progress < 36)
-                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dh %dmin   (%s)", progress*5/60, (progress*5)%60, timeInString(progress*5)));
+                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dh %dmin   (%s)", progress*5/60, (progress*5)%60, new TimeFormat().timeInString(progress*5)));
                 else
                     borrowLengthProgressTextView.setText("Not sure");
             }
@@ -396,11 +406,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         });
         borrowLengthSeekBar.setProgress(6);
+        borrowLength = -1;
 
         // set listener for when seekbar slider is changed, to update the distance text
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                walkDist = progress * 100;
                 if (progress < 10) {
                     distanceText.setText(String.format(Locale.getDefault(), "%dM", progress * 100));
                 } else if (progress != 20) {
@@ -420,11 +432,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         });
         seekBar.setProgress(5);
+        walkDist = 0;
 
         searchButton.setOnClickListener(this);
-
         root.setOnTouchListener(this);
-
     }
 
     private void loadDockReservedPage(){
@@ -477,6 +488,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         });
 
+    }
+
+    public void addQRScreenMessage(Message message){
+        QRScanWaitMsgList.add(message);
+        ((MessageListAdapter)QRScanWaitList.getAdapter()).notifyDataSetChanged();
     }
 
     private void updateStationEditTextGraphics(EditText editText){
@@ -561,7 +577,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 if (timeEditText.getText().toString().length() > 0){
                     Calendar now = Calendar.getInstance();
                     int minutes = now.get(Calendar.HOUR_OF_DAY)*60 + now.get(Calendar.MINUTE);
-                    if (timeInInt(timeEditText.getText().toString()) > minutes) {
+                    if (new TimeFormat().timeInInt(timeEditText.getText().toString()) > minutes) {
                         altStationLayout.setVisibility(VISIBLE);
                     } else {
                         altStationLayout.setVisibility(GONE);
@@ -572,32 +588,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             } else
                 selectedArrivalStation = selectedStation;
         }
-    }
-
-    private String timeInString(int plusMinutes){
-        Calendar now = Calendar.getInstance();
-        int minutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
-        minutes += plusMinutes;
-        int hours = minutes/60;
-        minutes = minutes % 60;
-        if (hours > 12 && hours != 12) {
-            hours -= 12;
-            return String.format(Locale.getDefault(), "%d:%02d%s", hours, minutes, "PM" );
-        }
-        return String.format(Locale.getDefault(), "%d:%02d%s", hours, minutes, "AM" );
-    }
-
-
-    private int timeInInt(String s) {
-        s = s.trim();
-        String[] hourMinAP = s.split(":");
-        int hour = Integer.parseInt(hourMinAP[0]);
-        String[] minAP = hourMinAP[1].split(" ");
-        int min = Integer.parseInt(minAP[0]);
-        if (minAP[1].equals("PM") && hour != 12){
-            hour += 12;
-        }
-        return hour * 60 + min;
     }
 
     private void updateScreenGraphics(){
@@ -624,6 +614,36 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     public void setDepartureStationFromMap(Station station){
         stationEditText.setText(station.getName());
         updateScreenGraphics();
+    }
+
+    public void QRCodeScannedAnimation(){
+        departureStationSelectedContainer.setVisibility(View.INVISIBLE);
+        final CardView scanAnim = root.findViewById(R.id.scanAnimation);
+        scanAnim.setVisibility(VISIBLE);
+        LottieAnimationView lottieAnimationView = root.findViewById(R.id.unlockAnimation);
+        lottieAnimationView.playAnimation();
+        lottieAnimationView.addAnimatorListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                scanAnim.setVisibility(GONE);
+                updateView();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
     }
 
     private void showTimePickerDialog(){
@@ -655,8 +675,19 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             replaceFragment(new MapFragment(STATIC_DEFINITIONS.STATION_LOOK_UP));
         } else if (v == searchButton){
             updateContainerVisibility();
-            bikeReserveDetailsContainer.setVisibility(GONE);
-            new SplashPage().execute();
+            int openFrom;
+            if (main.state.getBookingState() == State.RESERVE_BIKE_SELECTION_STATE) { // if checking for bike
+                openFrom = STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY;
+                bikeReserveDetailsContainer.setVisibility(GONE);
+                main.state.setDepartureTime(timeEditText.getText().toString());
+                main.queryServerStation(new BookingMessageToServer("queryDepart", selectedDepartureStation.getId(), new TimeFormat().timeInInt(timeEditText.getText().toString()), walkDist));
+            } else { // if checking for dock
+                openFrom = STATIC_DEFINITIONS.SERVER_ARRIVAL_STATION_QUERY;
+                dockReserveDetailsContainer.setVisibility(GONE);
+                main.state.setArrivalTime(timeEditText.getText().toString());
+                main.queryServerStation(new BookingMessageToServer("queryArrival", selectedArrivalStation.getId(), borrowLength, walkDist));
+            }
+            new SplashPage().execute(openFrom);
         } else if(v == choice2Button) {
             main.startQRScanner();
         } else if (v == choice3Button){
@@ -668,7 +699,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 choice1Button.setText("No");
                 choice2Button.setVisibility(GONE);
             } else {
-                main.state.bookingStateTransition(false);
+                main.state.resetState();
+                stationEditText.setText("");
+                timeEditText.setText("");
+                altDepartureStationRadioGroup.check(R.id.no);
                 main.viewPager.getAdapter().notifyDataSetChanged();
                 updateView();
                 choice2Button.setVisibility(VISIBLE);
@@ -749,8 +783,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         // If the radiobutton that has changed in check state is now checked...
         if (group == directTravelRadioGroup) {
             if (isChecked && checkedRadioButton.getId() == R.id.direct) {
+                borrowLength = -1;
                 root.findViewById(R.id.borrowLengthLayout).setVisibility(GONE);
             } else {
+                borrowLength = borrowLengthSeekBar.getProgress() * 5;
                 root.findViewById(R.id.borrowLengthLayout).setVisibility(VISIBLE);
             }
             altStationLayout.setVisibility(VISIBLE);
@@ -767,7 +803,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
     }
 
-    private class SplashPage extends AsyncTask<Void, Void, Void> {
+    private class SplashPage extends AsyncTask<Integer, Void, Integer> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -776,27 +812,25 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             inAnimation.setDuration(200);
             progressBarHolder.setAnimation(inAnimation);
             progressBarHolder.setVisibility(View.VISIBLE);
-            System.out.println(selectedDepartureStation.getId());
-            main.queryServerStation(new BookingMessageToServer("queryDepart", selectedDepartureStation.getId(), timeInInt(timeEditText.getText().toString()), walkDist));
         }
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(Integer integer) {
+            super.onPostExecute(integer);
             outAnimation = new AlphaAnimation(1f, 0f);
             outAnimation.setDuration(200);
             progressBarHolder.setAnimation(outAnimation);
             progressBarHolder.setVisibility(GONE);
             searchButton.setEnabled(true);
-            replaceFragment(new MapFragment(STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY));
+            replaceFragment(new MapFragment(integer));
         }
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Integer doInBackground(Integer... integers) {
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return null;
+            return integers[0];
         }
     }
 

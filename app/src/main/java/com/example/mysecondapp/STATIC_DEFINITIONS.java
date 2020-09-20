@@ -8,5 +8,6 @@ public class STATIC_DEFINITIONS {
 
     public static final int STATION_LOOK_UP = 0;
     public static final int SERVER_DEPARTURE_STATION_QUERY = 1;
+    public static final int SERVER_ARRIVAL_STATION_QUERY = 2;
 
 }

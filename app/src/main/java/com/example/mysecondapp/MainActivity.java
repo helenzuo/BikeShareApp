@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,12 +56,15 @@ public class MainActivity extends AppCompatActivity {
     public LocationManager locationManager;
     public Location lastKnownLocation;
 
-    private ArrayList<Station> stations;
+    private ArrayList<Station> stations = new ArrayList<Station>();;
+    public ArrayList<String> stationNames = new ArrayList<>();
 
     private Socket clientSocket;
     private BufferedWriter out;
     private DataInputStream in;
     boolean ping = false;
+
+    boolean openingQR = false;
 
     public HashMap<String, Station> stationMap = new HashMap<String, Station>();
 
@@ -108,9 +112,6 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         state = new State();
-
-        stations = new ArrayList<Station>();
-
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
         rvNavigationPicker = (RecyclerView) findViewById(R.id.rvNavigationPicker);
         viewPager = findViewById(R.id.view_pager);
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         rvNavigationPicker.scrollToPosition(1);
         rvNavigationPicker.smoothScrollBy(-1, 0);
         new Connect(this).execute();
-        new GetStationInfo(this).execute();
+        new GetMsg(this).execute("initialise");
     }
 
     private void setUpScreen(){
@@ -190,9 +191,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void startQRScanner() {
+        openingQR = true;
         Intent myIntent = new Intent(MainActivity.this, QRScanner.class);
         MainActivity.this.startActivityForResult(myIntent, 1);
-
     }
 
     private Location getLastKnownLocation() {
@@ -224,12 +225,11 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
-//                String result = data.getExtras().getString("QRCode");
-                state.bookingStateTransition(true);
-                ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1)).updateParentView();
+                queryServerStation(new BookingMessageToServer("QRScanned", data.getExtras().getString("QRCode").replaceAll("\\D+",""), -1, -1));
+                ((HomeFragment)((ViewPagerAdapter)viewPager.getAdapter()).getFragment(1)).QRCodeScannedAnimation();
             }
             else if (resultCode == RESULT_CANCELED) {
-                //Write your code if there's no_radio_button result
+                //Write your code if no result
             }
         }
     }
@@ -237,7 +237,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        new CloseSocket(this).execute();
+        if (!openingQR)
+            new CloseSocket(this).execute();
+        openingQR = false;
     }
 
     @Override
@@ -250,15 +252,8 @@ public class MainActivity extends AppCompatActivity {
         return stations;
     }
 
-
-    @Override public void onBackPressed() {
-        Objects.requireNonNull(getSupportActionBar()).show();
-        super.onBackPressed();
-    }
-
     public void queryServerStation(BookingMessageToServer msg){
-        System.out.println(new Gson().toJson(msg));
-        new SendMessage(this).execute(new Gson().toJson(msg));
+        new SendMessage(this).execute(msg.getKey(), new Gson().toJson(msg));
     }
 
     private static class Connect extends AsyncTask<Void, Void, Void> {
@@ -291,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Called to perform work in a worker thread.
-    private static class SendMessage extends AsyncTask<String, Void, Void> {
+    private static class SendMessage extends AsyncTask<String, Void, String> {
         private WeakReference<MainActivity> activityReference;
         // only retain a weak reference to the activity
         SendMessage(MainActivity context) {
@@ -299,26 +294,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            new GetMsg(activityReference.get()).execute();
+        protected void onPostExecute(String s) {
+            new GetMsg(activityReference.get()).execute(s);
         }
 
-        protected Void doInBackground(String... strings) {
+        protected String doInBackground(String... strings) {
             MainActivity activity = activityReference.get();
             if (activity.ping) {
                 try {
-                    if (!activity.clientSocket.isClosed()) activity.clientSocket.close();
+                    if (!activity.clientSocket.isClosed()) {
+                        activity.clientSocket.close();
+                    }
                     activity.clientSocket = new Socket("192.168.20.11", 8080);
                     activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                     activity.in = new DataInputStream(activity.clientSocket.getInputStream());
-                    activity.out.write(strings[0]);
+                    activity.out.write(strings[1]);
                     activity.out.flush();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
-            return null;
+            return strings[0];
         }
     }
 
@@ -362,7 +359,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static class GetMsg extends AsyncTask<Void, Void, String> {
+
+    private static class GetMsg extends AsyncTask<String, Void, String> {
         private WeakReference<MainActivity> activityReference;
         // only retain a weak reference to the activity
         GetMsg(MainActivity context) {
@@ -370,65 +368,103 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String doInBackground(Void... voids) {
+        protected String doInBackground(String... strings) {
             MainActivity activity = activityReference.get();
-            return activity.readUTF8();
+            return strings[0] + "##" +activity.readUTF8();
         }
 
         @Override
         protected void onPostExecute(String s) {
             MainActivity activity = activityReference.get();
-            System.out.println(s);
-            try {
-                JSONArray jsonArr  = new JSONArray(s);
-                activity.interchangeables = new ArrayList<>();
-                for (int i = 0; i < jsonArr.length(); i++) {
-                    JSONObject jsonObj = jsonArr.getJSONObject(i);
-                    Station station = activity.stationMap.get(jsonObj.getString("id"));
-                    station.setProb((float) jsonObj.getDouble("prob"));
-                    activity.interchangeables.add(activity.stationMap.get(jsonObj.getString("id")));
-                    if (jsonObj.getInt("assigned") == 1) {
-                        activity.assigned = station;
-                    }
-                }
-                for (Station station : activity.interchangeables){
-                    System.out.println(station.getId());
-                }
-            }catch (JSONException e){
-                System.out.println(e);
+            String[] strings = s.split("##");
+            if (strings[0].equals("initialise")){
+                activity.initialiseStationInfo(strings[1]);
+                activity.setUpScreen();
+            } else if (strings[0].equals("queryDepart")){
+                activity.departQueryResults(strings[1]);
+            } else if (strings[0].equals("QRScanned")){
+                activity.QRScanned(strings[1]);
+            } else if (strings[0].equals("queryArrival")){
+                activity.arrivalQueryResults(strings[1]);
             }
         }
     }
 
-    private static class GetStationInfo extends AsyncTask<Void, Void, String> {
-        private WeakReference<MainActivity> activityReference;
-        // only retain a weak reference to the activity
-        GetStationInfo(MainActivity context) {
-            activityReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected String doInBackground(Void... voids) {
-            MainActivity activity = activityReference.get();
-            return activity.readUTF8();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            MainActivity activity = activityReference.get();
-            try {
-                JSONArray jsonArr  = new JSONArray(s);
-                for (int i = 0; i < jsonArr.length(); i++) {
-                    JSONObject jsonObj = jsonArr.getJSONObject(i);
-                    Station station = new Station(activity, jsonObj.getDouble("lat"), jsonObj.getDouble("long"), jsonObj.getInt("cap"), jsonObj.getInt("occ"), jsonObj.getString("id"));
-                    activity.stations.add(station);
-                    activity.stationMap.put(station.getId(), station);
-                }
-            }catch (JSONException | IOException e){
-                System.out.println(e);
+    private void initialiseStationInfo(String s){
+        try {
+            JSONArray jsonArr  = new JSONArray(s);
+            for (int i = 0; i < jsonArr.length(); i++) {
+                JSONObject jsonObj = jsonArr.getJSONObject(i);
+                Station station = new Station(this, jsonObj.getDouble("lat"), jsonObj.getDouble("long"), jsonObj.getInt("cap"), jsonObj.getInt("occ"), jsonObj.getString("id"));
+                stations.add(station);
+                stationMap.put(station.getId(), station);
+                stationNames.add(station.getName());
             }
-            Collections.sort(activity.stations);
-            activity.setUpScreen();
+        }catch (JSONException | IOException e){
+            System.out.println(e);
+        }
+        Collections.sort(stations);
+    }
+
+    private void departQueryResults(String s){
+        try {
+            JSONArray jsonArr  = new JSONArray(s);
+            interchangeables = new ArrayList<>();
+            for (int i = 0; i < jsonArr.length(); i++) {
+                JSONObject jsonObj = jsonArr.getJSONObject(i);
+                Station station = stationMap.get(jsonObj.getString("id"));
+                station.setOccupancy(jsonObj.getInt("occ"));
+                station.setPredictedOcc(jsonObj.getInt("predictedOcc"));
+                interchangeables.add(stationMap.get(jsonObj.getString("id")));
+                if (jsonObj.getInt("assigned") == 1) {
+                    assigned = station;
+                }
+            }
+        } catch (JSONException e){
+            System.out.println(e);
+        }
+    }
+
+    private void QRScanned(String s){
+        if (s.equals("success")){
+            state.bookingStateTransition(true);
+        } else if (s.equals("empty")){
+            ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1))
+                    .addQRScreenMessage(new Message("out",
+                            String.format("%s.", assigned.getName())));
+            ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1))
+                    .addQRScreenMessage(new Message("in",
+                            "This is an empty dock. Please try scanning another one."));
+        }
+        else {
+            ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1))
+                .addQRScreenMessage(new Message("out",
+                        String.format("%s.", stationMap.get(s).getName())));
+            ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1))
+                    .addQRScreenMessage(new Message("in",
+                            String.format("QR Code scanned belongs to %s! You booked a departure from %s.", stationMap.get(s).getName(), state.getDepartingStation().getName())));
+            ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1))
+                    .addQRScreenMessage(new Message("in", "If you want to depart from here, please rebook by cancelling this reservation!"));
+        }
+    }
+
+    private void arrivalQueryResults(String s){
+        try {
+            System.out.println(s);
+            JSONArray jsonArr  = new JSONArray(s);
+            interchangeables = new ArrayList<>();
+            for (int i = 0; i < jsonArr.length(); i++) {
+                JSONObject jsonObj = jsonArr.getJSONObject(i);
+                Station station = stationMap.get(jsonObj.getString("id"));
+                station.setOccupancy(jsonObj.getInt("occ"));
+                station.setPredictedOcc(station.getCapacity() - jsonObj.getInt("predictedDocks"));
+                interchangeables.add(stationMap.get(jsonObj.getString("id")));
+                if (jsonObj.getInt("assigned") == 1) {
+                    assigned = station;
+                }
+            }
+        } catch (JSONException e){
+            System.out.println(e);
         }
     }
 
@@ -459,5 +495,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean getPing(){
         return ping;
     }
+
+
 
 }

@@ -753,13 +753,52 @@
         </LinearLayout>
 
     </RelativeLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/scanAnimation"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="15dp">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/offWhite"
+            android:layout_gravity="center"
+            android:padding="50dp"
+            android:layout_centerInParent="true">
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/unlockAnimation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                app:lottie_rawRes="@raw/scan"
+                app:lottie_autoPlay="false"
+                app:lottie_loop="false"
+                app:lottie_colorFilter="@color/buttonColor"
+                app:lottie_speed=".8"
+                app:lottie_scale=".35"/>
+            <TextView
+                android:id="@+id/dockUnlockText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_below="@+id/unlockAnimation"
+                android:layout_centerHorizontal="true"
+                android:textSize="20sp"
+                android:textColor="@color/almostBlack"
+                android:text="Verifying QR Code..."/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
     <FrameLayout
         android:id="@+id/progressBarHolder"
         android:animateLayoutChanges="true"
         android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
         <ProgressBar
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
@@ -767,7 +806,6 @@
             android:layout_gravity="center"
             android:indeterminateTint="@color/edited"
             android:indeterminate="true" />
-
     </FrameLayout>
 
     <LinearLayout

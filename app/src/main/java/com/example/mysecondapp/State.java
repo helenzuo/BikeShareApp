@@ -70,7 +70,7 @@ public class State {
         this.departureTime = departureTime;
     }
 
-    private void resetState(){
+    public void resetState(){
         bookingState = 0;
         departingStation = null;
         arrivalStation = null;

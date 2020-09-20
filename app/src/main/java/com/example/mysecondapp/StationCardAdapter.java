@@ -25,13 +25,13 @@ import java.util.List;
 public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.MyRecyclerHolder> {
     private LayoutInflater inflater;
     private ArrayList<Station> list;
-    private Context context;
+    private MainActivity context;
     View view;
 
     public StationCardAdapter(Context context, ArrayList<Station> list) {
         inflater= LayoutInflater.from(context);
         this.list = list;
-        this.context = context;
+        this.context = (MainActivity) context;
     }
 
     @Override
@@ -43,36 +43,46 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
     @Override
     public void onBindViewHolder(MyRecyclerHolder holder, int position) {
         Station station = list.get(position);
-        String name = station.getName();
+        String name;
+        if (context.assigned == station){
+            name = "ASSIGNED: " + station.getName();
+            if (holder.init){
+                holder.init = false;
+                holder.view.requestFocus();
+            }
+        } else {
+            name = station.getName();
+        }
         String distance = station.getDistanceFrom();
-        String address = station.getAddress();
-        String occupancy = "Available bikes:  " + station.getOccupancy();
+        String occupancy = "Current bike availability: " + station.getOccupancy();
+        String predictedOcc = "Predicted bike availability at " + context.state.getDepartureTime() + ": " + station.getPredictedOcc();
+
         holder.stationName.setText(name);
         holder.stationDistance.setText(distance);
-        holder.stationAddress.setText(address);
         holder.stationOccupancy.setText(occupancy);
+        holder.stationPredOcc.setText(predictedOcc);
     }
-
 
     @Override
     public int getItemCount() {
         return list.size();
     }
 
-
     public class MyRecyclerHolder extends RecyclerView.ViewHolder {
         private TextView stationName;
         private TextView stationDistance;
-        private TextView stationAddress;
         private TextView stationOccupancy;
-
+        private TextView stationPredOcc;
+        private boolean init = true;
+        private View view;
 
         public MyRecyclerHolder(final View itemView) {
             super(itemView);
             stationName = (TextView) itemView.findViewById(R.id.stationCardTitle);
             stationDistance = (TextView) itemView.findViewById(R.id.stationCardDistance);
-            stationAddress = (TextView) itemView.findViewById(R.id.stationCardAddress);
             stationOccupancy = (TextView) itemView.findViewById(R.id.stationOccupancy);
+            stationPredOcc = itemView.findViewById(R.id.predictedOcc);
+            view = itemView;
 
             itemView.setAlpha((float) 0.8);
 

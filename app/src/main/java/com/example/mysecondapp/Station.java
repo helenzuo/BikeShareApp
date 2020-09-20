@@ -25,7 +25,7 @@ public class Station implements Comparable<Station>{
      private String mAddress;
      private boolean favourite;
      private Context context;
-     private float prob;
+     private int predictedOcc;
 
 //     public Station(String name, double longitude, double latitude, int capacity, int occupancy, Context context) throws IOException {
 //        mName = name;
@@ -48,11 +48,9 @@ public class Station implements Comparable<Station>{
         if (mName == null){
             mName = addresses.get(0).getFeatureName();
         }
-        System.out.println("Address :" + mName);
         String tempName = mName;
         int i = 1;
-        while (((MainActivity)context).stationMap.containsKey(tempName)){
-            char[] repeat = new char[i-1];
+        while (((MainActivity)context).stationNames.contains(tempName)){
             tempName  = mName + " " + i;
             i++;
         }
@@ -124,9 +122,9 @@ public class Station implements Comparable<Station>{
          return distanceFrom;
     }
 
-    public void setProb(float prob){ this.prob = prob;}
+    public void setPredictedOcc(int predictedOcc) {this.predictedOcc = predictedOcc; }
 
-    public float getProb(){ return prob; }
+    public int getPredictedOcc() { return predictedOcc;}
 
     // default sort
     @Override

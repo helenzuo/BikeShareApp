@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
@@ -27,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.example.mysecondapp.BookingMessageToServer;
 import com.example.mysecondapp.IgnorePageViewSwipe;
 import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.MapViewInScroll;
@@ -34,6 +37,7 @@ import com.example.mysecondapp.R;
 import com.example.mysecondapp.STATIC_DEFINITIONS;
 import com.example.mysecondapp.Station;
 import com.example.mysecondapp.StationCardAdapter;
+import com.example.mysecondapp.TimeFormat;
 import com.example.mysecondapp.ui.home.HomeFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -48,27 +52,25 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
     private MapViewInScroll mapView;
     private GoogleMap googleMap;
     private View root;
     private MainActivity main;
-    private LocationManager locationManager;
     private MapFragment.updateParentView mParentListener;
     private HashMap<String, Marker> markerMap = new HashMap<String, Marker>();
     private AppCompatImageButton closeMapButton;
-    private String allocatedDepartureStationName;
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
     private Marker prevSelectedStation;
     private StationCardAdapter stationCardAdapter;
     private Button selectButton;
     private Station centredStation;
-    Location lastKnownLocation;
 
     private int openedFrom;
 
     private ArrayList<Station> stationList;
+
 
     public interface updateParentView {
         void updateParentView();
@@ -107,14 +109,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         }
     }
 
-    @SuppressLint("MissingPermission")
-    public void centreOnCurrentLocation(Location location) {
-        LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        googleMap.setMyLocationEnabled(true);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 16F));
-    }
 
-    public void centreOnStation(Station station){
+    public void centreOnStation(Station station, Boolean animate){
         Marker marker = (Marker)markerMap.get(station.getId());
         centredStation = station;
         if (prevSelectedStation != null){
@@ -122,21 +118,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         }
         marker.setAlpha(1);
         prevSelectedStation = marker;
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16F));
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                centreOnCurrentLocation(lastKnownLocation);
-            }
+        if (animate) {
+            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16F));
+        } else {
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16F));
         }
     }
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -153,26 +141,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
 //            layoutManager.smoothScrollToPosition(recyclerView, null, main.getStations().indexOf(main.stationMap.get("Flinders")));
             String buttonText = "Select Flinders as departure station";
             selectButton.setText(buttonText);
-        } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
-
+        } else {
             stationList = main.interchangeables;
             markerMap = loadNMarkers();
             setUpCardView();
-//            layoutManager.smoothScrollToPosition(recyclerView, null, stationList.indexOf(main.assigned));
-            String buttonText = "Reserve Bike at " + main.assigned.getName();
+            layoutManager.scrollToPosition(stationList.indexOf(main.assigned));
+            centreOnStation(main.assigned, false);
+            String buttonText;
+            if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+                buttonText = "Reserve Bike at " + main.assigned.getName();
+            } else {
+                buttonText = "Reserve Dock at " + main.assigned.getName();
+            }
             selectButton.setText(buttonText);
         }
-
-
     }
 
     private void setUpCardView(){
         selectButton.setOnClickListener(this);
         selectButton.setOnTouchListener(new IgnorePageViewSwipe(main));
         closeMapButton.setOnClickListener(this);
-
         main.updateUserLocation();
-        centreOnCurrentLocation(main.lastKnownLocation);
 
         // update centre current location button to bottom right
         View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
@@ -180,14 +169,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
         rlp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
         rlp.setMargins(0, 0, 30, 30);
-        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                layoutManager.smoothScrollToPosition(recyclerView, null, stationList.indexOf(main.stationMap.get(marker.getTitle())));
-                centreOnStation(main.stationMap.get(marker.getTitle()));
-                return true;
-            }
-        });
+        googleMap.setOnMarkerClickListener(this);
 
         // Bottom card view of stations (horizontal scroll)
         stationCardAdapter = new StationCardAdapter(getContext(), stationList);
@@ -202,13 +184,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 int position = layoutManager.findFirstCompletelyVisibleItemPosition();
                 if (position != -1) {
                     Station station = stationList.get(position);
-                    centreOnStation(station);
+                    centreOnStation(station, true);
                     layoutManager.findViewByPosition(position).requestFocus();
                     String buttonText = "";
                     if (openedFrom == STATIC_DEFINITIONS.STATION_LOOK_UP) {
                         buttonText = "Select "+ station.getName() + " as departure station";
                     } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
                         buttonText = "Reserve Bike at " + station.getName();
+                    } else {
+                        buttonText = "Reserve Dock at " + station.getName();
                     }
                     selectButton.setText(buttonText);
                     selectButton.setClickable(true);
@@ -223,7 +207,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 super.onScrollStateChanged(recyclerView, newState);
             }
         });
+
     }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        layoutManager.smoothScrollToPosition(recyclerView, null, stationList.indexOf(main.stationMap.get(marker.getTag())));
+        centreOnStation(main.stationMap.get(marker.getTag()), true);
+        return true;
+    }
+
     private HashMap<String, Marker> loadNMarkers(){
         HashMap<String, Marker> map = new HashMap<String, Marker>();
         if (googleMap != null) {
@@ -237,6 +230,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
             float fillLevel = station.getFillLevel();
             float colour = fillLevel * 120;
             Marker marker = googleMap.addMarker(new MarkerOptions().position(station.getLocation()).title(station.getName()).snippet(Integer.toString(station.getOccupancy())).icon(BitmapDescriptorFactory.defaultMarker(colour)).alpha(alpha));
+            marker.setTag(station.getId());
             map.put(station.getId(), marker);
         }
         return map;
@@ -249,17 +243,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 ((HomeFragment)getParentFragment()).setDepartureStationFromMap(centredStation);
                 getParentFragmentManager().popBackStackImmediate();
                 mParentListener.updateParentView();
-            } else if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+            } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setMessage("Confirm bike reservation?");
+                builder.setMessage("Confirm reservation?");
                 builder.setCancelable(true);
                 builder.setPositiveButton(
                         "Confirm",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 selectButton.setEnabled(false);
+                                if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+                                    main.state.setDepartingStation(centredStation);
+                                    main.queryServerStation(new BookingMessageToServer("confirmDepartingStation", centredStation.getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
+                                } else {
+                                    main.state.setArrivalStation(centredStation);
+                                    main.queryServerStation(new BookingMessageToServer("confirmArrivalStation", centredStation.getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
+                                }
                                 main.state.bookingStateTransition(true);
-                                main.state.setDepartingStation(centredStation);
                                 root.findViewById(R.id.doneScreen).setVisibility(View.VISIBLE);
                                 final LottieAnimationView doneAnimation = root.findViewById(R.id.reservationDoneAnimation);
                                 doneAnimation.playAnimation();

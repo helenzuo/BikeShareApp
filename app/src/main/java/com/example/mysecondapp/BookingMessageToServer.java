@@ -12,4 +12,6 @@ public class BookingMessageToServer {
         this.time = time;
         this.distance = distance;
     }
+
+    public String getKey(){ return key;}
 }
