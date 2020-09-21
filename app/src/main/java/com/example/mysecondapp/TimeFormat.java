@@ -5,7 +5,17 @@ import java.util.Locale;
 
 public class TimeFormat {
 
-    public String timeInString(int plusMinutes){
+    public String timeInString(int minutes){
+        int hours = minutes/60;
+        minutes = minutes % 60;
+        if (hours > 12 && hours != 12) {
+            hours -= 12;
+            return String.format(Locale.getDefault(), "%d:%02d %s", hours, minutes, "PM" );
+        }
+        return String.format(Locale.getDefault(), "%d:%02d %s", hours, minutes, "AM" );
+    }
+
+    public String currentTimeInString(int plusMinutes){
         Calendar now = Calendar.getInstance();
         int minutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
         minutes += plusMinutes;

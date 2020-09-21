@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Filter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -55,8 +56,12 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
         }
         String distance = station.getDistanceFrom();
         String occupancy = "Current bike availability: " + station.getOccupancy();
-        String predictedOcc = "Predicted bike availability at " + context.state.getDepartureTime() + ": " + station.getPredictedOcc();
-
+        String predictedOcc;
+        if (context.state.getBookingState() == State.RESERVE_DOCK_SELECTION_STATE){
+            predictedOcc  = "Estimated arrival time: " + new TimeFormat().timeInString(station.getEstArr()) + "\nEstimated number of docks: " + (station.getCapacity() - station.getPredictedOcc());
+        } else {
+            predictedOcc = "Predicted bike availability at " + context.state.getDepartureTime() + ": " + station.getPredictedOcc();
+        }
         holder.stationName.setText(name);
         holder.stationDistance.setText(distance);
         holder.stationOccupancy.setText(occupancy);
@@ -106,8 +111,8 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
             });
             itemView.setOnTouchListener(new IgnorePageViewSwipe(context));
         }
-
-
     }
+
+
 
 }

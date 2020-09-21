@@ -1,37 +1,38 @@
 package com.example.mysecondapp;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.ColorUtils;
-import androidx.fragment.app.Fragment;
-import androidx.vectordrawable.graphics.drawable.ArgbEvaluator;
-
 import com.example.mysecondapp.ui.stationSearch.DashboardFragment;
 
+import java.util.ArrayList;
+
 public class SearchListAdapter extends MyAdapter {
+    private ArrayList<Station> arr;
+    private ArrayList<Station> orig; // Original Values
+
     private int resourceLayout;
     private Context context;
     private DashboardFragment dashboardFragment;
-    private int expanded = -1;
 
 
-    public SearchListAdapter(Context context, int resource, DashboardFragment dashboardFragment) {
-        super(context, resource);
+    public SearchListAdapter(Context context, int resource, DashboardFragment dashboardFragment, ArrayList<Station> arr) {
+        super(context, resource, arr);
         this.context = context;
         this.resourceLayout = resource;
         this.dashboardFragment = dashboardFragment;
+        this.arr = arr;
     }
 
     public static class Holder{
@@ -70,10 +71,10 @@ public class SearchListAdapter extends MyAdapter {
         }
 
         // Set data into textviews
-        holder.stationName.setText(((MainActivity)context).getStations().get(position).getName());
-        holder.stationAddress.setText(String.format("%s", ((MainActivity)context).getStations().get(position).getAddress()));
-        holder.stationDistance.setText(String.format("%s away",((MainActivity)context).getStations().get(position).getDistanceFrom()));
-        if (((MainActivity)context).getStations().get(position).getFavourite()){
+        holder.stationName.setText(arr.get(position).getName());
+        holder.stationAddress.setText(String.format("%s", arr.get(position).getAddress()));
+        holder.stationDistance.setText(String.format("%s away", arr.get(position).getDistanceFrom()));
+        if (arr.get(position).getFavourite()){
             holder.favToggle.setChecked(true);
         } else {
             holder.favToggle.setChecked(false);
@@ -81,25 +82,15 @@ public class SearchListAdapter extends MyAdapter {
         holder.favToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MainActivity)context).getStations().get(position).toggleFavourite();
+                arr.get(position).toggleFavourite();
             }
 
         });
 
-        final View finalConvertView = convertView;
         holder.moreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if (holder.map != null){
-//                    dashboardFragment.getChildFragmentManager().beginTransaction().remove(holder.map).commit();
-//                    holder.map = null;
-//                } else {
-//                    holder.map = new MapViewCard(((MainActivity)context).getStations().get(position));
-//                    int id = View.generateViewId();
-//                    finalConvertView.findViewWithTag("bottom_layout").setId(id);
-//                    dashboardFragment.getChildFragmentManager().beginTransaction().add(id, holder.map,"map").commit();
-//                }
-                final Station station = ((MainActivity)context).getStations().get(position);
+                final Station station = arr.get(position);
                 if (holder.moreInfoLayout.getVisibility() == (View.VISIBLE)) {
                     holder.moreInfoLayout.setVisibility(View.GONE);
                     holder.mapButton.setOnClickListener(null);
@@ -119,17 +110,68 @@ public class SearchListAdapter extends MyAdapter {
 
             }
         });
-//        if (holder.map != null){
-//            dashboardFragment.getChildFragmentManager().beginTransaction().remove(holder.map).commit();
-//            holder.map = null;
-//        }
+
         if (holder.moreInfoLayout.getVisibility() == (View.VISIBLE)) {
             holder.moreInfoLayout.setVisibility(View.GONE);
             holder.mapButton.setOnClickListener(null);
         }
-
         return convertView;
     }
 
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                final FilterResults oReturn = new FilterResults();
+                final ArrayList<Station> results = new ArrayList<>();
+
+                if (orig == null) {
+                    orig = arr;
+                }
+                if (constraint != null) {
+                    if (orig != null && orig.size() > 0) {
+                        for (final Station station : orig) {
+                            if (station.getName().toLowerCase().startsWith(constraint.toString().toLowerCase())) {
+                                results.add(station);
+                            }
+
+                        }
+                    }
+                    oReturn.values = results;
+                } else {
+                    oReturn.values = orig;
+                }
+                return oReturn;
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                arr = (ArrayList<Station>) results.values;
+                notifyDataSetChanged();
+            }
+        };
+    }
+
+    @Override
+    public int getCount() {
+        if (arr != null) {
+            return arr.size();
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return arr.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
 
 }

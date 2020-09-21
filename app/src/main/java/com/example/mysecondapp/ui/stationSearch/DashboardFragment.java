@@ -10,6 +10,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -19,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -69,6 +72,10 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     private ViewGroup fragmentContainer;
     HashMap markerMap = new HashMap();
     RadioGroup radioGroup;
+    private StationSearchBar searchBar;
+    private Button sortButton;
+    private SearchListAdapter stationListAdapter;
+    private ListView stationListView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,11 +83,6 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_station_map, container, false);
         main = (MainActivity) getActivity();
-//        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-//        stationListFragment = new StationsListFragment();
-//        transaction.add(R.id.listViewFragment, stationListFragment, "stationsList"); // give your fragment container id in first parameter
-//        transaction.commit();
-
         return root;
     }
 
@@ -94,6 +96,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
+    @SuppressLint("MissingPermission")
     public void centreOnCurrentLocation(Location location) {
         LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         googleMap.setMyLocationEnabled(true);
@@ -123,6 +126,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
         centreOnStation(station.getName());
     }
 
+
     @Override
     public void onMapReady(GoogleMap map) {
         googleMap = map;
@@ -139,12 +143,14 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
             markerMap.put(station.getName(), marker);
         }
 
-        ListView stationListView = root.findViewById(R.id.stationsListView);
-        final StationSearchBar searchBar = root.findViewById(R.id.stationSearchBar);
-        final Button sortButton = root.findViewById(R.id.sortButton);
-        searchBar.setExternalViews(stationListView, sortButton);
-        final SearchListAdapter stationListAdapter = new SearchListAdapter(getActivity(), R.layout.station_list_search_design, this);
+        stationListAdapter = new SearchListAdapter(getActivity(), R.layout.station_list_search_design, this, main.getStations());
+//        stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations());
+        stationListView = root.findViewById(R.id.stationsListView);
         stationListView.setAdapter(stationListAdapter);
+        searchBar = root.findViewById(R.id.stationSearchBar);
+        sortButton = root.findViewById(R.id.sortButton);
+        searchBar.setExternalViews(stationListView, sortButton);
+
         radioGroup = root.findViewById(R.id.toggleMapList);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override

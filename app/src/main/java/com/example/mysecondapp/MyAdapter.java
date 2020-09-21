@@ -21,10 +21,10 @@ public class MyAdapter extends BaseAdapter implements Filterable {
     private Context context;
     private View rowView;
 
-    public MyAdapter(Context context, int resource) {
+    public MyAdapter(Context context, int resource, ArrayList<Station> arr) {
         this.resourceLayout = resource;
         this.context = context;
-        this.arr = ((MainActivity)context).getStations();
+        this.arr = arr;
     }
 
     @Override
@@ -54,9 +54,6 @@ public class MyAdapter extends BaseAdapter implements Filterable {
         ToggleButton favToggle;
     }
 
-    public StationNameHolder getHolder(View convertView){
-        return (StationNameHolder) convertView.getTag();
-    }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -100,6 +97,7 @@ public class MyAdapter extends BaseAdapter implements Filterable {
             protected FilterResults performFiltering(CharSequence constraint) {
                 final FilterResults oReturn = new FilterResults();
                 final ArrayList<Station> results = new ArrayList<>();
+
                 if (orig == null) {
                     orig = arr;
                 }
@@ -109,6 +107,7 @@ public class MyAdapter extends BaseAdapter implements Filterable {
                             if (station.getName().toLowerCase().startsWith(constraint.toString().toLowerCase())) {
                                 results.add(station);
                             }
+
                         }
                     }
                     oReturn.values = results;
@@ -124,14 +123,7 @@ public class MyAdapter extends BaseAdapter implements Filterable {
                 arr = (ArrayList<Station>) results.values;
                 notifyDataSetChanged();
             }
-
-
         };
     }
-
-    public void notifyDataSetChanged() {
-        super.notifyDataSetChanged();
-    }
-
 
 }

@@ -50,6 +50,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnMarkerClickListener {
@@ -244,58 +245,73 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 getParentFragmentManager().popBackStackImmediate();
                 mParentListener.updateParentView();
             } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setMessage("Confirm reservation?");
-                builder.setCancelable(true);
-                builder.setPositiveButton(
-                        "Confirm",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                selectButton.setEnabled(false);
-                                if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
-                                    main.state.setDepartingStation(centredStation);
-                                    main.queryServerStation(new BookingMessageToServer("confirmDepartingStation", centredStation.getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
-                                } else {
-                                    main.state.setArrivalStation(centredStation);
-                                    main.queryServerStation(new BookingMessageToServer("confirmArrivalStation", centredStation.getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
+                Calendar mcurrentTime = Calendar.getInstance();
+                int currentTime = mcurrentTime.get(Calendar.HOUR_OF_DAY) * 60 + mcurrentTime.get(Calendar.MINUTE);
+                if (currentTime > new TimeFormat().timeInInt(main.state.getDepartureTime())) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setMessage("Requested departure time has already passed! Please search again.");
+                    builder.setCancelable(false);
+                    builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            getParentFragmentManager().popBackStackImmediate();
+                            mParentListener.updateParentView();
+                        }
+                    });
+                    AlertDialog confirmAlert = builder.create();
+                    confirmAlert.show();
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setMessage("Confirm reservation?");
+                    builder.setCancelable(true);
+                    builder.setPositiveButton(
+                            "Confirm", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    selectButton.setEnabled(false);
+                                    if (openedFrom == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
+                                        main.state.setDepartingStation(centredStation);
+                                        main.queryServerStation(new BookingMessageToServer("confirmDepartingStation", centredStation.getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
+                                    } else {
+                                        main.state.setArrivalStation(centredStation);
+                                        main.queryServerStation(new BookingMessageToServer("confirmArrivalStation", centredStation.getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
+                                    }
+                                    main.state.bookingStateTransition(true);
+                                    root.findViewById(R.id.doneScreen).setVisibility(View.VISIBLE);
+                                    final LottieAnimationView doneAnimation = root.findViewById(R.id.reservationDoneAnimation);
+                                    doneAnimation.playAnimation();
+                                    doneAnimation.addAnimatorListener(new Animator.AnimatorListener() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            closeMapButton.callOnClick();
+                                            selectButton.setEnabled(true);
+                                        }
+
+                                        @Override
+                                        public void onAnimationCancel(Animator animation) {
+
+                                        }
+
+                                        @Override
+                                        public void onAnimationRepeat(Animator animation) {
+
+                                        }
+                                    });
                                 }
-                                main.state.bookingStateTransition(true);
-                                root.findViewById(R.id.doneScreen).setVisibility(View.VISIBLE);
-                                final LottieAnimationView doneAnimation = root.findViewById(R.id.reservationDoneAnimation);
-                                doneAnimation.playAnimation();
-                                doneAnimation.addAnimatorListener(new Animator.AnimatorListener() {
-                                    @Override
-                                    public void onAnimationStart(Animator animation) {
-                                    }
+                            });
+                    builder.setNegativeButton(
+                            "Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
 
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
-                                        closeMapButton.callOnClick();
-                                        selectButton.setEnabled(true);
-                                    }
-
-                                    @Override
-                                    public void onAnimationCancel(Animator animation) {
-
-                                    }
-
-                                    @Override
-                                    public void onAnimationRepeat(Animator animation) {
-
-                                    }
-                                });
-                            }
-                        });
-                builder.setNegativeButton(
-                        "Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
-                        });
-
-                AlertDialog confirmAlert = builder.create();
-                confirmAlert.show();
+                    AlertDialog confirmAlert = builder.create();
+                    confirmAlert.show();
+                }
             }
         } else if (v == closeMapButton){
             getParentFragmentManager().popBackStackImmediate();

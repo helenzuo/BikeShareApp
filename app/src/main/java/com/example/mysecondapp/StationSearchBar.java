@@ -19,10 +19,10 @@ import androidx.core.content.res.ResourcesCompat;
 
 public class StationSearchBar extends androidx.appcompat.widget.AppCompatEditText implements TextWatcher, View.OnFocusChangeListener, View.OnTouchListener {
 
-    ListView stationList;
-    Button sortButton;
-    Context context;
-    int height;
+    public ListView stationList;
+    public Button sortButton;
+    public Context context;
+    public int height;
 
     public StationSearchBar(Context context) {
         super(context);
@@ -49,7 +49,6 @@ public class StationSearchBar extends androidx.appcompat.widget.AppCompatEditTex
     public StationSearchBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
-        this.stationList = stationList;
         this.setCompoundDrawables(null,null,getResources().getDrawable(R.drawable.edit_text_clear),null);
         this.setSoundEffectsEnabled(true);
         this.setBackground(getResources().getDrawable(R.drawable.edit_text_focus));
@@ -88,12 +87,12 @@ public class StationSearchBar extends androidx.appcompat.widget.AppCompatEditTex
     }
 
     public void afterTextChanged(Editable s) {
-       ((MyAdapter)stationList.getAdapter()).getFilter().filter(s.toString().toLowerCase().trim());
+        ((MyAdapter)stationList.getAdapter()).getFilter().filter(s.toString().toLowerCase().trim());
         updateDrawable();
     }
 
     public void onFocusChange(View v, boolean hasFocus) {
-        if (hasFocus()){
+        if (hasFocus){
             this.setVisibility(View.VISIBLE);
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) this.getLayoutParams();
             params.height = (int) (height * (6f/5f));

@@ -168,7 +168,7 @@ public class NotificationsFragment extends Fragment implements View.OnClickListe
         dobEditText.addTextChangedListener(tw);
 
         ListView tripListView = root.findViewById(R.id.tripListView);
-        final MyAdapter stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design);
+        final MyAdapter stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations());
         tripListView.setAdapter(stationListAdapter);
 
         tripListView.setOnTouchListener(new OnSwipeTouchListener(getContext()){

@@ -112,15 +112,6 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
-    <style name="timeSelectThemeText" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorControlNormal">@color/offWhite</item>
-        <item name="colorControlActivated">@color/buttonColor</item>
-        <item name="android:textColor">@color/offWhite</item>
-        <item name="android:textColorHint">#90B4BAC0</item>
-        <item name="android:padding">16dp</item>
-        <item name="cornerFamily">rounded</item>
-        <item name="android:gravity">center_vertical</item>
-    </style>
 
     <style name="ActionButtonStyle" parent="@android:style/Widget.ActionButton">
         <item name="android:minWidth">32dip</item>

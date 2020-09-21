@@ -48,7 +48,6 @@ import java.util.Objects;
 import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
 
 public class MainActivity extends AppCompatActivity {
-
     public State state;
 
     public User user;
@@ -435,8 +434,7 @@ public class MainActivity extends AppCompatActivity {
             ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1))
                     .addQRScreenMessage(new Message("in",
                             "This is an empty dock. Please try scanning another one."));
-        }
-        else {
+        } else {
             ((HomeFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(1))
                 .addQRScreenMessage(new Message("out",
                         String.format("%s.", stationMap.get(s).getName())));
@@ -458,6 +456,7 @@ public class MainActivity extends AppCompatActivity {
                 Station station = stationMap.get(jsonObj.getString("id"));
                 station.setOccupancy(jsonObj.getInt("occ"));
                 station.setPredictedOcc(station.getCapacity() - jsonObj.getInt("predictedDocks"));
+                station.setEstArr(jsonObj.getInt("estArr"));
                 interchangeables.add(stationMap.get(jsonObj.getString("id")));
                 if (jsonObj.getInt("assigned") == 1) {
                     assigned = station;
@@ -491,11 +490,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return "";
     }
-
-    public boolean getPing(){
-        return ping;
-    }
-
-
 
 }

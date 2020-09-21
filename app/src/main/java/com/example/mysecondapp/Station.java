@@ -26,6 +26,7 @@ public class Station implements Comparable<Station>{
      private boolean favourite;
      private Context context;
      private int predictedOcc;
+     private int estArr;
 
 //     public Station(String name, double longitude, double latitude, int capacity, int occupancy, Context context) throws IOException {
 //        mName = name;
@@ -125,6 +126,10 @@ public class Station implements Comparable<Station>{
     public void setPredictedOcc(int predictedOcc) {this.predictedOcc = predictedOcc; }
 
     public int getPredictedOcc() { return predictedOcc;}
+
+    public void setEstArr(int estArr){this.estArr = estArr;}
+
+    public int getEstArr(){return  estArr;}
 
     // default sort
     @Override

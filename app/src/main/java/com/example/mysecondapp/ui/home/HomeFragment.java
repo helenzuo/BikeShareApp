@@ -37,6 +37,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -47,7 +48,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.mysecondapp.BookingMessageToServer;
-import com.example.mysecondapp.CustomTimePickeerDialog;
+import com.example.mysecondapp.CustomTimePickerDialog;
 import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.Message;
 import com.example.mysecondapp.MessageListAdapter;
@@ -86,7 +87,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private ListView stationListView;
     private MyAdapter stationListAdapter;
     private ImageButton mapSearchButton;
-    private EditText timeEditText;
+    public EditText timeEditText;
     private RadioGroup altDepartureStationRadioGroup;
     private TextView distanceText;
     private SeekBar seekBar;
@@ -128,6 +129,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             case State.START_BOOKING_STATE:
                 startBookingButton = root.findViewById(R.id.startBookingButton);
                 startBookingButton.setOnClickListener(this);
+                if (timeEditText != null){
+                    timeEditText.setBackgroundTintList(ColorStateList.valueOf(getContext().getResources().getColor(R.color.editTextNoFocus)));
+                    if (altDepartureStationRadioGroup.getCheckedRadioButtonId() == R.id.yes || altDepartureStationRadioGroup.getCheckedRadioButtonId() == R.id.no)
+                        altDepartureStationRadioGroup.clearCheck();
+                }
                 break;
             case State.RESERVE_BIKE_SELECTION_STATE:
                 loadDepartureStationSelectionPage();
@@ -187,7 +193,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             searchButton = root.findViewById(R.id.nextButtonTimeSelected);
 
             // Station search with list view filter
-            stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design);
+            stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations());
             stationListView.setAdapter(stationListAdapter);
             stationEditText.addTextChangedListener(this);
             stationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -348,7 +354,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         seekBar = root.findViewById(R.id.arrivalDistanceSeekBar);
         searchButton = root.findViewById(R.id.searchDockButton);
 
-        stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design);
+        stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations());
         stationListView.setAdapter(stationListAdapter);
         stationEditText.addTextChangedListener(this);
         mapSearchButton.setOnClickListener(this);
@@ -388,9 +394,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 borrowLength = progress * 5;
                 if (progress < 12)
-                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dmin   (%s)", progress * 5, new TimeFormat().timeInString(progress*5)));
+                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dmin   (%s)", progress * 5, new TimeFormat().currentTimeInString(progress*5)));
                 else if (progress < 36)
-                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dh %dmin   (%s)", progress*5/60, (progress*5)%60, new TimeFormat().timeInString(progress*5)));
+                    borrowLengthProgressTextView.setText(String.format(Locale.getDefault(), "%dh %dmin   (%s)", progress*5/60, (progress*5)%60, new TimeFormat().currentTimeInString(progress*5)));
                 else
                     borrowLengthProgressTextView.setText("Not sure");
             }
@@ -446,7 +452,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         waitToDockMsgList.add(new Message("in", r.getString(R.string.dockReserved)));
         waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s",  main.state.getArrivalStation().getName())));
         waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s",  main.state.getArrivalStation().getAddress())));
-        waitToDockMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Bike reserved until: %s",  main.state.getArrivalStation()))));
+        waitToDockMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Bike reserved until: %s",  new TimeFormat().timeInString(main.state.getArrivalStation().getEstArr())))));
         waitToDockMsgList.add(new Message("in", r.getString(R.string.bikeReturnInstructions)));
 
         msgAdapter = new MessageListAdapter(getContext(), waitToDockMsgList);
@@ -575,18 +581,30 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             if (main.state.getBookingState() == STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY) {
                 selectedDepartureStation = selectedStation;
                 if (timeEditText.getText().toString().length() > 0){
-                    Calendar now = Calendar.getInstance();
-                    int minutes = now.get(Calendar.HOUR_OF_DAY)*60 + now.get(Calendar.MINUTE);
-                    if (new TimeFormat().timeInInt(timeEditText.getText().toString()) > minutes) {
-                        altStationLayout.setVisibility(VISIBLE);
-                    } else {
-                        altStationLayout.setVisibility(GONE);
-                        searchButton.setVisibility(GONE);
-                        timeEditText.setText("");
+                    altStationLayout.setVisibility(VISIBLE);
+                    if (altDepartureStationRadioGroup.getCheckedRadioButtonId() == R.id.yes || altDepartureStationRadioGroup.getCheckedRadioButtonId() == R.id.no){
+                        searchButton.setVisibility(VISIBLE);
                     }
+                } else {
+                    timeEditText.setBackgroundTintList(ColorStateList.valueOf(getContext().getResources().getColor(R.color.editTextNoFocus)));
+                    if (altDepartureStationRadioGroup.getCheckedRadioButtonId() == R.id.yes || altDepartureStationRadioGroup.getCheckedRadioButtonId() == R.id.no)
+                        altDepartureStationRadioGroup.clearCheck();
+                    altStationLayout.setVisibility(GONE);
+                    searchButton.setVisibility(GONE);
                 }
-            } else
+            } else {
                 selectedArrivalStation = selectedStation;
+                if (selectedArrivalStation == main.state.getDepartingStation()){
+                    root.findViewById(R.id.textView7).setVisibility(GONE);
+                    root.findViewById(R.id.textView7b).setVisibility(GONE);
+                    root.findViewById(R.id.toggleYesNoDirectTravel).setVisibility(GONE);
+                    directTravelRadioGroup.check(R.id.indirect);
+                } else {
+                    root.findViewById(R.id.textView7).setVisibility(VISIBLE);
+                    root.findViewById(R.id.textView7b).setVisibility(VISIBLE);
+                    root.findViewById(R.id.toggleYesNoDirectTravel).setVisibility(VISIBLE);
+                }
+            }
         }
     }
 
@@ -618,7 +636,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
     public void QRCodeScannedAnimation(){
         departureStationSelectedContainer.setVisibility(View.INVISIBLE);
-        final CardView scanAnim = root.findViewById(R.id.scanAnimation);
+        final RelativeLayout scanAnim = root.findViewById(R.id.scanAnimation);
         scanAnim.setVisibility(VISIBLE);
         LottieAnimationView lottieAnimationView = root.findViewById(R.id.unlockAnimation);
         lottieAnimationView.playAnimation();
@@ -651,12 +669,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         int timeInMinutes = mcurrentTime.get(Calendar.HOUR_OF_DAY) * 60 + mcurrentTime.get(Calendar.MINUTE) + 5;
         final int hour = timeInMinutes/60;
         final int minute = timeInMinutes%60;
-        final CustomTimePickeerDialog mTimePicker = new CustomTimePickeerDialog(getContext(), R.style.themeOnverlay_timePicker, new TimePickerDialog.OnTimeSetListener() {
+        final CustomTimePickerDialog mTimePicker = new CustomTimePickerDialog(getContext(), R.style.themeOnverlay_timePicker, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
 
             }
-        }, hour, minute, false, timeEditText, altStationLayout);
+        }, hour, minute, false, this);
         mTimePicker.show();
         Objects.requireNonNull(mTimePicker.getWindow()).setBackgroundDrawableResource(R.drawable.rounded_corners);
         mTimePicker.getButton(DatePickerDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE);
@@ -674,13 +692,25 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             bikeReserveDetailsContainer.setVisibility(GONE);
             replaceFragment(new MapFragment(STATIC_DEFINITIONS.STATION_LOOK_UP));
         } else if (v == searchButton){
-            updateContainerVisibility();
             int openFrom;
             if (main.state.getBookingState() == State.RESERVE_BIKE_SELECTION_STATE) { // if checking for bike
                 openFrom = STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY;
+                Calendar mcurrentTime = Calendar.getInstance();
+                int currentTime = mcurrentTime.get(Calendar.HOUR_OF_DAY) * 60 + mcurrentTime.get(Calendar.MINUTE);
+                int bookedTime = new TimeFormat().timeInInt(timeEditText.getText().toString());
+                if (bookedTime < currentTime){
+                    timeEditText.setText("");
+                    Toast.makeText(getContext(),"Time entered has passed! Re-enter departure time.", Toast.LENGTH_SHORT).show();
+                    updateContainerVisibility();
+                    return;
+                }
+                else if (bookedTime == currentTime){
+                    bookedTime = currentTime + 1;
+                }
                 bikeReserveDetailsContainer.setVisibility(GONE);
-                main.state.setDepartureTime(timeEditText.getText().toString());
-                main.queryServerStation(new BookingMessageToServer("queryDepart", selectedDepartureStation.getId(), new TimeFormat().timeInInt(timeEditText.getText().toString()), walkDist));
+                main.state.setDepartureTime(new TimeFormat().timeInString(bookedTime));
+                updateContainerVisibility();
+                main.queryServerStation(new BookingMessageToServer("queryDepart", selectedDepartureStation.getId(), bookedTime, walkDist));
             } else { // if checking for dock
                 openFrom = STATIC_DEFINITIONS.SERVER_ARRIVAL_STATION_QUERY;
                 dockReserveDetailsContainer.setVisibility(GONE);
@@ -767,6 +797,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         stationListAdapter.getFilter().filter(s.toString().toLowerCase().trim());
         updateContainerVisibility();
         updateStationEditTextGraphics(stationEditText);
+
     }
 
     @Override
@@ -779,6 +810,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         // This will get the radiobutton that has changed in its check state
         RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
         // This puts the value (true/false) into the variable
+        if (checkedRadioButton == null) {
+            return;
+        }
         boolean isChecked = checkedRadioButton.isChecked();
         // If the radiobutton that has changed in check state is now checked...
         if (group == directTravelRadioGroup) {

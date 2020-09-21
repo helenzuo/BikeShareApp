@@ -17,6 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.example.mysecondapp.ui.home.HomeFragment;
+
 import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.Locale;
@@ -24,17 +26,15 @@ import java.util.Locale;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-public class CustomTimePickeerDialog extends TimePickerDialog {
+public class CustomTimePickerDialog extends TimePickerDialog {
 
     TimePicker mTimePicker;
-    EditText editText;
+    HomeFragment homeFragment;
     Context context;
-    RelativeLayout distanceRelativeView;
-    public CustomTimePickeerDialog(Context context, int themeResId, OnTimeSetListener listener, int hourOfDay, int minute, boolean is24HourView, EditText editText, RelativeLayout distanceRelativeView) {
+    public CustomTimePickerDialog(Context context, int themeResId, OnTimeSetListener listener, int hourOfDay, int minute, boolean is24HourView, HomeFragment homeFragment) {
         super(context, themeResId, listener, hourOfDay, minute, is24HourView);
-        this.editText = editText;
+        this.homeFragment = homeFragment;
         this.context = context;
-        this.distanceRelativeView = distanceRelativeView;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class CustomTimePickeerDialog extends TimePickerDialog {
         } catch (IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        ((LinearLayout) ((LinearLayout) mTimePicker.getChildAt(0)).getChildAt(4)).getChildAt(0).setVisibility(GONE);
+        ((LinearLayout) ((LinearLayout) mTimePicker.getChildAt(0)).getChildAt(4)).getChildAt(0).setVisibility(GONE); // hide keyboard on timepicker pop up
     }
 
     @Override
@@ -68,13 +68,13 @@ public class CustomTimePickeerDialog extends TimePickerDialog {
                     Calendar mcurrentTime = Calendar.getInstance();
                     int currentHour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
                     int currentMinute = mcurrentTime.get(Calendar.MINUTE);
-                    CustomTimePickeerDialog.this.onClick(CustomTimePickeerDialog.this, BUTTON_POSITIVE);
+                    CustomTimePickerDialog.this.onClick(CustomTimePickerDialog.this, BUTTON_POSITIVE);
                     // Clearing focus forces the dialog to commit any pending
                     // changes, e.g. typed text in a NumberPicker.
                     if (mTimePicker.getHour() < currentHour || (mTimePicker.getHour() == currentHour && mTimePicker.getMinute() < currentMinute)) {
                         Toast.makeText(getContext(),"You can't travel back in time!\nPlease select a later time",Toast.LENGTH_SHORT).show();
-                    } else if (mTimePicker.getHour()*60 + mTimePicker.getMinute() < currentHour*60 + currentMinute + 5) {
-                        Toast.makeText(getContext(),"Sorry! The earliest you can book is in 5 minutes time",Toast.LENGTH_SHORT).show();
+                    } else if (mTimePicker.getHour()*60 + mTimePicker.getMinute() < currentHour*60 + currentMinute + 1) {
+                        Toast.makeText(getContext(),"Sorry! The earliest you can book is in 1 minute's time",Toast.LENGTH_SHORT).show();
                     }
                     else {
                         String amPm = "AM";
@@ -86,10 +86,10 @@ public class CustomTimePickeerDialog extends TimePickerDialog {
                             amPm = "PM";
                         }
                         String output = String.format(Locale.getDefault(), "%2d:%02d %s", selectedHour, mTimePicker.getMinute(), amPm);
-                        editText.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.edited)));
-                        editText.setTextColor(context.getResources().getColor(R.color.almostBlack));
-                        editText.setText(output);
-                        distanceRelativeView.setVisibility(View.VISIBLE);
+                        homeFragment.timeEditText.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.edited)));
+                        homeFragment.timeEditText.setTextColor(context.getResources().getColor(R.color.almostBlack));
+                        homeFragment.timeEditText.setText(output);
+                        homeFragment.updateParentView();
                         mTimePicker.clearFocus();
                         dismiss();
                     }
