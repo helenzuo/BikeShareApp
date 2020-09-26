@@ -82,7 +82,13 @@ public class SearchListAdapter extends MyAdapter {
         holder.favToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                arr.get(position).toggleFavourite();
+                Station station = arr.get(position);
+                station.toggleFavourite();
+                if (station.getFavourite()) {
+                    ((MainActivity)context).user.addFavStation(station.getId());
+                } else {
+                    ((MainActivity)context).user.removeFavStation(station.getId());
+                }
             }
 
         });

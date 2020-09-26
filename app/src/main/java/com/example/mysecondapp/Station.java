@@ -37,7 +37,7 @@ public class Station implements Comparable<Station>{
 //        fillLevel = (float) occupancy/capacity;
 //     }
 
-    public Station(Context context, double lat, double lon, int cap, int occ, String id) throws IOException {
+    public Station(Context context, double lat, double lon, int cap, String id) throws IOException {
         this.context = context;
         this.id = id;
         mLocation = new LatLng(lat, lon);
@@ -57,9 +57,7 @@ public class Station implements Comparable<Station>{
         }
         mName = tempName;
         mAddress = addresses.get(0).getAddressLine(0);
-        setOccupancy(occ);
         mCapacity = cap;
-        fillLevel = (float) occ/mCapacity;
     }
 
     public String getName(){

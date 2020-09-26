@@ -6,70 +6,79 @@
     android:focusable="true"
     android:focusableInTouchMode="true"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
     <RelativeLayout
         android:id="@+id/cardLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp">
-    <RelativeLayout
-        android:id="@+id/frontCard"
-        android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:layout_marginHorizontal="24dp"
-        android:background="@drawable/rounded_corners"
-        android:backgroundTint="@color/editTextNoFocus">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
+
         <RelativeLayout
-            android:id="@+id/animation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/animationBoy"
-                android:focusableInTouchMode="true"
-                android:layout_centerHorizontal="true"
-                app:lottie_rawRes="@raw/bike_ride"
-                app:lottie_autoPlay="true"
-                app:lottie_loop="true"
-                android:layout_marginTop="-30dp"
-                android:layout_height="200dp"
+            android:id="@+id/frontCard"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginHorizontal="24dp"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/editTextNoFocus">
+
+            <RelativeLayout
+                android:id="@+id/animation"
                 android:layout_width="wrap_content"
-                android:scaleType="fitCenter" />
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/animationGirl"
-                android:focusableInTouchMode="true"
-                android:layout_centerHorizontal="true"
-                app:lottie_rawRes="@raw/bike_female"
-                app:lottie_autoPlay="true"
-                app:lottie_loop="true"
-                android:layout_height="180dp"
-                android:layout_width="wrap_content"
-                android:paddingBottom="20dp"
-                android:scaleType="fitCenter"
-                android:visibility="gone"/>
+                android:layout_height="wrap_content">
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/animationBoy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="-30dp"
+                    android:focusableInTouchMode="true"
+                    android:scaleType="fitCenter"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true"
+                    app:lottie_rawRes="@raw/bike_ride" />
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/animationGirl"
+                    android:layout_width="wrap_content"
+                    android:layout_height="180dp"
+                    android:layout_centerHorizontal="true"
+                    android:focusableInTouchMode="true"
+                    android:paddingBottom="20dp"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true"
+                    app:lottie_rawRes="@raw/bike_female" />
             </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@id/animation"
                 android:layout_marginTop="-30dp"
-                android:background="@color/transparent"
-                android:layout_below="@id/animation">
+                android:background="@color/transparent">
 
-                    <TextView
-                        android:id="@+id/name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/nunito_semibold"
-                        android:textAllCaps="true"
-                        android:layout_centerHorizontal="true"
-                        android:textSize="22sp"/>
-                    <TextView
-                        android:id="@+id/username"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/nunito_semibold"
-                        android:layout_below="@id/name"
-                        android:layout_centerHorizontal="true"
-                        android:textColor="#CAF5F6F4"
-                        android:textSize="16sp"/>
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:fontFamily="@font/nunito_semibold"
+                    android:textAllCaps="true"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:id="@+id/username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/name"
+                    android:layout_centerHorizontal="true"
+                    android:fontFamily="@font/nunito_semibold"
+                    android:textColor="#CAF5F6F4"
+                    android:textSize="16sp" />
             </RelativeLayout>
 
             <ImageButton
@@ -77,143 +86,158 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:src="@drawable/edit"
-                android:tint="@color/edited"
+                android:layout_marginTop="8dp"
                 android:background="@color/transparent"
+                android:paddingEnd="8dp"
                 android:scaleX="1.2"
                 android:scaleY="1.2"
-                android:layout_marginTop="8dp"
-                android:paddingEnd="8dp"/>
-    </RelativeLayout>
-    <RelativeLayout
-        android:id="@+id/backCard"
-        android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:layout_marginHorizontal="24dp"
-        android:background="@drawable/rounded_corners"
-        android:backgroundTint="@color/edited"
-        android:visibility="gone"
-        android:paddingHorizontal="8dp">
+                android:src="@drawable/edit"
+                android:tint="@color/edited" />
+            <Button
+                android:id="@+id/logout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="logout"
+                android:textColor="@color/offWhite"
+                android:fontFamily="@font/nunito_semibold"
+                android:background="@color/transparent"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/backCard"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginHorizontal="24dp"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/edited"
+            android:paddingHorizontal="8dp"
+            android:visibility="gone">
 
             <Button
                 android:id="@+id/saveButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SAVE CHANGES"
-                android:background="@null"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
-                android:textSize="15sp"
-                android:textColor="@color/almostBlack"
-                android:fontFamily="@font/lato_bold"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
-                android:layout_margin="10dp"/>
-        <Button
-            android:id="@+id/cancelButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CANCEL"
-            android:background="@null"
-            android:minHeight="0dp"
-            android:minWidth="0dp"
-            android:textSize="15sp"
-            android:textColor="@color/almostBlack"
-            android:fontFamily="@font/lato_bold"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="10dp"/>
+                android:layout_margin="10dp"
+                android:background="@null"
+                android:fontFamily="@font/lato_bold"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="SAVE CHANGES"
+                android:textColor="@color/almostBlack"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="10dp"
+                android:background="@null"
+                android:fontFamily="@font/lato_bold"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="CANCEL"
+                android:textColor="@color/almostBlack"
+                android:textSize="15sp" />
 
             <EditText
                 android:id="@+id/editNameText"
+                style="@style/EditTextTheme"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/edit_text_focus"
                 android:backgroundTint="@color/editTextFocus"
+                android:hint="Full Name (required)"
                 android:paddingVertical="5dp"
                 android:paddingStart="8dp"
-                android:hint="Full Name (required)"
-                android:textColorHint="#F5B68C"
                 android:singleLine="true"
-                style="@style/EditTextTheme"/>
-        <EditText
-            android:id="@+id/editEmailText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/editNameText"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/edit_text_focus"
-            android:backgroundTint="@color/editTextFocus"
-            android:paddingVertical="5dp"
-            android:paddingStart="8dp"
-            android:hint="Email Address (required)"
-            android:singleLine="true"
-            android:inputType="textEmailAddress"
-            android:textColorHint="#F5B68C"
-            style="@style/EditTextTheme"/>
+                android:textColorHint="#F5B68C" />
 
-        <EditText
-            android:id="@+id/editNumberText"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/editEmailText"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/edit_text_focus"
-            android:backgroundTint="@color/editTextFocus"
-            android:paddingVertical="5dp"
-            android:paddingStart="8dp"
-            android:hint="Mobile (required)"
-            android:singleLine="true"
-            android:inputType="phone"
-            android:textColorHint="#F5B68C"
-            style="@style/EditTextTheme"/>
-        <EditText
-            android:id="@+id/editDOBText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/editEmailText"
-            android:layout_toEndOf="@id/editNumberText"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/edit_text_focus"
-            android:backgroundTint="@color/editTextFocus"
-            android:paddingVertical="5dp"
-            android:paddingStart="8dp"
-            android:hint="Date of Birth"
-            android:singleLine="true"
-            android:inputType="date"
-            android:textColorHint="#F5B68C"
-            style="@style/EditTextTheme"/>
+            <EditText
+                android:id="@+id/editEmailText"
+                style="@style/EditTextTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/editNameText"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/edit_text_focus"
+                android:backgroundTint="@color/editTextFocus"
+                android:hint="Email Address (required)"
+                android:inputType="textEmailAddress"
+                android:paddingVertical="5dp"
+                android:paddingStart="8dp"
+                android:singleLine="true"
+                android:textColorHint="#F5B68C" />
 
-        <RadioGroup
-            android:id="@+id/genderToggle"
-            android:layout_height="35dp"
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:checkedButton="@id/none"
-            android:layout_marginTop="4dp"
-            android:layout_below="@id/editDOBText"
-            android:background="@drawable/gender_toggle_outline">
-            <RadioButton
-                android:id="@+id/female"
-                android:text="FEMALE"
-                android:fontFamily="@font/lato_bold"
-                style="@style/neutralRadioButtonStyle"/>
+            <EditText
+                android:id="@+id/editNumberText"
+                style="@style/EditTextTheme"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/editEmailText"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/edit_text_focus"
+                android:backgroundTint="@color/editTextFocus"
+                android:hint="Mobile (required)"
+                android:inputType="phone"
+                android:paddingVertical="5dp"
+                android:paddingStart="8dp"
+                android:singleLine="true"
+                android:textColorHint="#F5B68C" />
 
-            <RadioButton
-                android:id="@+id/male"
-                android:text="MALE"
-                android:fontFamily="@font/lato_bold"
-                style="@style/neutralRadioButtonStyle"/>
-            <RadioButton
-                android:id="@+id/none"
-                android:text="NEUTRAL"
-                android:fontFamily="@font/lato_bold"
-                style="@style/neutralRadioButtonStyle"/>
-        </RadioGroup>
+            <EditText
+                android:id="@+id/editDOBText"
+                style="@style/EditTextTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/editEmailText"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_toEndOf="@id/editNumberText"
+                android:background="@drawable/edit_text_focus"
+                android:backgroundTint="@color/editTextFocus"
+                android:hint="Date of Birth"
+                android:inputType="none"
+                android:paddingVertical="5dp"
+                android:paddingStart="8dp"
+                android:singleLine="true"
+                android:focusable="false"
+                android:textColorHint="#F5B68C" />
+
+            <RadioGroup
+                android:id="@+id/genderToggle"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_below="@id/editDOBText"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/gender_toggle_outline"
+                android:checkedButton="@id/none"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/female"
+                    style="@style/neutralRadioButtonStyle"
+                    android:fontFamily="@font/lato_bold"
+                    android:text="FEMALE" />
+
+                <RadioButton
+                    android:id="@+id/male"
+                    style="@style/neutralRadioButtonStyle"
+                    android:fontFamily="@font/lato_bold"
+                    android:text="MALE" />
+
+                <RadioButton
+                    android:id="@+id/none"
+                    style="@style/neutralRadioButtonStyle"
+                    android:fontFamily="@font/lato_bold"
+                    android:text="NEUTRAL" />
+            </RadioGroup>
+        </RelativeLayout>
     </RelativeLayout>
-    </RelativeLayout>
-
 
     <TextView
         android:id="@+id/textview"
@@ -232,7 +256,6 @@
         android:id="@+id/tripListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginHorizontal="8dp"
-        android:layout_below="@id/textview"/>
-
+        android:layout_below="@id/textview"
+        android:layout_marginHorizontal="8dp" />
 </RelativeLayout>

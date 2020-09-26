@@ -1,9 +1,12 @@
-package com.example.mysecondapp.ui.notifications;
+package com.example.mysecondapp.ui.profile;
 
 import android.animation.LayoutTransition;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,7 +17,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -31,16 +36,25 @@ import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.MyAdapter;
 import com.example.mysecondapp.OnSwipeTouchListener;
 import com.example.mysecondapp.R;
+import com.example.mysecondapp.State;
+import com.example.mysecondapp.User;
+import com.example.mysecondapp.ui.login.LoginActivity;
+import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
-public class NotificationsFragment extends Fragment implements View.OnClickListener {
+public class ProfileFragment extends Fragment implements View.OnClickListener {
+    Calendar myCalendar;
+    DatePickerDialog.OnDateSetListener date;
 
     private MainActivity main;
     private View root;
 
     private ImageButton editProfileButton;
-    private Button saveButton, cancelButton;
+    private Button saveButton, cancelButton, logout;
     private ValueAnimator flipAnimator;
     private EditText nameEditText, emailEditText, mobileEditText, dobEditText;
     private TextView nameTextView, userTextView;
@@ -55,6 +69,7 @@ public class NotificationsFragment extends Fragment implements View.OnClickListe
 
         root = inflater.inflate(R.layout.fragment_profile, container, false);
         main = (MainActivity)getActivity();
+        logout = root.findViewById(R.id.logout);
         editProfileButton = root.findViewById(R.id.editProfileButton);
         nameTextView = root.findViewById(R.id.name);
         userTextView = root.findViewById(R.id.username);
@@ -99,96 +114,65 @@ public class NotificationsFragment extends Fragment implements View.OnClickListe
         flipAnimator.addUpdateListener(new FlipListener(cardFront, cardBack));
         flipAnimator.setDuration(700);
 
+        logout.setOnClickListener(this);
         editProfileButton.setOnClickListener(this);
         saveButton.setOnClickListener(this);
         cancelButton.setOnClickListener(this);
 
-        // add mask to dob to format as date
-        TextWatcher tw = new TextWatcher() {
-            private String current = "";
-            private String ddmmyyyy = "DDMMYYYY";
-            private Calendar cal = Calendar.getInstance();
-
+        myCalendar = Calendar.getInstance();
+        date = new DatePickerDialog.OnDateSetListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!s.toString().equals(current)) {
-                    String clean = s.toString().replaceAll("[^\\d.]|\\.", "");
-                    String cleanC = current.replaceAll("[^\\d.]|\\.", "");
-
-                    int cl = clean.length();
-                    int sel = cl;
-                    for (int i = 2; i <= cl && i < 6; i += 2) {
-                        sel++;
-                    }
-                    //Fix for pressing delete next to a forward slash
-                    if (clean.equals(cleanC)) sel--;
-
-                    if (clean.length() < 8) {
-                        clean = clean + ddmmyyyy.substring(clean.length());
-                    } else {
-                        //This part makes sure that when we finish entering numbers
-                        //the date is correct, fixing it otherwise
-                        int day = Integer.parseInt(clean.substring(0, 2));
-                        int mon = Integer.parseInt(clean.substring(2, 4));
-                        int year = Integer.parseInt(clean.substring(4, 8));
-
-                        mon = mon < 1 ? 1 : Math.min(mon, 12);
-                        cal.set(Calendar.MONTH, mon - 1);
-                        year = (year < 1900) ? 1900 : Math.min(year, Calendar.getInstance().get(Calendar.YEAR));
-                        cal.set(Calendar.YEAR, year);
-                        // ^ first set year for the line below to work correctly
-                        //with leap years - otherwise, date e.g. 29/02/2012
-                        //would be automatically corrected to 28/02/2012
-
-                        day = Math.min(day, cal.getActualMaximum(Calendar.DATE));
-                        clean = String.format("%02d%02d%02d", day, mon, year);
-                    }
-
-                    clean = String.format("%s/%s/%s", clean.substring(0, 2),
-                            clean.substring(2, 4),
-                            clean.substring(4, 8));
-
-                    sel = Math.max(sel, 0);
-                    current = clean;
-                    dobEditText.setText(current);
-                    dobEditText.setSelection(Math.min(sel, current.length()));
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
+            public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                  int dayOfMonth) {
+                // TODO Auto-generated method stub
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH, monthOfYear);
+                myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                updateLabel();
             }
         };
 
-        dobEditText.addTextChangedListener(tw);
+        dobEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(), date, myCalendar
+                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH));
+                datePickerDialog.show();
+                datePickerDialog.getButton(DatePickerDialog.BUTTON_NEGATIVE).setTextColor(Color.BLACK);
+                datePickerDialog.getButton(DatePickerDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK);
+                Date today = new Date();
+                Calendar c = Calendar.getInstance();
+                c.setTime(today);
+                c.add( Calendar.YEAR, -5 );  // Subtract 5 years
+                datePickerDialog.getDatePicker().setMaxDate(c.getTime().getTime());
+            }
+
+        });
 
         ListView tripListView = root.findViewById(R.id.tripListView);
         final MyAdapter stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations());
         tripListView.setAdapter(stationListAdapter);
+        tripListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
 
-        tripListView.setOnTouchListener(new OnSwipeTouchListener(getContext()){
-            public void onSwipeTop() {
-                ((RelativeLayout)root).setLayoutTransition(new LayoutTransition());
-                root.findViewById(R.id.cardLayout).setVisibility(View.GONE);
             }
-            public void onSwipeBottom() {
-                ((RelativeLayout)root).setLayoutTransition(null);
-                root.findViewById(R.id.cardLayout).setVisibility(View.VISIBLE);
-            }
-            public boolean onTouch(View v, MotionEvent event) {
-                root.clearFocus();
-                hideKeyboard();
-                return gestureDetector.onTouchEvent(event);
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
             }
         });
-
         updateCard();
         return root;
+    }
+
+    private void updateLabel() {
+        String myFormat = "dd/MM/yy"; //In which you need put here
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+        dobEditText.setText(sdf.format(myCalendar.getTime()));
     }
 
     public void updateCard(){
@@ -197,12 +181,16 @@ public class NotificationsFragment extends Fragment implements View.OnClickListe
         nameEditText.setText(main.user.getName());
         emailEditText.setText(main.user.getEmail());
         mobileEditText.setText(main.user.getMobile());
-        if (main.user.getGender() == R.id.female){
+        dobEditText.setText(main.user.getDob());
+        if (main.user.getGender() == User.FEMALE){
+            genderRadioGroup.check(R.id.female);
             root.findViewById(R.id.animationBoy).setVisibility(View.GONE);
             root.findViewById(R.id.animationGirl).setVisibility(View.VISIBLE);
         } else {
             root.findViewById(R.id.animationBoy).setVisibility(View.VISIBLE);
             root.findViewById(R.id.animationGirl).setVisibility(View.GONE);
+            if (main.user.getGender() == User.MALE)
+                genderRadioGroup.check(R.id.male);
         }
     }
 
@@ -211,6 +199,19 @@ public class NotificationsFragment extends Fragment implements View.OnClickListe
     public void onClick(View v) {
         if (v == editProfileButton){
             flipAnimator.start();
+        } else if (v == logout) {
+            main.state.logOut();
+            SharedPreferences pref = main.getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
+            SharedPreferences.Editor prefsEditor = pref.edit();
+            Gson gson = new Gson();
+            String json = gson.toJson(main.state.getUser());
+            prefsEditor.putString(State.USER_KEY, json);
+            prefsEditor.putInt(State.LOG_KEY, main.state.getLoggedState());
+            prefsEditor.apply();
+            System.out.println(json);
+            Intent intent = new Intent(main.getBaseContext(), LoginActivity.class);
+            main.startActivity(intent);
+            main.finish();
         } else if (v == cancelButton){
             flipAnimator.reverse();
         } else if (v == saveButton){
@@ -219,8 +220,14 @@ public class NotificationsFragment extends Fragment implements View.OnClickListe
                 main.user.setEmail(emailEditText.getText().toString());
                 main.user.setMobile(mobileEditText.getText().toString());
                 main.user.setDob(dobEditText.getText().toString());
-                main.user.setGender(genderRadioGroup.getCheckedRadioButtonId());
+                if (genderRadioGroup.getCheckedRadioButtonId() == R.id.female)
+                    main.user.setGender(User.FEMALE);
+                else if (genderRadioGroup.getCheckedRadioButtonId() == R.id.male)
+                    main.user.setGender(User.MALE);
+                else
+                    main.user.setGender(User.NEUTRAL);
                 updateCard();
+                main.updateUserInfo();
                 flipAnimator.reverse();
             } else {
                 Toast.makeText(getContext(), "Input(s) invalid", Toast.LENGTH_SHORT).show();

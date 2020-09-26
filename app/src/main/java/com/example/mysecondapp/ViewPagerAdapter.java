@@ -8,7 +8,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.example.mysecondapp.ui.stationSearch.DashboardFragment;
 import com.example.mysecondapp.ui.home.HomeFragment;
-import com.example.mysecondapp.ui.notifications.NotificationsFragment;
+import com.example.mysecondapp.ui.profile.ProfileFragment;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
 
@@ -17,7 +17,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     public ViewPagerAdapter(@NonNull FragmentManager fm, Lifecycle lifecycle) {
         super(fm, lifecycle);
         childFragments = new Fragment[]{
-                new NotificationsFragment(), //0
+                new ProfileFragment(), //0
                 new HomeFragment(), //1
                 new DashboardFragment() //2
         };

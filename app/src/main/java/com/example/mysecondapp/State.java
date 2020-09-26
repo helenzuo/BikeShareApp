@@ -10,10 +10,35 @@ public class State {
     public static final int ARRIVAL_STATION_SELECTED_STATE = 5;
     public static final int BIKE_DOCKED_STATE = 6;
 
+    public static final int LOGGED_OUT = 0;
+    public static final int LOGGED_IN = 1;
+
+    public static final String LOG_KEY = "LOG_KEY";
+    public static final String USER_KEY = "USER_KEY";
 
     private int bookingState;
     private Station departingStation, arrivalStation;
     private String departureTime, arrivalTime; //in minutes of the day
+    private int loggedState;
+    private User user;
+
+    public void setUser(User user){ this.user = user;}
+
+    public User getUser(){return user;}
+
+    public int getLoggedState() {
+        return loggedState;
+    }
+
+    public void logIn(User user){
+        loggedState = LOGGED_IN;
+        setUser(user);
+    }
+
+    public void logOut(){
+        loggedState = LOGGED_OUT ;
+        setUser(null);
+    }
 
     public void bookingStateTransition(boolean forward) {
         if (forward) {

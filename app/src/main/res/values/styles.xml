@@ -11,8 +11,16 @@
         <item name="android:textColor">@color/offWhite</item>
         <item name="alertDialogTheme">@style/AlertDialogCustom</item>
         <item name="android:itemTextAppearance">@style/myCustomMenuTextAppearance</item>
-
+        <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
     </style>
+
+    <style name="MyDatePickerStyle" parent="@android:style/Widget.Material.Light.DatePicker" tools:targetApi="lollipop">
+        <item name="android:textColor">@color/almostBlack</item>
+        <item name="android:datePickerMode">spinner</item>
+        <item name="android:minDate">01/01/1900</item>
+        <item name="android:divider">@color/edited</item>
+    </style>
+
 
     <style name="myCustomMenuTextAppearance" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
         <item name="android:textColor">@color/almostBlack</item>
@@ -110,6 +118,8 @@
         <item name="android:padding">10dp</item>
         <item name="cornerFamily">rounded</item>
         <item name="android:gravity">center_vertical</item>
+        <item name="errorEnabled">true</item>
+        <item name="errorContentDescription"></item>
     </style>
 
 

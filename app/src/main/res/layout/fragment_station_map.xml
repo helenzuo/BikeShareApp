@@ -3,12 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/fragment_dashboard">
+
+
     <RelativeLayout
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/toggleMapList">
-
 
         <com.example.mysecondapp.StationSearchBar
             android:id="@+id/stationSearchBar"
@@ -20,7 +21,6 @@
             android:paddingStart="24dp"
             android:hint="Search for bike station by name"
             android:theme="@style/EditTextTheme" />
-
 
         <Button
             android:id="@+id/sortButton"
@@ -34,19 +34,25 @@
             android:layout_alignParentEnd="true"
             android:background="@color/transparent"/>
 
-        <ListView
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:id="@+id/stationsListView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="0dp"
-            android:layout_below="@+id/stationSearchBar"
-            android:contextClickable="false"
-            android:divider="@null"
-            android:dividerHeight="2dp"
-            android:cacheColorHint="@color/transparent"
-            android:listSelector="@color/transparent"
-            android:background="@color/transparent" />
+<!--        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
+<!--            android:id="@+id/pullToRefreshStation"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_below="@+id/stationSearchBar"-->
+<!--            android:hapticFeedbackEnabled="true"-->
+<!--            android:layout_height="wrap_content">-->
+            <ListView
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:id="@+id/stationsListView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contextClickable="false"
+                android:divider="@null"
+                android:layout_below="@+id/stationSearchBar"
+                android:dividerHeight="2dp"
+                android:cacheColorHint="@color/transparent"
+                android:listSelector="@color/transparent"
+                android:background="@color/transparent" />
+<!--        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
 
     </RelativeLayout>
 
@@ -58,6 +64,22 @@
         android:name="com.google.android.gms.maps.MapView"
         android:layout_marginStart="6dp"
         android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/refreshButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refresh"
+        android:textColor="@color/offWhite"
+        android:background="@drawable/refresh_button"
+        android:layout_alignTop="@id/mapView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:minHeight="0dp"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="20dp"
+        android:visibility="gone"/>
+
 
     <RadioGroup
         android:id="@+id/toggleMapList"

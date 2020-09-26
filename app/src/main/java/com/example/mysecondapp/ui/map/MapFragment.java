@@ -88,7 +88,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_maps, container, false);
         main = (MainActivity) getActivity();
-
+        main.swipeRefreshLayout.setEnabled(false);
         return root;
     }
 
@@ -244,6 +244,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 ((HomeFragment)getParentFragment()).setDepartureStationFromMap(centredStation);
                 getParentFragmentManager().popBackStackImmediate();
                 mParentListener.updateParentView();
+                main.swipeRefreshLayout.setEnabled(true);
             } else {
                 Calendar mcurrentTime = Calendar.getInstance();
                 int currentTime = mcurrentTime.get(Calendar.HOUR_OF_DAY) * 60 + mcurrentTime.get(Calendar.MINUTE);
@@ -287,6 +288,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                                         public void onAnimationEnd(Animator animation) {
                                             closeMapButton.callOnClick();
                                             selectButton.setEnabled(true);
+                                            main.swipeRefreshLayout.setEnabled(true);
                                         }
 
                                         @Override
@@ -316,39 +318,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         } else if (v == closeMapButton){
             getParentFragmentManager().popBackStackImmediate();
             mParentListener.updateParentView();
+            main.swipeRefreshLayout.setEnabled(true);
         }
     }
 
 
-//    private static class RetrieveMessage extends AsyncTask<Void, Void, Void> {
-//        private WeakReference<MainActivity> activityReference;
-//        private WeakReference<MapFragment> fragmentReference;
-//        // only retain a weak reference to the activity
-//        RetrieveMessage(MainActivity context1, MapFragment context2) {
-//            activityReference = new WeakReference<>(context1);
-//            fragmentReference = new WeakReference<>(context2);
-//        }
-//        @Override
-//        protected Void doInBackground(Void... params) {
-//            MainActivity main = activityReference.get();
-//            MapFragment mapFragment = fragmentReference.get();
-//            while (true) {
-//                try {
-//                    String msg = main.readUTF8() ;
-//                    if (msg != null){
-//                        String[] message = msg.split("#");
-//                        for (int i = 0; i < message.length-2; i = i + 2){
-//                            main.stationMap.get(message[i]).setOccupancy(Integer.parseInt(message[i+1]));
-//                        }
-//                        mapFragment.allocatedDepartureStationName = message[message.length-1];
-//                        break;
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            return null;
-//        }
-//    }
 }
 

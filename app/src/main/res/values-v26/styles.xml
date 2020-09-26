@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="EditTextTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorControlNormal">@color/offWhite</item>
+        <item name="colorControlHighlight">@color/lightGreen</item>
+        <item name="android:textColor">@color/offWhite</item>
+        <item name="android:textColorHint">#90B4BAC0</item>
+        <item name="android:padding">10dp</item>
+        <item name="cornerFamily">rounded</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:autofilledHighlight">@android:color/transparent</item>
+
+    </style>
+</resources>

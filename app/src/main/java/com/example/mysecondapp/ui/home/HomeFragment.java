@@ -41,7 +41,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.cardview.widget.CardView;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -61,7 +60,6 @@ import com.example.mysecondapp.Station;
 import com.example.mysecondapp.TimeFormat;
 import com.example.mysecondapp.ui.map.MapFragment;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -222,6 +220,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
                 @Override
                 public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                    main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
                 }
             });
 
@@ -292,6 +291,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
             msgAdapter = new MessageListAdapter(getContext(), QRScanWaitMsgList);
             QRScanWaitList.setAdapter(msgAdapter);
+            QRScanWaitList.setOnScrollListener(new AbsListView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+                }
+
+                @Override
+                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                    main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+                }
+            });
 
             choice1Button = root.findViewById(R.id.choice1Button);
             choice1Button.setText(String.format(Locale.getDefault(), "Get directions to %s", main.state.getDepartingStation().getName()));
@@ -326,6 +336,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         listMessages.add(new Message("in", r.getString(R.string.QRScanned2)));
         msgAdapter = new MessageListAdapter(getContext(), listMessages);
         listMsg.setAdapter(msgAdapter);
+        listMsg.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+            }
+        });
 
         Button startDockSelectionButton = root.findViewById(R.id.startDockSelectionButton);
         startDockSelectionButton.setOnClickListener(new View.OnClickListener() {
@@ -384,6 +405,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
             }
         });
         directTravelRadioGroup.setOnCheckedChangeListener(this);
@@ -729,6 +751,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 choice1Button.setText("No");
                 choice2Button.setVisibility(GONE);
             } else {
+                main.queryServerStation(new BookingMessageToServer("cancelDeparture", main.state.getDepartingStation().getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
                 main.state.resetState();
                 stationEditText.setText("");
                 timeEditText.setText("");

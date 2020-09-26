@@ -3,50 +3,35 @@ package com.example.mysecondapp.ui.stationSearch;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.MapViewInScroll;
-import com.example.mysecondapp.MyAdapter;
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.SearchListAdapter;
 import com.example.mysecondapp.Station;
 import com.example.mysecondapp.StationComparator;
 import com.example.mysecondapp.StationSearchBar;
+import com.example.mysecondapp.ViewPagerAdapter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -54,11 +39,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Set;
 
-import static android.content.Context.LOCATION_SERVICE;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
@@ -70,12 +52,13 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     private LocationManager locationManager;
     private boolean choiceMade = false;
     private ViewGroup fragmentContainer;
-    HashMap markerMap = new HashMap();
+    HashMap<String, Marker> markerMap;
     RadioGroup radioGroup;
     private StationSearchBar searchBar;
-    private Button sortButton;
+    private Button sortButton, refreshButton;
     private SearchListAdapter stationListAdapter;
     private ListView stationListView;
+    private GoogleMap.OnCameraMoveStartedListener onCameraMoveListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -104,26 +87,27 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     }
 
     public void centreOnStation(String station){
-        Marker marker = (Marker)markerMap.get(station);
+        Marker marker = markerMap.get(station);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16F));
-//        Set<String> keySet = markerMap.keySet();
-//        for (String key : keySet){
-//            Marker tempMarker = (Marker) markerMap.get(key);
-//            if (key != station) {
-//                BitmapDescriptor bd = BitmapDescriptorFactory.fromResource(android.R.drawable.ic_map_marker);
-//                mMap.addMarker(new MarkerOptions().icon(bd).position(pos));
-//                tempMarker.setVisible(false);
-//            } else {
-//                tempMarker.setVisible(true);;
-//            }
-
-//        }
         marker.showInfoWindow();
     }
 
     public void stationSelectedFromList(Station station){
         radioGroup.check(R.id.mapToggle);
         centreOnStation(station.getName());
+    }
+
+    public void updateMarkers(){
+        markerMap = new HashMap<>();
+        googleMap.clear();
+        for (Station station : main.getStations()) {
+            float fillLevel = station.getFillLevel();
+            float colour = fillLevel * 120;
+            Marker marker = googleMap.addMarker(new MarkerOptions().position(station.getLocation()).title(station.getName()).snippet(Integer.toString(station.getOccupancy())).icon(BitmapDescriptorFactory.defaultMarker(colour)));
+            markerMap.put(station.getName(), marker);
+        }
+        if (stationListAdapter != null)
+            stationListAdapter.notifyDataSetChanged();
     }
 
 
@@ -135,21 +119,15 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
             centreOnCurrentLocation(main.lastKnownLocation);
         }
 
-
-        for (Station station : main.getStations()) {
-            float fillLevel = station.getFillLevel();
-            float colour = fillLevel * 120;
-            Marker marker = googleMap.addMarker(new MarkerOptions().position(station.getLocation()).title(station.getName()).snippet(Integer.toString(station.getOccupancy())).icon(BitmapDescriptorFactory.defaultMarker(colour)));
-            markerMap.put(station.getName(), marker);
-        }
+        updateMarkers();
 
         stationListAdapter = new SearchListAdapter(getActivity(), R.layout.station_list_search_design, this, main.getStations());
-//        stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations());
         stationListView = root.findViewById(R.id.stationsListView);
         stationListView.setAdapter(stationListAdapter);
         searchBar = root.findViewById(R.id.stationSearchBar);
         sortButton = root.findViewById(R.id.sortButton);
         searchBar.setExternalViews(stationListView, sortButton);
+        refreshButton = root.findViewById(R.id.refreshButton);
 
         radioGroup = root.findViewById(R.id.toggleMapList);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -162,10 +140,15 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
                 // If the radiobutton that has changed in check state is now checked...
                 if (isChecked && checkedRadioButton.getId() == R.id.mapToggle) {
                     root.findViewById(R.id.listView).setVisibility(GONE);
+                    refreshButton.setVisibility(VISIBLE);
                     root.findViewById(R.id.mapView).setVisibility(VISIBLE);
+                    main.swipeRefreshLayout.setEnabled(false);
+                    updateMarkers();
                 } else {
                     root.findViewById(R.id.listView).setVisibility(VISIBLE);
                     root.findViewById(R.id.mapView).setVisibility(GONE);
+                    refreshButton.setVisibility(GONE);
+                    main.swipeRefreshLayout.setEnabled(true);
                 }
             }
         });
@@ -180,7 +163,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
             }
         });
 
@@ -224,6 +207,44 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
             }
         });
 
+        onCameraMoveListener = new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int i) {
+                refreshButton.animate().alpha(0.0f).setDuration(200).start();
+                refreshButton.setEnabled(false);
+            }
+        };
+
+        googleMap.setOnCameraMoveStartedListener(onCameraMoveListener);
+
+        googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                refreshButton.animate().alpha(1.0f).setDuration(200).start();
+                refreshButton.setEnabled(true);
+            }
+        });
+
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                main.refreshData(-1);
+            }
+        });
+    }
+
+    public void refreshing(){
+        refreshButton.setText("Refreshing...");
+        refreshButton.setEnabled(false);
+        googleMap.setOnCameraMoveStartedListener(null);
+    }
+
+    public void refreshed(){
+        refreshButton.setText("Refresh");
+        refreshButton.setEnabled(true);
+        googleMap.setOnCameraMoveStartedListener(onCameraMoveListener);
+
+        updateMarkers();
     }
 
 }
