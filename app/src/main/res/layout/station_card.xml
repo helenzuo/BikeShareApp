@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_marginEnd="12dp"
     android:layout_marginStart="12dp"
-    android:layout_height="100dp"
+    android:layout_height="110dp"
     android:layout_alignParentBottom="true"
     android:layout_centerHorizontal="true"
     android:layout_marginBottom="16dp"
@@ -18,61 +18,90 @@
     android:padding="4dp"
     android:clickable="true">
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:weightSum="1">
-                <ImageView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight=".3"
-                    android:src="@drawable/bike"/>
+        <RelativeLayout
+            android:padding="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/stationNameCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:textColor="@color/almostBlack"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:layout_marginEnd="16dp"
+            android:layout_toStartOf="@id/stationDistanceCard"
+            android:focusable="false"
+            android:textSize="15sp"/>
+        <TextView
+            android:id="@+id/stationDistanceCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:textColor="@color/enabled_color"
+            android:focusable="false"
+            android:textSize="12sp"/>
 
-                <RelativeLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:layout_weight=".7">
-                <RelativeLayout
-                    android:id="@+id/titleAndDistanceContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentStart="true"
-                    android:orientation="horizontal">
-                        <TextView
-                            android:id="@+id/stationCardTitle"
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"
-                            android:layout_toStartOf="@id/stationCardDistance"
-                            android:layout_alignParentStart="true"
-                            android:textColor="@color/almostBlack"
-                            android:textSize="16sp"/>
-                        <TextView
-                            android:id="@+id/stationCardDistance"
-                            android:layout_alignParentEnd="true"
-                            android:layout_height="wrap_content"
-                            android:layout_alignBaseline="@+id/stationCardTitle"
-                            android:layout_width="wrap_content"
-                            android:textColor="@color/almostBlack"
-                            android:paddingStart="8dp"
-                            android:textSize="12sp"/>
-                </RelativeLayout>
-                        <TextView
-                            android:layout_below="@+id/titleAndDistanceContainer"
-                            android:id="@+id/stationOccupancy"
-                            android:layout_height="wrap_content"
-                            android:layout_width="match_parent"
-                            android:textColor="@color/almostBlack"
-                            android:textSize="12sp"/>
-                        <TextView
-                            android:id="@+id/predictedOcc"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@id/stationOccupancy"
-                            android:textColor="@color/almostBlack"
-                            android:textSize="12sp"/>
-                </RelativeLayout>
-        </TableRow>
+        <TextView
+            android:id="@+id/stationAddressCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="italic"
+            android:layout_below="@id/stationNameCard"
+            android:layout_alignParentStart="true"
+            android:textColor="@color/enabled_color"
+            android:layout_marginTop="2dp"
+            android:focusable="false"
+            android:textSize="11sp"/>
+
+        <TextView
+            android:id="@+id/stationOccText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/bikeTextCard"
+            android:layout_alignParentStart="true"
+            android:textColor="@color/enabled_color"
+            android:layout_marginTop="12dp"
+            android:focusable="false"
+            android:textSize="11sp"/>
+
+        <TextView
+            android:id="@+id/bikeTextCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:paddingVertical="4dp"
+            android:textColor="@color/buttonColor"
+            android:textSize="12sp"
+            android:paddingBottom="20dp"
+            android:layout_above="@id/fillLevelSeekBarCard" />
+
+        <TextView
+            android:id="@+id/dockTextCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:paddingEnd="4dp"
+            android:layout_alignParentEnd="true"
+            android:textColor="@color/edited"
+            android:layout_above="@id/fillLevelSeekBarCard"
+            android:textSize="12sp"/>
+
+        <SeekBar
+            android:id="@+id/fillLevelSeekBarCard"
+            android:layout_marginHorizontal="-16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:progressDrawable="@drawable/fill_level_seek_bar"
+            android:splitTrack="false"
+            android:maxHeight="3.5dp"
+            android:minHeight="3.5dp"
+            android:thumb="@null"
+            android:paddingBottom="4dp"
+            android:theme="@style/SeekBarWithoutSteps"
+            android:max="100"/>
+        </RelativeLayout>
 </androidx.cardview.widget.CardView>
 

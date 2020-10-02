@@ -59,6 +59,8 @@ public class LoginActivity extends AppCompatActivity {
             transaction.commit();
         } else {
             String user_string = pref.getString(State.USER_KEY, "null");
+            System.out.println(user_string);
+
             User user = new Gson().fromJson(user_string, User.class);
             user.saveUser();
             sendMsg(user);
@@ -149,7 +151,6 @@ public class LoginActivity extends AppCompatActivity {
                         activity.in.close();
                         activity.out.close();
                         System.out.println(s);
-
                         JSONObject jsonObj  = new JSONObject(s);
                         activity.user = new User(jsonObj.getString("name"), jsonObj.getString("email"), "", jsonObj.getString("username"), jsonObj.getString("password"), "loggedIn");
                         if (!jsonObj.getString("dob").equals("None"))

@@ -1,10 +1,8 @@
 package com.example.mysecondapp;
 
 import android.Manifest;
-import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,11 +11,11 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -27,7 +25,6 @@ import androidx.recyclerview.widget.SnapHelper;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.airbnb.lottie.LottieAnimationView;
 import com.example.mysecondapp.ui.home.HomeFragment;
 import com.example.mysecondapp.ui.stationSearch.DashboardFragment;
 import com.google.gson.Gson;
@@ -54,6 +51,8 @@ import java.util.Objects;
 import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
 
 public class MainActivity extends AppCompatActivity {
+
+    private Thread dockCheckThread;
 
     public State state;
     public User user;
@@ -84,6 +83,29 @@ public class MainActivity extends AppCompatActivity {
     public ArrayList<Station> interchangeables = new ArrayList<>();
     public Station assigned;
 
+    private boolean checkingDock;
+
+    Context context;
+
+    private class SavedState {
+
+        int bookingState;
+        String departureStation, arrivalStation;
+        private String departureTime, arrivalTime;
+
+        SavedState(State state){
+            bookingState = state.getBookingState();
+            if (state.getDepartingStation() != null) {
+                departureStation = state.getDepartingStation().getId();
+                departureTime = state.getDepartureTime();
+            }
+            if (state.getArrivalStation() != null) {
+                arrivalStation = state.getArrivalStation().getId();
+                arrivalTime = state.getArrivalTime();
+            }
+        }
+
+    };
     @Override
     protected void onDestroy() {
         SharedPreferences pref = getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
@@ -92,8 +114,11 @@ public class MainActivity extends AppCompatActivity {
         String json = gson.toJson(state.getUser());
         prefsEditor.putString(State.USER_KEY, json);
         prefsEditor.putInt(State.LOG_KEY, state.getLoggedState());
+        json = gson.toJson(new SavedState(state));
+        prefsEditor.putString(State.STATE_KEY, json);
+
         prefsEditor.apply();
-        System.out.println(json);
+
         super.onDestroy();
     }
 
@@ -101,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = this;
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
 
@@ -189,9 +215,27 @@ public class MainActivity extends AppCompatActivity {
                 refreshData(viewPager.getCurrentItem()); // your code
             }
         });
-        swipeRefreshLayout.setColorSchemeColors(getColor(R.color.editTextFocus));
+        swipeRefreshLayout.setProgressBackgroundColorSchemeColor(getColor(R.color.buttonColor));
+        swipeRefreshLayout.setColorSchemeColors(getColor(R.color.offWhite));
+        swipeRefreshLayout.setSize(1);
 
         rvNavigationPicker.setVisibility(View.VISIBLE);
+
+        SharedPreferences pref = getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
+        String state_string = pref.getString(State.STATE_KEY, "null");
+        if (!state_string.equals("null")) {
+            SavedState savedState = new Gson().fromJson(state_string, SavedState.class);
+            state.setBookingState(savedState.bookingState);
+            if (savedState.departureStation != null) {
+                state.setDepartureTime(savedState.departureTime);
+                state.setDepartingStation(stationMap.get(savedState.departureStation));
+            }
+            if (savedState.arrivalStation != null) {
+                state.setArrivalTime(savedState.arrivalTime);
+                state.setArrivalStation(stationMap.get(savedState.arrivalStation));
+                checkDockStatus();
+            }
+        }
     }
 
 
@@ -219,6 +263,9 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(new Runnable() {
                 @Override public void run() {
                     swipeRefreshLayout.setRefreshing(false);
+                    if (state.getMapFragment() != null){
+                        state.getMapFragment().updateMarkers();
+                    }
                 }
             }, 1500);
         }
@@ -306,6 +353,22 @@ public class MainActivity extends AppCompatActivity {
         new SendMessage(this,"updateUser").execute(new Gson().toJson(user));
     }
 
+    public void checkDockStatus() {
+        checkingDock = true;
+        dockCheckThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                    while(checkingDock) {
+                        SystemClock.sleep(3000);
+                        new SendMessage((MainActivity) context, "checkDock").execute(new Gson().toJson(new BookingMessageToServer("checkDock", "", -1, -1)));
+                    }
+            }
+        });
+        dockCheckThread.start();
+    }
+
     private static class Connect extends AsyncTask<Void, Void, Void> {
         private WeakReference<MainActivity> activityReference;
 
@@ -347,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void avoid) {
-            if (!key.equals("refresh") && !key.equals("updateUser"))
+            if (!key.equals("refresh") && !key.equals("updateUser") && activityReference.get().ping)
                 new GetMsg(activityReference.get(), key).execute();
         }
 
@@ -421,15 +484,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-//            MainActivity activity = activityReference.get();
-//            dashboardFragment = ((DashboardFragment)((ViewPagerAdapter) activityReference.get().viewPager.getAdapter()).getFragment(2));
-//            dashboardFragment.updateMarkers();
-//            ((DashboardFragment)((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(2)).updateMarkers();
-//            activity.swipeRefreshLayout.setRefreshing(false);
-        }
-
-        @Override
         protected Void doInBackground(Void... aVoid) {
             MainActivity activity = activityReference.get();
             if (activity.clientSocket.isClosed()) {
@@ -461,44 +515,57 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             MainActivity activity = activityReference.get();
-            if (key.equals("static")){
-                activity.initialiseStationInfo(result);
-                try {
-                    activity.clientSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            if (activity.ping) {
+                if (key.equals("static")) {
+                    activity.initialiseStationInfo(result);
+                    try {
+                        activity.clientSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    new GetMsg(activity, "dynamic").execute();
+                } else if (key.equals("dynamic")) {
+                    activity.updateStationInfo(result);
+                    activity.setUpScreen();
+                } else if (key.equals("queryDepart")) {
+                    activity.departQueryResults(result);
+                } else if (key.equals("QRScanned")) {
+                    activity.QRScanned(result);
+                } else if (key.equals("queryArrival")) {
+                    activity.arrivalQueryResults(result);
+                } else if (key.equals("refresh")) {
+                    activity.updateStationInfo(result);
+                    ((DashboardFragment) ((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(2)).updateMarkers();
+                    activity.swipeRefreshLayout.setRefreshing(false);
+                } else if (key.equals("confirmArrivalStation")) {
+                    activity.checkDockStatus();
+                } else if (key.equals("checkDock")) {
+                    if (!result.equals("")) {
+                        activity.checkingDock = false;
+                        activity.state.setDockedStation(activity.stationMap.get(result));
+                        activity.state.bookingStateTransition(true);
+                        ((HomeFragment) ((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(1)).bikeDocked();
+                    }
                 }
-                new GetMsg(activity, "dynamic").execute();
-            } else if (key.equals("dynamic")) {
-                activity.updateStationInfo(result);
-                activity.setUpScreen();
-            } else if (key.equals("queryDepart")){
-                activity.departQueryResults(result);
-            } else if (key.equals("QRScanned")){
-                activity.QRScanned(result);
-            } else if (key.equals("queryArrival")){
-                activity.arrivalQueryResults(result);
-            } else if(key.equals("refresh")){
-                activity.updateStationInfo(result);
-                ((DashboardFragment)((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(2)).updateMarkers();
-                activity.swipeRefreshLayout.setRefreshing(false);
             }
         }
 
         @Override
         protected String doInBackground(Void... aVoid) {
             MainActivity activity = activityReference.get();
-            if (activity.clientSocket.isClosed()) {
-                try {
-                    activity.clientSocket = new Socket("192.168.20.11", 8080);
-                    activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
-                    activity.in = new DataInputStream(activity.clientSocket.getInputStream());
-                } catch (IOException e) {
-                    e.printStackTrace();
+            if (activity.ping) {
+                if (activity.clientSocket.isClosed()) {
+                    try {
+                        activity.clientSocket = new Socket("192.168.20.11", 8080);
+                        activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
+                        activity.in = new DataInputStream(activity.clientSocket.getInputStream());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
+                return activity.readUTF8();
             }
-
-            return activity.readUTF8();
+            return null;
         }
 
     }

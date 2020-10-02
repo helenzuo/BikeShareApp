@@ -208,7 +208,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             prefsEditor.putString(State.USER_KEY, json);
             prefsEditor.putInt(State.LOG_KEY, main.state.getLoggedState());
             prefsEditor.apply();
-            System.out.println(json);
             Intent intent = new Intent(main.getBaseContext(), LoginActivity.class);
             main.startActivity(intent);
             main.finish();

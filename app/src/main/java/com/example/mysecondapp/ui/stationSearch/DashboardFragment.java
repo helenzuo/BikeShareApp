@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -29,7 +28,6 @@ import com.example.mysecondapp.SearchListAdapter;
 import com.example.mysecondapp.Station;
 import com.example.mysecondapp.StationComparator;
 import com.example.mysecondapp.StationSearchBar;
-import com.example.mysecondapp.ViewPagerAdapter;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -49,9 +47,6 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap googleMap;
     private View root;
     private MainActivity main;
-    private LocationManager locationManager;
-    private boolean choiceMade = false;
-    private ViewGroup fragmentContainer;
     HashMap<String, Marker> markerMap;
     RadioGroup radioGroup;
     private StationSearchBar searchBar;
@@ -243,7 +238,6 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
         refreshButton.setText("Refresh");
         refreshButton.setEnabled(true);
         googleMap.setOnCameraMoveStartedListener(onCameraMoveListener);
-
         updateMarkers();
     }
 

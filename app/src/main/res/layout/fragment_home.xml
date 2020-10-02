@@ -752,7 +752,48 @@
                 android:layout_weight="1"/>
 
         </LinearLayout>
+    </RelativeLayout>
 
+    <!--   DOCKED PAGE  -->
+    <RelativeLayout
+        android:id="@+id/bikeDockedLayoutContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:paddingHorizontal="100dp"
+            android:gravity="center"
+            android:layout_marginVertical="50dp"
+            android:fontFamily="@font/lato_bold"
+            android:text="Done!"
+            android:textSize="28dp"/>
+
+        <ListView
+            android:id="@+id/chatListViewDocked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@color/transparent"
+            android:layout_below="@id/textView10"
+            android:dividerHeight="0dp"/>
+
+        <Button
+            android:id="@+id/doneButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/button_margin"
+            android:layout_marginTop="42dp"
+            android:layout_below="@+id/chatListViewDocked"
+            android:layout_centerHorizontal="true"
+            android:text="OK"
+            android:textSize="18sp"
+            android:background="@drawable/choice_button"
+            android:fontFamily="@font/roboto_light"/>
     </RelativeLayout>
 
     <RelativeLayout

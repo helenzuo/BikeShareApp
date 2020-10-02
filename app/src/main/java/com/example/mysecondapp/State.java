@@ -1,5 +1,7 @@
 package com.example.mysecondapp;
 
+import com.example.mysecondapp.ui.map.MapFragment;
+
 public class State {
 
     public static final int START_BOOKING_STATE = 0;
@@ -15,12 +17,21 @@ public class State {
 
     public static final String LOG_KEY = "LOG_KEY";
     public static final String USER_KEY = "USER_KEY";
+    public static final String STATE_KEY = "STATE_KEY";
 
     private int bookingState;
-    private Station departingStation, arrivalStation;
+    private Station departingStation, arrivalStation, dockedStation;
     private String departureTime, arrivalTime; //in minutes of the day
     private int loggedState;
     private User user;
+
+    private MapFragment mapFragment;
+
+    public void setMapFragment(MapFragment mapFragment){
+        this.mapFragment = mapFragment;
+    }
+
+    public MapFragment getMapFragment() {return  mapFragment;}
 
     public void setUser(User user){ this.user = user;}
 
@@ -48,10 +59,6 @@ public class State {
             }
         } else {
             bookingState--;
-            if (bookingState == RESERVE_BIKE_SELECTION_STATE){
-                departureTime = null;
-                departingStation = null;
-            }
         }
     }
 
@@ -71,6 +78,10 @@ public class State {
         return arrivalTime;
     }
 
+    public Station getDockedStation() {
+        return dockedStation;
+    }
+
     public Station getArrivalStation() {
         return arrivalStation;
     }
@@ -81,6 +92,10 @@ public class State {
 
     public void setArrivalStation(Station arrivalStation) {
         this.arrivalStation = arrivalStation;
+    }
+
+    public void setDockedStation(Station dockedStation) {
+        this.dockedStation = dockedStation;
     }
 
     public void setArrivalTime(String arrivalTime) {
@@ -101,5 +116,8 @@ public class State {
         arrivalStation = null;
         departureTime = null;
         arrivalTime = null;
+        dockedStation = null;
     }
+
 }
+

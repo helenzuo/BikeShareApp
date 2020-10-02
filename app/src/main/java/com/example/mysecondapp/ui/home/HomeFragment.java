@@ -60,10 +60,12 @@ import com.example.mysecondapp.Station;
 import com.example.mysecondapp.TimeFormat;
 import com.example.mysecondapp.ui.map.MapFragment;
 
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -76,7 +78,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     private ArrayList<RelativeLayout> relativeLayoutContainers = new ArrayList<>();
     private RelativeLayout startStateContainer, bikeReserveDetailsContainer,
             departureStationSelectedContainer, qrScannedLayoutContainer,
-            dockReserveDetailsContainer, arrivalStationSelectedContainer;
+            dockReserveDetailsContainer, arrivalStationSelectedContainer, bikeDockedContainer;
 
     private Button startBookingButton;
 
@@ -147,8 +149,13 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 break;
             case State.ARRIVAL_STATION_SELECTED_STATE:
                 loadDockReservedPage();
+                break;
+            case State.BIKE_DOCKED_STATE :
+                loadBikeDockedPage();
+                break;
         }
     }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -170,6 +177,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         relativeLayoutContainers.add(dockReserveDetailsContainer);
         arrivalStationSelectedContainer = root.findViewById(R.id.arrivalStationSelectedLayout);
         relativeLayoutContainers.add(arrivalStationSelectedContainer);
+        bikeDockedContainer = root.findViewById(R.id.bikeDockedLayoutContainer);
+        relativeLayoutContainers.add(bikeDockedContainer);
 
         updateView();
         return root;
@@ -177,7 +186,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
     private void loadDepartureStationSelectionPage(){
         if (timeSelectLayout == null) {
-            progressBarHolder = root.findViewById(R.id.progressBarHolder);
             timeSelectLayout = root.findViewById(R.id.departTimePickLayout);
             altStationLayout = root.findViewById(R.id.walkingRelativeLayout);
             distanceSelectLayout = root.findViewById(R.id.distanceSelectLayout);
@@ -359,7 +367,6 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
     }
 
     private void loadArrivalStationSelectionPage(){
-
         timeSelectLayout = root.findViewById(R.id.arriveTimePickLayout);
         altStationLayout = root.findViewById(R.id.walkingArrivalRelativeLayout);
         distanceSelectLayout = root.findViewById(R.id.arrivalDistanceSelectLayout);
@@ -474,7 +481,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
         waitToDockMsgList.add(new Message("in", r.getString(R.string.dockReserved)));
         waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s",  main.state.getArrivalStation().getName())));
         waitToDockMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s",  main.state.getArrivalStation().getAddress())));
-        waitToDockMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Bike reserved until: %s",  new TimeFormat().timeInString(main.state.getArrivalStation().getEstArr())))));
+        waitToDockMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Bike reserved until: %s",  main.state.getArrivalTime()))));
         waitToDockMsgList.add(new Message("in", r.getString(R.string.bikeReturnInstructions)));
 
         msgAdapter = new MessageListAdapter(getContext(), waitToDockMsgList);
@@ -509,6 +516,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                     updateView();
                     button1.setText("Change my reservation");
                     button2.setText("Get directions");
+                    main.queryServerStation(new BookingMessageToServer("cancelArrival", main.state.getArrivalStation().getId(), new TimeFormat().timeInInt(main.state.getArrivalTime()), -1));
+                    main.state.setArrivalStation(null);
+                    main.state.setArrivalTime(null);
                 } else {
 
                 }
@@ -516,6 +526,39 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             }
         });
 
+    }
+
+    private void loadBikeDockedPage(){
+        final ListView listMsg = root.findViewById(R.id.chatListViewDocked);
+        ArrayList<Message> listMessages;
+        listMessages = new ArrayList<>();
+        MessageListAdapter msgAdapter;
+
+        listMessages.add(new Message("in", String.format("You've arrived at %s and docked your bike successfully.", main.state.getDockedStation().getName())));
+        listMessages.add(new Message("in", "Thanks for using us and we'll see you next time!"));
+        msgAdapter = new MessageListAdapter(getContext(), listMessages);
+        listMsg.setAdapter(msgAdapter);
+        listMsg.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+            }
+        });
+
+        Button doneButton = root.findViewById(R.id.doneButton);
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateView();
+            }
+        });
+
+        main.state.resetState();
     }
 
     public void addQRScreenMessage(Message message){
@@ -712,11 +755,12 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             showTimePickerDialog();
         } else if (v == mapSearchButton){
             bikeReserveDetailsContainer.setVisibility(GONE);
-            replaceFragment(new MapFragment(STATIC_DEFINITIONS.STATION_LOOK_UP));
+            main.state.bookingStateTransition(false);
+            MapFragment mapFragment = new MapFragment();
+            main.state.setMapFragment(mapFragment);
+            replaceFragment(mapFragment);
         } else if (v == searchButton){
-            int openFrom;
             if (main.state.getBookingState() == State.RESERVE_BIKE_SELECTION_STATE) { // if checking for bike
-                openFrom = STATIC_DEFINITIONS.SERVER_DEPARTURE_STATION_QUERY;
                 Calendar mcurrentTime = Calendar.getInstance();
                 int currentTime = mcurrentTime.get(Calendar.HOUR_OF_DAY) * 60 + mcurrentTime.get(Calendar.MINUTE);
                 int bookedTime = new TimeFormat().timeInInt(timeEditText.getText().toString());
@@ -734,12 +778,10 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
                 updateContainerVisibility();
                 main.queryServerStation(new BookingMessageToServer("queryDepart", selectedDepartureStation.getId(), bookedTime, walkDist));
             } else { // if checking for dock
-                openFrom = STATIC_DEFINITIONS.SERVER_ARRIVAL_STATION_QUERY;
                 dockReserveDetailsContainer.setVisibility(GONE);
-                main.state.setArrivalTime(timeEditText.getText().toString());
                 main.queryServerStation(new BookingMessageToServer("queryArrival", selectedArrivalStation.getId(), borrowLength, walkDist));
             }
-            new SplashPage().execute(openFrom);
+            new SplashPage(main.state.getBookingState()).execute();
         } else if(v == choice2Button) {
             main.startQRScanner();
         } else if (v == choice3Button){
@@ -753,9 +795,11 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             } else {
                 main.queryServerStation(new BookingMessageToServer("cancelDeparture", main.state.getDepartingStation().getId(), new TimeFormat().timeInInt(main.state.getDepartureTime()), -1));
                 main.state.resetState();
-                stationEditText.setText("");
-                timeEditText.setText("");
-                altDepartureStationRadioGroup.check(R.id.no);
+                if (stationEditText != null) {
+                    stationEditText.setText("");
+                    timeEditText.setText("");
+                    altDepartureStationRadioGroup.check(R.id.no);
+                }
                 main.viewPager.getAdapter().notifyDataSetChanged();
                 updateView();
                 choice2Button.setVisibility(VISIBLE);
@@ -860,35 +904,56 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
     }
 
-    private class SplashPage extends AsyncTask<Integer, Void, Integer> {
+    private class SplashPage extends AsyncTask<Void, Void, Void> {
+
+        int key;
+        SplashPage(int key){
+            progressBarHolder = root.findViewById(R.id.progressBarHolder);
+            this.key = key;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            searchButton.setEnabled(false);
+            if (key != State.BIKE_DOCKED_STATE) {
+                searchButton.setEnabled(false);
+            }
             inAnimation = new AlphaAnimation(0f, 1f);
             inAnimation.setDuration(200);
             progressBarHolder.setAnimation(inAnimation);
             progressBarHolder.setVisibility(View.VISIBLE);
         }
         @Override
-        protected void onPostExecute(Integer integer) {
-            super.onPostExecute(integer);
+        protected void onPostExecute(Void aVoid ) {
+            super.onPostExecute(aVoid);
+            progressBarHolder = root.findViewById(R.id.progressBarHolder);
             outAnimation = new AlphaAnimation(1f, 0f);
             outAnimation.setDuration(200);
             progressBarHolder.setAnimation(outAnimation);
             progressBarHolder.setVisibility(GONE);
-            searchButton.setEnabled(true);
-            replaceFragment(new MapFragment(integer));
+            if (key != State.BIKE_DOCKED_STATE) {
+                searchButton.setEnabled(true);
+                replaceFragment(new MapFragment());
+            } else {
+                updateView();
+            }
         }
         @Override
-        protected Integer doInBackground(Integer... integers) {
+        protected Void doInBackground(Void... voids) {
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            return integers[0];
+            return null;
         }
+    }
+
+    public void bikeDocked() {
+        for (RelativeLayout relativeLayout : relativeLayoutContainers) {
+            relativeLayout.setVisibility(GONE);
+        }
+        new SplashPage(main.state.getBookingState()).execute();
     }
 
     private int pixelToDp(int pixel){

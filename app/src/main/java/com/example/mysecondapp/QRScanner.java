@@ -46,9 +46,6 @@ public class QRScanner extends AppCompatActivity implements ZXingScannerView.Res
     private AppCompatImageButton closeButton;
     private static final int MY_CAMERA_REQUEST_CODE = 100;
     private boolean flash = false;
-    private boolean scanned = false;
-    private Button OKbutton;
-    private Result rawResult;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,18 +122,12 @@ public class QRScanner extends AppCompatActivity implements ZXingScannerView.Res
 
     @Override
     public void onBackPressed(){
-        if (!scanned) {
-            super.onBackPressed();
-        } else {
-            OKbutton.callOnClick();
-        }
-        overridePendingTransition( R.anim.slide_up,0);
+        super.onBackPressed();
+        overridePendingTransition(0 ,R.anim.slide_down);
     }
 
     @Override
     public void handleResult(final Result rawResult) {
-        this.rawResult = rawResult;
-        scanned = true;
         findViewById(R.id.QRScannedLayoutContainer).setVisibility(View.VISIBLE);
         Intent intent = new Intent();
         intent.putExtra("QRCode", rawResult.getText());
