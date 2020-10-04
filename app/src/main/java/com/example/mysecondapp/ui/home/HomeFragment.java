@@ -228,7 +228,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
                 @Override
                 public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                    main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+                    int topRowVerticalPosition = (stationListView == null || stationListView.getChildCount() == 0) ? 0 : stationListView.getChildAt(0).getTop();
+                    main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
                 }
             });
 
@@ -307,7 +308,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
                 @Override
                 public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                    main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+                    int topRowVerticalPosition = (QRScanWaitList == null || QRScanWaitList.getChildCount() == 0) ? 0 : QRScanWaitList.getChildAt(0).getTop();
+                    main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
                 }
             });
 
@@ -412,7 +414,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+                int topRowVerticalPosition = (stationListView == null || stationListView.getChildCount() == 0) ? 0 : stationListView.getChildAt(0).getTop();
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
             }
         });
         directTravelRadioGroup.setOnCheckedChangeListener(this);
@@ -546,7 +549,8 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+                int topRowVerticalPosition = (listMsg == null || listMsg.getChildCount() == 0) ? 0 : listMsg.getChildAt(0).getTop();
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
             }
         });
 
@@ -933,7 +937,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, View
             progressBarHolder.setVisibility(GONE);
             if (key != State.BIKE_DOCKED_STATE) {
                 searchButton.setEnabled(true);
-                replaceFragment(new MapFragment());
+                MapFragment mapFragment = new MapFragment();
+                main.state.setMapFragment(mapFragment);
+                replaceFragment(mapFragment);
             } else {
                 updateView();
             }

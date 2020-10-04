@@ -26,6 +26,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.mysecondapp.ui.home.HomeFragment;
+import com.example.mysecondapp.ui.profile.ProfileFragment;
 import com.example.mysecondapp.ui.stationSearch.DashboardFragment;
 import com.google.gson.Gson;
 
@@ -50,6 +51,7 @@ import java.util.Objects;
 
 import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
 
+// MainActivity contains all the booking/station search/profile fragments etc..
 public class MainActivity extends AppCompatActivity {
 
     private Thread dockCheckThread;
@@ -60,8 +62,10 @@ public class MainActivity extends AppCompatActivity {
     public LocationManager locationManager;
     public Location lastKnownLocation;
 
-    private ArrayList<Station> stations = new ArrayList<Station>();;
+    private ArrayList<Station> stations = new ArrayList<Station>();
     public ArrayList<String> stationNames = new ArrayList<>();
+
+    private ArrayList<Trip> trips = new ArrayList<>();
 
     private Socket clientSocket;
     private BufferedWriter out;
@@ -85,43 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkingDock;
 
-    Context context;
-
-    private class SavedState {
-
-        int bookingState;
-        String departureStation, arrivalStation;
-        private String departureTime, arrivalTime;
-
-        SavedState(State state){
-            bookingState = state.getBookingState();
-            if (state.getDepartingStation() != null) {
-                departureStation = state.getDepartingStation().getId();
-                departureTime = state.getDepartureTime();
-            }
-            if (state.getArrivalStation() != null) {
-                arrivalStation = state.getArrivalStation().getId();
-                arrivalTime = state.getArrivalTime();
-            }
-        }
-
-    };
-    @Override
-    protected void onDestroy() {
-        SharedPreferences pref = getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
-        SharedPreferences.Editor prefsEditor = pref.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(state.getUser());
-        prefsEditor.putString(State.USER_KEY, json);
-        prefsEditor.putInt(State.LOG_KEY, state.getLoggedState());
-        json = gson.toJson(new SavedState(state));
-        prefsEditor.putString(State.STATE_KEY, json);
-
-        prefsEditor.apply();
-
-        super.onDestroy();
-    }
-
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,7 +138,41 @@ public class MainActivity extends AppCompatActivity {
         rvNavigationPicker.smoothScrollBy(-1, 0);
 
         new Connect(this).execute();
-        new GetMsg(this, "static").execute();
+        new GetMsg(this, "initialise").execute();
+    }
+    private class SavedState {
+        int bookingState;
+        String departureStation, arrivalStation;
+        private String departureTime, arrivalTime;
+
+        SavedState(State state){
+            bookingState = state.getBookingState();
+            if (state.getDepartingStation() != null) {
+                departureStation = state.getDepartingStation().getId();
+                departureTime = state.getDepartureTime();
+            }
+            if (state.getArrivalStation() != null) {
+                arrivalStation = state.getArrivalStation().getId();
+                arrivalTime = state.getArrivalTime();
+            }
+        }
+    };
+
+
+    @Override
+    protected void onDestroy() {
+        SharedPreferences pref = getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEditor = pref.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(state.getUser());
+        prefsEditor.putString(State.USER_KEY, json);
+        prefsEditor.putInt(State.LOG_KEY, state.getLoggedState());
+        json = gson.toJson(new SavedState(state));
+        prefsEditor.putString(State.STATE_KEY, json);
+
+        prefsEditor.apply();
+
+        super.onDestroy();
     }
 
     private void setUpScreen(){
@@ -202,8 +204,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onPageScrollStateChanged(int state) {
-                toggleRefreshing(state == ViewPager2.SCROLL_STATE_IDLE);
+            public void onPageScrollStateChanged(int s) {
+                toggleRefreshing(s == ViewPager2.SCROLL_STATE_IDLE);
+                if (state.getMapFragment() != null){
+                    if (currentFrag == 1){
+                        swipeRefreshLayout.setEnabled(false);
+                    }
+                }
             }
         });
 
@@ -225,15 +232,17 @@ public class MainActivity extends AppCompatActivity {
         String state_string = pref.getString(State.STATE_KEY, "null");
         if (!state_string.equals("null")) {
             SavedState savedState = new Gson().fromJson(state_string, SavedState.class);
-            state.setBookingState(savedState.bookingState);
-            if (savedState.departureStation != null) {
-                state.setDepartureTime(savedState.departureTime);
-                state.setDepartingStation(stationMap.get(savedState.departureStation));
-            }
-            if (savedState.arrivalStation != null) {
-                state.setArrivalTime(savedState.arrivalTime);
-                state.setArrivalStation(stationMap.get(savedState.arrivalStation));
-                checkDockStatus();
+            if (savedState.bookingState > State.RESERVE_BIKE_SELECTION_STATE) {
+                state.setBookingState(savedState.bookingState);
+                if (savedState.departureStation != null) {
+                    state.setDepartureTime(savedState.departureTime);
+                    state.setDepartingStation(stationMap.get(savedState.departureStation));
+                }
+                if (savedState.arrivalStation != null) {
+                    state.setArrivalTime(savedState.arrivalTime);
+                    state.setArrivalStation(stationMap.get(savedState.arrivalStation));
+                    checkDockStatus();
+                }
             }
         }
     }
@@ -254,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
             new Handler().postDelayed(new Runnable() {
                 @Override public void run() {
                     dashboardFragment.refreshed();
+                    ((ProfileFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(0)).refreshTripList();
                 }
             }, 1500);
 
@@ -266,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
                     if (state.getMapFragment() != null){
                         state.getMapFragment().updateMarkers();
                     }
+                    ((ProfileFragment)((ViewPagerAdapter) viewPager.getAdapter()).getFragment(0)).refreshTripList();
                 }
             }, 1500);
         }
@@ -343,6 +354,10 @@ public class MainActivity extends AppCompatActivity {
 
     public ArrayList<Station> getStations(){
         return stations;
+    }
+
+    public ArrayList<Trip> getTrips() {
+        return trips;
     }
 
     public void queryServerStation(BookingMessageToServer msg){
@@ -496,8 +511,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             String result = activity.readUTF8();
-            activity.updateStationInfo(result);
-
+            activity.refreshLists(result);
 
             return null;
         }
@@ -516,36 +530,36 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             MainActivity activity = activityReference.get();
             if (activity.ping) {
-                if (key.equals("static")) {
-                    activity.initialiseStationInfo(result);
-                    try {
-                        activity.clientSocket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    new GetMsg(activity, "dynamic").execute();
-                } else if (key.equals("dynamic")) {
-                    activity.updateStationInfo(result);
-                    activity.setUpScreen();
-                } else if (key.equals("queryDepart")) {
-                    activity.departQueryResults(result);
-                } else if (key.equals("QRScanned")) {
-                    activity.QRScanned(result);
-                } else if (key.equals("queryArrival")) {
-                    activity.arrivalQueryResults(result);
-                } else if (key.equals("refresh")) {
-                    activity.updateStationInfo(result);
-                    ((DashboardFragment) ((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(2)).updateMarkers();
-                    activity.swipeRefreshLayout.setRefreshing(false);
-                } else if (key.equals("confirmArrivalStation")) {
-                    activity.checkDockStatus();
-                } else if (key.equals("checkDock")) {
-                    if (!result.equals("")) {
-                        activity.checkingDock = false;
-                        activity.state.setDockedStation(activity.stationMap.get(result));
-                        activity.state.bookingStateTransition(true);
-                        ((HomeFragment) ((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(1)).bikeDocked();
-                    }
+                switch (key) {
+                    case "initialise":
+                        activity.initialiseFromServer(result);
+                        activity.setUpScreen();
+                        break;
+                    case "queryDepart":
+                        activity.departQueryResults(result);
+                        break;
+                    case "QRScanned":
+                        activity.QRScanned(result);
+                        break;
+                    case "queryArrival":
+                        activity.arrivalQueryResults(result);
+                        break;
+                    case "refresh":
+                        activity.updateStationInfo(result);
+                        ((DashboardFragment) ((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(2)).updateMarkers();
+                        activity.swipeRefreshLayout.setRefreshing(false);
+                        break;
+                    case "confirmArrivalStation":
+                        activity.checkDockStatus();
+                        break;
+                    case "checkDock":
+                        if (!result.equals("")) {
+                            activity.checkingDock = false;
+                            activity.state.setDockedStation(activity.stationMap.get(result));
+                            activity.state.bookingStateTransition(true);
+                            ((HomeFragment) ((ViewPagerAdapter) activity.viewPager.getAdapter()).getFragment(1)).bikeDocked();
+                        }
+                        break;
                 }
             }
         }
@@ -570,22 +584,60 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void initialiseStationInfo(String s){
+    private void initialiseFromServer(String s){
         try {
-            JSONArray jsonArr  = new JSONArray(s);
-            for (int i = 0; i < jsonArr.length(); i++) {
-                JSONObject jsonObj = jsonArr.getJSONObject(i);
+            JSONObject jsonObject  = new JSONObject(s);
+            JSONArray staticInfo = new JSONArray(jsonObject.getString("staticInfo"));
+            for (int i = 0; i < staticInfo.length(); i++) {
+                JSONObject jsonObj = staticInfo.getJSONObject(i);
                 Station station = new Station(this, jsonObj.getDouble("lat"), jsonObj.getDouble("long"), jsonObj.getInt("cap"), jsonObj.getString("id"));
                 stations.add(station);
                 stationMap.put(station.getId(), station);
                 stationNames.add(station.getName());
             }
-        }catch (JSONException | IOException e){
+            updateStationInfo(jsonObject.getString("dynamicInfo"));
+
+            JSONArray tripInfo = new JSONArray(jsonObject.getString("tripInfo"));
+            for (int i = 0; i < tripInfo.length(); i++) {
+                JSONObject jsonObj = tripInfo.getJSONObject(i);
+                Trip trip = new Trip(jsonObj.getString("date"), stationMap.get(jsonObj.getString("startStation")).getName(),
+                        stationMap.get(jsonObj.getString("endStation")).getName(),
+                        jsonObj.getInt("startTime"), jsonObj.getInt("endTime"),
+                        jsonObj.getString("bike"), jsonObj.getInt("duration"));
+                trips.add(trip);
+            }
+        } catch (JSONException | IOException e){
             System.out.println(e);
         }
         Collections.sort(stations);
         for (String stationId : user.getFavStations()){
-            stationMap.get(stationId).toggleFavourite();
+            stationMap.get(stationId).setAsFavourite();
+        }
+    }
+
+    private void refreshLists(String s){
+        trips = new ArrayList<>();
+        try {
+            JSONObject jsonObject  = new JSONObject(s);
+            JSONArray stationArr = new JSONArray(jsonObject.getString("stationInfo"));
+
+            for (int i = 0; i < stationArr.length(); i++) {
+                JSONObject jsonObj = stationArr.getJSONObject(i);
+                stationMap.get(jsonObj.getString("id")).setOccupancy(jsonObj.getInt("occ"));
+            }
+
+            JSONArray tripsArr =  new JSONArray(jsonObject.getString("tripInfo"));
+            for (int i = 0; i < tripsArr.length(); i++) {
+                JSONObject jsonObj = tripsArr.getJSONObject(i);
+                Trip trip = new Trip(jsonObj.getString("date"), stationMap.get(jsonObj.getString("startStation")).getName(),
+                        stationMap.get(jsonObj.getString("endStation")).getName(),
+                        jsonObj.getInt("startTime"), jsonObj.getInt("endTime"),
+                        jsonObj.getString("bike"), jsonObj.getInt("duration"));
+                trips.add(trip);
+            }
+
+        }catch (JSONException e){
+            System.out.println(e);
         }
     }
 
@@ -600,6 +652,8 @@ public class MainActivity extends AppCompatActivity {
             System.out.println(e);
         }
     }
+
+
     private void departQueryResults(String s){
         try {
             JSONArray jsonArr  = new JSONArray(s);

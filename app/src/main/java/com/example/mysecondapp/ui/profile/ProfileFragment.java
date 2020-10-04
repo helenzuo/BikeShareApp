@@ -1,10 +1,12 @@
 package com.example.mysecondapp.ui.profile;
 
+import android.animation.Animator;
 import android.animation.LayoutTransition;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -29,14 +31,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.airbnb.lottie.LottieAnimationView;
+import com.example.mysecondapp.BookingMessageToServer;
 import com.example.mysecondapp.FlipListener;
 import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.MyAdapter;
 import com.example.mysecondapp.OnSwipeTouchListener;
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.State;
+import com.example.mysecondapp.TimeFormat;
+import com.example.mysecondapp.TripListAdapter;
 import com.example.mysecondapp.User;
 import com.example.mysecondapp.ui.login.LoginActivity;
 import com.google.gson.Gson;
@@ -53,6 +60,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     private MainActivity main;
     private View root;
 
+    private ListView tripListView;
+    private TripListAdapter tripListAdapter;
     private ImageButton editProfileButton;
     private Button saveButton, cancelButton, logout;
     private ValueAnimator flipAnimator;
@@ -81,14 +90,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         dobEditText = root.findViewById(R.id.editDOBText);
         editTexts = new EditText[]{nameEditText, emailEditText, mobileEditText, dobEditText};
         for (final EditText editText : editTexts){
-            editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus){
-                        editText.setTextColor(getResources().getColor(R.color.offWhite));
-                    }
-                }
-            });
+
             editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -98,6 +100,41 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 }
             });
         }
+
+        nameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                nameEditText.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        emailEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                emailEditText.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         genderRadioGroup = root.findViewById(R.id.genderToggle);
         cardFront = root.findViewById(R.id.frontCard);
         cardBack = root.findViewById(R.id.backCard);
@@ -151,9 +188,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
         });
 
-        ListView tripListView = root.findViewById(R.id.tripListView);
-        final MyAdapter stationListAdapter = new MyAdapter(getActivity(), R.layout.station_list_card_design, main.getStations());
-        tripListView.setAdapter(stationListAdapter);
+        tripListView = root.findViewById(R.id.tripListView);
+        tripListAdapter = new TripListAdapter(getActivity(), R.layout.trips_card, main.getTrips());
+        tripListView.setAdapter(tripListAdapter);
         tripListView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -162,12 +199,19 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+                int topRowVerticalPosition = (tripListView == null || tripListView.getChildCount() == 0) ? 0 : tripListView.getChildAt(0).getTop();
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
             }
         });
         updateCard();
         return root;
     }
+
+    public void refreshTripList(){
+        tripListAdapter.notifyDataSetChanged();
+        System.out.print(tripListAdapter.getCount());
+    }
+
 
     private void updateLabel() {
         String myFormat = "dd/MM/yy"; //In which you need put here
@@ -182,6 +226,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         emailEditText.setText(main.user.getEmail());
         mobileEditText.setText(main.user.getMobile());
         dobEditText.setText(main.user.getDob());
+
         if (main.user.getGender() == User.FEMALE){
             genderRadioGroup.check(R.id.female);
             root.findViewById(R.id.animationBoy).setVisibility(View.GONE);
@@ -198,19 +243,28 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (v == editProfileButton){
+            updateCard();
             flipAnimator.start();
         } else if (v == logout) {
-            main.state.logOut();
-            SharedPreferences pref = main.getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
-            SharedPreferences.Editor prefsEditor = pref.edit();
-            Gson gson = new Gson();
-            String json = gson.toJson(main.state.getUser());
-            prefsEditor.putString(State.USER_KEY, json);
-            prefsEditor.putInt(State.LOG_KEY, main.state.getLoggedState());
-            prefsEditor.apply();
-            Intent intent = new Intent(main.getBaseContext(), LoginActivity.class);
-            main.startActivity(intent);
-            main.finish();
+            if (main.state.getBookingState() <= State.RESERVE_BIKE_SELECTION_STATE) {
+                main.state.logOut();
+                SharedPreferences pref = main.getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
+                SharedPreferences.Editor prefsEditor = pref.edit();
+                Gson gson = new Gson();
+                String json = gson.toJson(main.state.getUser());
+                prefsEditor.putString(State.USER_KEY, json);
+                prefsEditor.putInt(State.LOG_KEY, main.state.getLoggedState());
+                prefsEditor.apply();
+                Intent intent = new Intent(main.getBaseContext(), LoginActivity.class);
+                main.startActivity(intent);
+                main.finish();
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setMessage("You cannot logout when you have booked a bike! Please cancel the reservation first.");
+                builder.setPositiveButton("Ok", null);
+                AlertDialog confirmAlert = builder.create();
+                confirmAlert.show();
+            }
         } else if (v == cancelButton){
             flipAnimator.reverse();
         } else if (v == saveButton){
@@ -228,38 +282,24 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 updateCard();
                 main.updateUserInfo();
                 flipAnimator.reverse();
-            } else {
-                Toast.makeText(getContext(), "Input(s) invalid", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     boolean checkEditText(){
         boolean ok = true;
-        if (nameEditText.getText().toString().isEmpty())
+        if (nameEditText.getText().toString().isEmpty()) {
             ok = false;
-        if (!isEmailValid(emailEditText.getText().toString())) {
-            emailEditText.setTextColor(Color.RED);
+            nameEditText.setError("Enter your full name");
+        } if (!isEmailValid(emailEditText.getText().toString())) {
             ok = false;
-        }
-        if (!isPhoneValid(mobileEditText.getText().toString())) {
-            mobileEditText.setTextColor(Color.RED);
-            ok = false;
+            emailEditText.setError("Enter a valid email address");
         }
         return ok;
     }
 
     boolean isEmailValid(CharSequence email) {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
-    }
-    boolean isPhoneValid(String number){
-        number = number.trim();
-        mobileEditText.setText(number);
-        System.out.println(number.length());
-        if (number.length() < 8){
-            return false;
-        }
-        return number.substring(0, 2).equals("04");
     }
 
     private void hideKeyboard(){

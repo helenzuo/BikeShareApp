@@ -182,7 +182,7 @@
                 android:layout_marginTop="4dp"
                 android:background="@drawable/edit_text_focus"
                 android:backgroundTint="@color/editTextFocus"
-                android:hint="Mobile (required)"
+                android:hint="Mobile"
                 android:inputType="phone"
                 android:paddingVertical="5dp"
                 android:paddingStart="8dp"
@@ -257,5 +257,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/textview"
+        android:dividerHeight="1dp"
+        android:divider="@color/transparent"
         android:layout_marginHorizontal="8dp" />
 </RelativeLayout>

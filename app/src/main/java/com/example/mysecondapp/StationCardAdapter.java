@@ -58,6 +58,7 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
                     holder.init = false;
                     holder.view.requestFocus();
                 }
+                holder.assignedText.setVisibility(View.VISIBLE);
             }
         }
         String name = station.getName();
@@ -74,7 +75,7 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
                 description = "Predicted station occupancy at " + context.state.getDepartureTime();
             else
                 description = "Predicted station occupancy at " + new TimeFormat().timeInString(station.getEstArr());
-            holder.seekBar.setProgress(((int)(float)((station.getPredictedOcc()/station.getCapacity())*100)));
+            holder.seekBar.setProgress(((int)(((float) station.getPredictedOcc()/(float) station.getCapacity())*100)));
 
         } else {
             bike = station.getOccupancy() + " bikes";
@@ -98,7 +99,7 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
     }
 
     public class MyRecyclerHolder extends RecyclerView.ViewHolder {
-        private TextView stationName, stationDistance, stationAddress, stationBike, stationDock, stationOccText;
+        private TextView stationName, stationDistance, stationAddress, stationBike, stationDock, stationOccText, assignedText;
         private SeekBar seekBar;
         private boolean init = true;
         private View view;
@@ -106,6 +107,7 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
         public MyRecyclerHolder(final View itemView) {
             super(itemView);
             stationName = (TextView) itemView.findViewById(R.id.stationNameCard);
+            assignedText = itemView.findViewById(R.id.assigned);
             stationDistance = (TextView) itemView.findViewById(R.id.stationDistanceCard);
             stationAddress = itemView.findViewById(R.id.stationAddressCard);
             stationBike = (TextView) itemView.findViewById(R.id.bikeTextCard);

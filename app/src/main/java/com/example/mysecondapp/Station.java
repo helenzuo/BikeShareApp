@@ -28,14 +28,6 @@ public class Station implements Comparable<Station>{
      private int predictedOcc;
      private int estArr;
 
-//     public Station(String name, double longitude, double latitude, int capacity, int occupancy, Context context) throws IOException {
-//        mName = name;
-//        mLocation = new LatLng(latitude, longitude);
-//        mAddress = latLngToAddress(mLocation, context);
-//        mCapacity = capacity;
-//        mOccupancy = occupancy;
-//        fillLevel = (float) occupancy/capacity;
-//     }
 
     public Station(Context context, double lat, double lon, int cap, String id) throws IOException {
         this.context = context;
@@ -78,6 +70,10 @@ public class Station implements Comparable<Station>{
 
     public void toggleFavourite(){
          favourite = !favourite;
+    }
+
+    public void setAsFavourite(){
+        favourite = true;
     }
 
     public boolean getFavourite(){

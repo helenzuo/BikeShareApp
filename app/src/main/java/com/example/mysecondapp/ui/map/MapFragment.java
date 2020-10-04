@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -230,6 +231,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     public void onClick(View v) {
         if (v == selectButton) {
             if (main.state.getBookingState() != State.RESERVE_BIKE_SELECTION_STATE && main.state.getBookingState() != State.RESERVE_DOCK_SELECTION_STATE){
+                root.setOnTouchListener(null);
                 main.state.bookingStateTransition(true);
                 main.state.setMapFragment(null);
                 ((HomeFragment)getParentFragment()).setDepartureStationFromMap(centredStation);
@@ -281,6 +283,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                                             getParentFragmentManager().popBackStackImmediate();
                                             mParentListener.updateParentView();
                                             main.swipeRefreshLayout.setEnabled(true);
+                                            main.state.setMapFragment(null);
                                         }
 
                                         @Override
@@ -308,10 +311,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
                 }
             }
         } else if (v == closeMapButton){
-            if (main.state.getBookingState() != State.RESERVE_BIKE_SELECTION_STATE && main.state.getBookingState() != State.RESERVE_DOCK_SELECTION_STATE) {
+            if (main.state.getBookingState() != State.RESERVE_BIKE_SELECTION_STATE && main.state.getBookingState() != State.RESERVE_DOCK_SELECTION_STATE)
                 main.state.bookingStateTransition(true);
-                main.state.setMapFragment(null);
-            }
+            main.state.setMapFragment(null);
             getParentFragmentManager().popBackStackImmediate();
             mParentListener.updateParentView();
             main.swipeRefreshLayout.setEnabled(true);

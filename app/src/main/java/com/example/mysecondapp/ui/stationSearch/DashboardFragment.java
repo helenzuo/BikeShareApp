@@ -158,7 +158,8 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0);
+                int topRowVerticalPosition = (stationListView == null || stationListView.getChildCount() == 0) ? 0 : stationListView.getChildAt(0).getTop();
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
             }
         });
 

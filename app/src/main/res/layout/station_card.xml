@@ -14,7 +14,7 @@
     app:cardElevation="2dp"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:backgroundTint="@color/offWhite"
+    android:backgroundTint="@color/backgroundColor"
     android:padding="4dp"
     android:clickable="true">
 
@@ -27,7 +27,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:textColor="@color/almostBlack"
             android:textStyle="bold"
             android:textAllCaps="true"
             android:layout_marginEnd="16dp"
@@ -35,11 +34,20 @@
             android:focusable="false"
             android:textSize="15sp"/>
         <TextView
+            android:id="@+id/assigned"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/stationNameCard"
+            android:text="*Recommended station"
+            android:textColor="@color/buttonColor"
+            android:focusable="false"
+            android:visibility="gone"
+            android:textSize="11sp"/>
+        <TextView
             android:id="@+id/stationDistanceCard"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:textColor="@color/enabled_color"
             android:focusable="false"
             android:textSize="12sp"/>
 
@@ -48,10 +56,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textStyle="italic"
-            android:layout_below="@id/stationNameCard"
+            android:layout_below="@id/assigned"
             android:layout_alignParentStart="true"
-            android:textColor="@color/enabled_color"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:focusable="false"
             android:textSize="11sp"/>
 
@@ -61,7 +68,6 @@
             android:layout_height="wrap_content"
             android:layout_above="@id/bikeTextCard"
             android:layout_alignParentStart="true"
-            android:textColor="@color/enabled_color"
             android:layout_marginTop="12dp"
             android:focusable="false"
             android:textSize="11sp"/>
