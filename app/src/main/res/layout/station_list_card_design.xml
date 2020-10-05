@@ -15,42 +15,47 @@
         android:layout_width="match_parent"
         android:layout_height="80dp">
 
+        <RelativeLayout
+            android:paddingStart="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/favouritesToggle"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true">
+
         <TextView
             android:id="@+id/stationName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:layout_marginTop="24dp"
             android:textColor="#3d5a80"
             android:focusable="false"
             android:textStyle="bold"
             android:textSize="15sp"
+            android:paddingEnd="3dp"
             android:textAllCaps="true"/>
 
         <TextView
             android:id="@+id/stationAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
             android:layout_marginEnd="26dp"
+            android:layout_marginTop="5dp"
             android:textColor="@color/enabled_color"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="6dp"
+            android:layout_below="@id/stationName"
             android:focusable="false"
             android:textSize="12sp"/>
 
+        </RelativeLayout>
         <TextView
             android:id="@+id/stationDistance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center|start"
-            android:layout_alignBaseline="@id/stationName"
-            android:layout_marginStart="10dp"
-            android:layout_toEndOf="@id/stationName"
+            android:padding="6dp"
+            android:layout_alignParentEnd="true"
             android:textColor="@color/enabled_color"
             android:focusable="false"
-            android:textSize="12sp"/>
-
+            android:textSize="11sp"/>
         <ToggleButton
             android:id="@+id/favouritesToggle"
             android:layout_width="@dimen/favourite_icon"
@@ -60,7 +65,7 @@
             android:textOff=""
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_margin="@dimen/button_margin"
+            android:layout_marginEnd="@dimen/button_margin"
             android:background="@drawable/favourite_toggle"
             android:focusable="false"/>
     </RelativeLayout>

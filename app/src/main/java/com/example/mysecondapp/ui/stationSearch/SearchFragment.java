@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -102,7 +103,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
         for (Station station : main.getStations()) {
             float fillLevel = station.getFillLevel();
             float colour = fillLevel * 120;
-            Marker marker = googleMap.addMarker(new MarkerOptions().position(station.getLocation()).title(station.getName()).snippet(Integer.toString(station.getOccupancy())).icon(BitmapDescriptorFactory.defaultMarker(colour)));
+            Marker marker = googleMap.addMarker(new MarkerOptions().position(station.getLocation()).title(station.getName()).snippet(String.format(Locale.getDefault(),"Bikes available: %d", station.getOccupancy())).icon(BitmapDescriptorFactory.defaultMarker(colour)));
             markerMap.put(station.getName(), marker);
         }
         if (stationListAdapter != null)
