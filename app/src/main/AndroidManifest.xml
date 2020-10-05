@@ -48,7 +48,7 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity
-            android:name=".QRScanner"
+            android:name=".QRScannerActivity"
             android:screenOrientation="portrait"
             android:label="qrScanner" />
         <activity

@@ -18,9 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.mysecondapp.R;
-import com.example.mysecondapp.User;
-
-import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
+import com.example.mysecondapp.state.User;
 
 public class LoginFragment extends Fragment {
 

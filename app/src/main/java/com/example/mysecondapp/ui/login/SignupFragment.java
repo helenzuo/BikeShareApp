@@ -1,11 +1,8 @@
 package com.example.mysecondapp.ui.login;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.Html;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -16,17 +13,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.R;
-import com.example.mysecondapp.User;
-import com.google.gson.Gson;
-
-import org.w3c.dom.Text;
+import com.example.mysecondapp.state.User;
 
 public class SignupFragment extends Fragment implements View.OnClickListener {
     private EditText name, username, email, password1, password2;

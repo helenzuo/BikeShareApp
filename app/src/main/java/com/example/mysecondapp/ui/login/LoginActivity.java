@@ -11,9 +11,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.mysecondapp.MainActivity;
 import com.example.mysecondapp.R;
-import com.example.mysecondapp.State;
-import com.example.mysecondapp.Station;
-import com.example.mysecondapp.User;
+import com.example.mysecondapp.state.State;
+import com.example.mysecondapp.state.User;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;

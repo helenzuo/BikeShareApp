@@ -94,6 +94,8 @@
             android:layout_above="@id/fillLevelSeekBarCard"
             android:textSize="12sp"/>
 
+
+
         <SeekBar
             android:id="@+id/fillLevelSeekBarCard"
             android:layout_marginHorizontal="-16dp"
