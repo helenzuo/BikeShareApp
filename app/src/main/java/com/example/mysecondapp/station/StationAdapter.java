@@ -15,14 +15,15 @@ import com.example.mysecondapp.station.Station;
 
 import java.util.ArrayList;
 
-public class MyAdapter extends BaseAdapter implements Filterable {
+// StationAdapter is a custom adapter that is used to display the stations in the listviews in the booking
+// fragments. It is filterable to allow the client to search using the edittext.
+public class StationAdapter extends BaseAdapter implements Filterable {
     private ArrayList<Station> arr;
     private ArrayList<Station> orig; // Original Values
     private int resourceLayout;
     private Context context;
-    private View rowView;
 
-    public MyAdapter(Context context, int resource, ArrayList<Station> arr) {
+    public StationAdapter(Context context, int resource, ArrayList<Station> arr) {
         this.resourceLayout = resource;
         this.context = context;
         this.arr = arr;

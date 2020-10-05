@@ -16,6 +16,8 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.example.mysecondapp.R;
 
+// StationSearchBar for the searchFragment -> extends EditText and changes the appearance of the edittext
+// depending on if the user has entered text/focus on the searchbar
 public class StationSearchBar extends androidx.appcompat.widget.AppCompatEditText implements TextWatcher, View.OnFocusChangeListener, View.OnTouchListener {
 
     public ListView stationList;
@@ -86,7 +88,7 @@ public class StationSearchBar extends androidx.appcompat.widget.AppCompatEditTex
     }
 
     public void afterTextChanged(Editable s) {
-        ((MyAdapter)stationList.getAdapter()).getFilter().filter(s.toString().toLowerCase().trim());
+        ((StationAdapter)stationList.getAdapter()).getFilter().filter(s.toString().toLowerCase().trim());
         updateDrawable();
     }
 

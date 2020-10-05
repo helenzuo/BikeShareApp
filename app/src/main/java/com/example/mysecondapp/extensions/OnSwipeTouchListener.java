@@ -7,6 +7,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
+// TouchListener that detects swipes/gestures
+// Overwrite the relevant methods when using it (adding a touchlistener to a view)
 public class OnSwipeTouchListener implements OnTouchListener {
 
     public final GestureDetector gestureDetector;

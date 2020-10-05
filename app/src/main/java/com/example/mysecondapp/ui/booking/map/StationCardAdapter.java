@@ -20,6 +20,7 @@ import com.example.mysecondapp.TimeFormat;
 
 import java.util.ArrayList;
 
+// Adapter for the cards at the bottom of the map fragment
 public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.MyRecyclerHolder> {
     private LayoutInflater inflater;
     private ArrayList<Station> list;
@@ -43,13 +44,13 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
         Station station = list.get(position);
         if (context.state.getBookingState() != State.RESERVE_BIKE_SELECTION_STATE && context.state.getBookingState() != State.RESERVE_DOCK_SELECTION_STATE) {
             if (position == 0) {
-                if (holder.init) {
+                if (holder.init) {  // if first time, request focus of the first in position to make it larger
                     holder.init = false;
                     holder.view.requestFocus();
                 }
             }
         } else {
-            if (context.assigned == station) {
+            if (context.assigned == station) {  // if first time and opened after requesting booking from server, enlarge the assigned station
                 if (holder.init) {
                     holder.init = false;
                     holder.view.requestFocus();
@@ -65,23 +66,23 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
         String description;
 
         if (context.state.getBookingState() == State.RESERVE_DOCK_SELECTION_STATE || context.state.getBookingState() == State.RESERVE_BIKE_SELECTION_STATE){
-            int docks = station.getCapacity() - station.getPredictedOcc();
-            if (docks < 0) { // bikes are waiting to dock
-                dock = "0 docks";
+            int docks = station.getCapacity() - station.getPredictedOcc();  // if opened after requesting booking
+            if (docks < 0) { // bikes are waiting to dock...
+                dock = "0 docks";  // then there are no docks available at the moment
                 bike = station.getCapacity() + " bikes docked + " + (-docks) + " waiting";
-                holder.seekBar.setProgress(100);
-            } else {
+                holder.seekBar.setProgress(100);  // station at full capacity, plus more
+            } else { // if no bikes are waiting to dock...
                 bike  = station.getPredictedOcc() + " bikes";
                 dock = docks + " docks";
                 holder.seekBar.setProgress((int)((((float) station.getPredictedOcc()/(float) station.getCapacity())) * 100));
             }
-            if (context.state.getBookingState() == State.RESERVE_BIKE_SELECTION_STATE )
+            if (context.state.getBookingState() == State.RESERVE_BIKE_SELECTION_STATE )  // opened after requesting bike
                 description = "Predicted station occupancy at " + context.state.getDepartureTime();
-            else
+            else  // opened after requesting dock (estArr = what was asked for or returned from the server if not requested)
                 description = "Predicted station occupancy at " + new TimeFormat().timeInString(station.getEstArr());
-        } else {
+        } else {  // opened from the search map button
             int docks = station.getCapacity() - station.getOccupancy();
-            if (docks < 0) { // bikes are waiting to dock
+            if (docks < 0) { // bikes are waiting to dock using current occupancy levels
                 dock = "0 docks";
                 bike = station.getCapacity() + " bikes docked + " + (-docks) + " waiting";
                 holder.seekBar.setProgress(100);
@@ -92,7 +93,7 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
             }
             description = "Current station occupancy:";
         }
-        holder.stationName.setText(name);
+        holder.stationName.setText(name);  // set text of the textviews....
         holder.stationDistance.setText(distance);
         holder.stationAddress.setText(address);
         holder.stationBike.setText(bike);
@@ -113,11 +114,11 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
 
         public MyRecyclerHolder(final View itemView) {
             super(itemView);
-            stationName = (TextView) itemView.findViewById(R.id.stationNameCard);
+            stationName = itemView.findViewById(R.id.stationNameCard);
             assignedText = itemView.findViewById(R.id.assigned);
-            stationDistance = (TextView) itemView.findViewById(R.id.stationDistanceCard);
+            stationDistance = itemView.findViewById(R.id.stationDistanceCard);
             stationAddress = itemView.findViewById(R.id.stationAddressCard);
-            stationBike = (TextView) itemView.findViewById(R.id.bikeTextCard);
+            stationBike = itemView.findViewById(R.id.bikeTextCard);
             stationDock = itemView.findViewById(R.id.dockTextCard);
             seekBar = itemView.findViewById(R.id.fillLevelSeekBarCard);
             stationOccText = itemView.findViewById(R.id.stationOccText);
@@ -128,13 +129,13 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
             itemView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus) {
+                    if (hasFocus) {  // when the cardview has focus, it is made larger and opaque
                         itemView.setAlpha((float) 1);
                         // run scale animation and make it bigger
                         Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale_in);
                         itemView.startAnimation(anim);
                         anim.setFillAfter(true);
-                    } else {
+                    } else {  // other cardviews are smaller and slightly transparent
                         // run scale animation and make it smaller
                         Animation anim = AnimationUtils.loadAnimation(context, R.anim.scale_out);
                         itemView.startAnimation(anim);
@@ -143,7 +144,7 @@ public class StationCardAdapter extends RecyclerView.Adapter<StationCardAdapter.
                     }
                 }
             });
-            itemView.setOnTouchListener(new IgnorePageViewSwipe(context));
+            itemView.setOnTouchListener(new IgnorePageViewSwipe(context));  // allow horizontal swiping (don't trigger viewpager)
         }
     }
 

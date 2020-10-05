@@ -18,7 +18,7 @@ import com.example.mysecondapp.ui.stationSearch.SearchFragment;
 
 import java.util.ArrayList;
 
-public class SearchListAdapter extends MyAdapter {
+public class SearchListAdapter extends StationAdapter {
     private ArrayList<Station> arr;
     private ArrayList<Station> orig; // Original Values
 

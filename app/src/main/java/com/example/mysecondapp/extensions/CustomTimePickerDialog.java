@@ -21,8 +21,9 @@ import java.util.Locale;
 
 import static android.view.View.GONE;
 
+// Customised timepickerdialog that will verify the time selected is valid (ie: in the future)
+// for the booking pages
 public class CustomTimePickerDialog extends TimePickerDialog {
-
     TimePicker mTimePicker;
     BookingFragment bookingFragment;
     Context context;

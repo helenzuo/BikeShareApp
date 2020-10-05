@@ -18,6 +18,7 @@ import com.example.mysecondapp.R;
 import me.dm7.barcodescanner.core.DisplayUtils;
 import me.dm7.barcodescanner.core.IViewFinder;
 
+// Customised QR scanner page that removes the white border and laser animations.
 public class CustomZXingScannerView extends View implements IViewFinder {
     private static final String TAG = "ViewFinderView";
 

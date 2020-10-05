@@ -13,6 +13,9 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Locale;
 
+// Station object contains all the important information associated to each station that is retrieved
+// from the server.
+// Info is originally in JSON format and then assigned to the corresponding attribute here
 public class Station implements Comparable<Station>{
      private String id;
      private String mName;

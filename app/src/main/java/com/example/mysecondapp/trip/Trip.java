@@ -1,7 +1,8 @@
 package com.example.mysecondapp.trip;
 
-import java.util.Calendar;
-
+// Trip Class contains all the relevant information of trips that have previously been
+// taken by the user that is logged in
+// This info is retrieved from the server and stored into the appropriate attributes of this class
 public class Trip {
 
     private String date;

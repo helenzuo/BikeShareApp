@@ -29,6 +29,8 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.Socket;
 
+// This the start-up Activity that lets the user log-in
+// Note that even if the user has already logged in, we still enter the app through here
 public class LoginActivity extends AppCompatActivity {
 
     private Socket clientSocket;
@@ -46,26 +48,26 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
         getSupportActionBar().hide();
-
+        // retrieve shared preferences
         pref = getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
         int log_state = pref.getInt(State.LOG_KEY, -1);
-
+        // if not logged in
         if (log_state != State.LOGGED_IN){
+            // create the login and signup fragments
             loginFragment = new LoginFragment();
             signupFragment = new SignupFragment();
+            // and inflate the login fragment
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.container, loginFragment); // give your fragment container id in first parameter
             transaction.commit();
-        } else {
-            String user_string = pref.getString(State.USER_KEY, "null");
-            System.out.println(user_string);
-
+        } else {  // if logged in
+            String user_string = pref.getString(State.USER_KEY, "null"); // get info about the user saved in the preferences
             User user = new Gson().fromJson(user_string, User.class);
             user.saveUser();
-            sendMsg(user);
+            sendMsg(user);  // send user + pw to the server
         }
     }
-
+    // sends a message to the server
     public void sendMsg(User user){
         new LoginActivity.SendMessage(this).execute(new Gson().toJson(user));
     }
@@ -80,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            new LoginActivity.GetMsg(activityReference.get()).execute();
+            new LoginActivity.GetMsg(activityReference.get()).execute();  // after sending the message, listen for response from server
         }
 
         protected Void doInBackground(String... strings) {
@@ -89,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (activity.clientSocket != null && !activity.clientSocket.isClosed()) {
                     activity.clientSocket.close();
                 }
-                activity.clientSocket = new Socket("192.168.20.11", 8080);
+                activity.clientSocket = new Socket("192.168.20.11", 8080);  // computer IP address
                 activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                 activity.in = new DataInputStream(activity.clientSocket.getInputStream());
                 activity.out.write(strings[0]);
@@ -101,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
             return null;
         }
     }
-
+    // get message from the server
     private static class GetMsg extends AsyncTask<Void, Void, String> {
         private WeakReference<LoginActivity> activityReference;
         // only retain a weak reference to the activity
@@ -119,10 +121,10 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             LoginActivity activity = activityReference.get();
             switch (s) {
-                case "received":
+                case "received":  // if the username/email are valid for sign up
                     Intent intent = new Intent(activity.getBaseContext(), MainActivity.class);
-                    activity.signupFragment.tempUser.confirmUser();
-                     intent.putExtra(State.USER_KEY, new Gson().toJson(activity.signupFragment.tempUser));
+                    activity.signupFragment.tempUser.confirmUser();  // start the MainActivity!
+                    intent.putExtra(State.USER_KEY, new Gson().toJson(activity.signupFragment.tempUser));
                     activity.startActivity(intent);
                     try {
                         activity.clientSocket.close();
@@ -132,27 +134,26 @@ public class LoginActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     break;
-                case "both":
-                    activity.signupFragment.setErrorMessages(0);
+                case "both":  // If both username and emails are taken by someone else
+                    activity.signupFragment.setErrorMessages(0);  //set error msgs for email and username edittexts
                     break;
-                case "username":
+                case "username":  // if username is taken by someone else
                     activity.signupFragment.setErrorMessages(-1);
                     break;
-                case "email":
+                case "email":  // if email already associated with another user
                     activity.signupFragment.setErrorMessages(-2);
                     break;
-                case "fail":
+                case "fail":  // if username and/or pw don't match records on server side
                     activity.loginFragment.setErrorMessage();
                     break;
-                default: // success case
+                default: // the username/email and password matches records in server when logging in
                     try {
                         activity.clientSocket.close();
                         activity.in.close();
                         activity.out.close();
-                        System.out.println(s);
-                        JSONObject jsonObj  = new JSONObject(s);
+                        JSONObject jsonObj  = new JSONObject(s);  // get the relevant info that has been returned about the user from the server
                         activity.user = new User(jsonObj.getString("name"), jsonObj.getString("email"), "", jsonObj.getString("username"), jsonObj.getString("password"), "loggedIn");
-                        if (!jsonObj.getString("dob").equals("None"))
+                        if (!jsonObj.getString("dob").equals("None")) // and update the user class attributes using this info
                             activity.user.setDob(jsonObj.getString("dob"));
                         if (!jsonObj.getString("mobile").equals("None"))
                             activity.user.setMobile(jsonObj.getString("mobile"));
@@ -168,15 +169,14 @@ public class LoginActivity extends AppCompatActivity {
                         activity.user.setGender(jsonObj.getInt("gender"));
                         intent = new Intent(activity.getBaseContext(), MainActivity.class);
                         intent.putExtra(State.USER_KEY, new Gson().toJson(activity.user));
-                        activity.startActivity(intent);
-
+                        activity.startActivity(intent);  // start the main activity and pass this user class over to it as an extra
                     } catch (JSONException | IOException e) {
                         e.printStackTrace();
                     }
             }
         }
     }
-
+    // Returns string until end of line (-1) of the input stream
     private String readUTF8(){
         int n;
         char[] buffer = new char[1024 * 4];

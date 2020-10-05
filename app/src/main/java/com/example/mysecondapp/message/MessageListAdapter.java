@@ -12,6 +12,9 @@ import com.example.mysecondapp.R;
 
 import java.util.ArrayList;
 
+// MessageListAdapter is the adapter that is attached to the chatlist listviews
+// Need custom adapter as we use custom objects (not strings) to decide which sort of chat bubble
+// (received or sent) to use..
 public class MessageListAdapter extends BaseAdapter {
 
     private Context context;

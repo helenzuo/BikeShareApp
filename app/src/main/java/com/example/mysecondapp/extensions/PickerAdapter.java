@@ -13,8 +13,9 @@ import com.example.mysecondapp.R;
 
 import java.util.List;
 
-// Created by adityagohad on 06/06/17.
-
+// Created by adityagohad on 06/06/17. -> updated for this app
+// This is the adapter that is attached to the spinner at the top of the app for the navigation between
+// fragments
 public class PickerAdapter extends RecyclerView.Adapter<PickerAdapter.TextVH> {
 
     private Context context;

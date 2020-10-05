@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.state.User;
 
+// LoginFragment for the user to log in with
 public class LoginFragment extends Fragment {
 
     private View root;
@@ -49,7 +50,7 @@ public class LoginFragment extends Fragment {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public void afterTextChanged(Editable s) {  // remove the errors if any, after text change in edit text
                 if (username.getText().length() > 0)
                     username.setError(null);
                 if (password.getText().length() > 0)
@@ -57,24 +58,24 @@ public class LoginFragment extends Fragment {
             }
         };
 
-        username.addTextChangedListener(textWatcher);
+        username.addTextChangedListener(textWatcher);  // set textwatcher to edit texts
         password.addTextChangedListener(textWatcher);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                if (username.getText().length() > 0 && password.getText().length() > 0) {
-                    User tempUser;
-                    if (android.util.Patterns.EMAIL_ADDRESS.matcher(username.getText()).matches()) {
+            public void onClick(View v) {  // set click listener on the login button
+                if (username.getText().length() > 0 && password.getText().length() > 0) {  // if both username and pw have text entered
+                    User tempUser;  // create a temporary user
+                    if (android.util.Patterns.EMAIL_ADDRESS.matcher(username.getText()).matches()) {  // and assign username/email and pw from edittexts
                         tempUser = new User(null, username.getText().toString().toLowerCase().trim(), null, null, password.getText().toString(), "logIn");
                     } else {
                         tempUser = new User(null, null, null, username.getText().toString().toLowerCase().trim(), password.getText().toString(), "logIn");
                     }
                     LoginActivity activity = (LoginActivity) getActivity();
-                    activity.sendMsg(tempUser);
+                    activity.sendMsg(tempUser);  // send this user over to server to verify if it matches records
                     return;
                 }
-                if (username.getText().length() == 0)
+                if (username.getText().length() == 0)  // set errors on the edittexts if either are empty
                     username.setError("Enter your email/username");
                 if (password.getText().length() == 0)
                     password.setError("Enter your password");
@@ -82,8 +83,8 @@ public class LoginFragment extends Fragment {
         });
         createAccount.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                try {
+            public void onClick(View v) {  // set click listener on the sign up text view
+                try { // clicking it will replace this fragment with the signup fragment
                     FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                     transaction.replace(R.id.container, ((LoginActivity)getActivity()).signupFragment); // give your fragment container id in first parameter
                     transaction.commit();
@@ -94,7 +95,7 @@ public class LoginFragment extends Fragment {
         root.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                hideKeyboard();
+                hideKeyboard(); // hide keyboard and clear focus
                 return false;
             }
         });
@@ -102,19 +103,19 @@ public class LoginFragment extends Fragment {
         password.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                hideKeyboard();
+                hideKeyboard(); // hide keyboard if pressing enter on the password edittext
                 return false;
             }
         });
         return root;
     }
-
+    // hide keyboard and clear focus
     private void hideKeyboard(){
         root.clearFocus();
         InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(root.getApplicationWindowToken(), 0);
     }
-
+    // public method for the login activity to call if server responds username/password don't match records
     public void setErrorMessage(){
         username.setError("Username and/or password incorrect");
         password.setError("Username and/or password incorrect");

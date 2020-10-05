@@ -3,6 +3,8 @@ package com.example.mysecondapp.state;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+// All the information unique to the client currently logged in. This information is retrieved from the
+// server in JSON format and then stored into this class for the app to use
 public class User {
     private String name;
     private String email;

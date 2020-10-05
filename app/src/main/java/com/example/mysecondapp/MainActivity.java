@@ -617,10 +617,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException | IOException e){
             System.out.println(e);
         }
-        Collections.sort(stations);  // sort the stations by alphabetical order...
         for (String stationId : user.getFavStations()){ // get the favourite stations of the user and update Station Objects
             stationMap.get(stationId).setAsFavourite();
         }
+        Collections.sort(stations);  // sort the stations by alphabetical order and push the favourites to the top...
     }
 
     // Updates the Station and Trip lists to reflect current station occupancies

@@ -44,6 +44,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+// Profile fragments shows user information and let's them change their details
+// also displays past trips
 public class ProfileFragment extends Fragment implements View.OnClickListener {
     Calendar myCalendar;
     DatePickerDialog.OnDateSetListener date;
@@ -66,7 +68,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     @SuppressLint("ClickableViewAccessibility")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
+        // get all the views
         root = inflater.inflate(R.layout.fragment_profile, container, false);
         main = (MainActivity)getActivity();
         logout = root.findViewById(R.id.logout);
@@ -80,8 +82,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         mobileEditText = root.findViewById(R.id.editNumberText);
         dobEditText = root.findViewById(R.id.editDOBText);
         editTexts = new EditText[]{nameEditText, emailEditText, mobileEditText, dobEditText};
+        // set listeners for all the edittexts, where pressing enter will hide keyboard and remove focus from editText
         for (final EditText editText : editTexts){
-
             editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -91,7 +93,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 }
             });
         }
-
+        // Textwatchers for name and email EditTexts (required fields) that clear the error message when
+        // any text is entered
         nameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -125,7 +128,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
             }
         });
-
         genderRadioGroup = root.findViewById(R.id.genderToggle);
         cardFront = root.findViewById(R.id.frontCard);
         cardBack = root.findViewById(R.id.backCard);
@@ -138,6 +140,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 return false;
             }
         });
+        // animate the flip of card from front to back
         flipAnimator = ValueAnimator.ofFloat(0f, 1f);
         flipAnimator.addUpdateListener(new FlipListener(cardFront, cardBack));
         flipAnimator.setDuration(700);
@@ -146,7 +149,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         editProfileButton.setOnClickListener(this);
         saveButton.setOnClickListener(this);
         cancelButton.setOnClickListener(this);
-
+        // use a calandar to select date of birth
+        // when date selected, update the EditText of the DOB field
         myCalendar = Calendar.getInstance();
         date = new DatePickerDialog.OnDateSetListener() {
             @Override
@@ -159,7 +163,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 updateLabel();
             }
         };
-
+        // bring up the calendar dialog when the DOB field is clicked
         dobEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -173,12 +177,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 Date today = new Date();
                 Calendar c = Calendar.getInstance();
                 c.setTime(today);
-                c.add( Calendar.YEAR, -5 );  // Subtract 5 years
+                c.add( Calendar.YEAR, -5 );  // Subtract 5 years (user must be at least 5 years old)
                 datePickerDialog.getDatePicker().setMaxDate(c.getTime().getTime());
             }
 
         });
 
+        // List of past trips
         tripListView = root.findViewById(R.id.tripListView);
         tripListAdapter = new TripListAdapter(getActivity(), R.layout.trips_card, main.getTrips());
         tripListView.setAdapter(tripListAdapter);
@@ -191,25 +196,23 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int topRowVerticalPosition = (tripListView == null || tripListView.getChildCount() == 0) ? 0 : tripListView.getChildAt(0).getTop();
-                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0); // disable refresh unless at the top of the list
             }
         });
-        updateCard();
+        updateCard();  // updates both the back and front of the card
         return root;
     }
-
+    // public method that is called by MainActivity when the app is refreshed (ie, the trip list has changed)
     public void refreshTripList(){
         tripListAdapter.notifyDataSetChanged();
-        System.out.print(tripListAdapter.getCount());
     }
-
-
+    // Called when a date has been selected for DOB. This sets the format for the DOB field string
     private void updateLabel() {
         String myFormat = "dd/MM/yy"; //In which you need put here
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
         dobEditText.setText(sdf.format(myCalendar.getTime()));
     }
-
+    // updates the back and front of the card using the attributes stored in the User Class
     public void updateCard(){
         nameTextView.setText(main.user.getName());
         userTextView.setText(main.user.getUserName());
@@ -230,26 +233,25 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-
     @Override
     public void onClick(View v) {
-        if (v == editProfileButton){
+        if (v == editProfileButton){  // flip the card around and update the card before doing so
             updateCard();
             flipAnimator.start();
         } else if (v == logout) {
-            if (main.state.getBookingState() <= State.RESERVE_BIKE_SELECTION_STATE) {
-                main.state.logOut();
+            if (main.state.getBookingState() <= State.RESERVE_BIKE_SELECTION_STATE) {  // if bike hasn't been booked, free to log out
+                main.state.logOut();  // update state -> this removes the User class linked with the State Class
                 SharedPreferences pref = main.getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
                 SharedPreferences.Editor prefsEditor = pref.edit();
                 Gson gson = new Gson();
-                String json = gson.toJson(main.state.getUser());
+                String json = gson.toJson(main.state.getUser());  // this will be null now
                 prefsEditor.putString(State.USER_KEY, json);
-                prefsEditor.putInt(State.LOG_KEY, main.state.getLoggedState());
-                prefsEditor.apply();
-                Intent intent = new Intent(main.getBaseContext(), LoginActivity.class);
+                prefsEditor.putInt(State.LOG_KEY, main.state.getLoggedState()); // "logged out"
+                prefsEditor.apply();  // save preferences
+                Intent intent = new Intent(main.getBaseContext(), LoginActivity.class);  // start LoginActivity
                 main.startActivity(intent);
-                main.finish();
-            } else {
+                main.finish();  // end main activity so that cannot press back key and return
+            } else {  // if a bike has been booked, tell the user that they must cancel this booking before logging out!
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setMessage("You cannot logout when you have booked a bike! Please cancel the reservation first.");
                 builder.setPositiveButton("Ok", null);
@@ -259,8 +261,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         } else if (v == cancelButton){
             flipAnimator.reverse();
         } else if (v == saveButton){
-            if (checkEditText()){
-                main.user.setName(nameEditText.getText().toString());
+            if (checkEditText()){  // check if required fields (name and email) are valid format
+                main.user.setName(nameEditText.getText().toString());  // if so, update the User Class attribute to what has been entered
                 main.user.setEmail(emailEditText.getText().toString());
                 main.user.setMobile(mobileEditText.getText().toString());
                 main.user.setDob(dobEditText.getText().toString());
@@ -276,23 +278,23 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             }
         }
     }
-
+    // checks that the name and email fields are valid, returns true if so
     boolean checkEditText(){
         boolean ok = true;
-        if (nameEditText.getText().toString().isEmpty()) {
+        if (nameEditText.getText().toString().isEmpty()) {  // make sure something is entered in the name, don't force a format bc people have different names..
             ok = false;
-            nameEditText.setError("Enter your full name");
+            nameEditText.setError("Enter your full name"); // if empty, set an error
         } if (!isEmailValid(emailEditText.getText().toString())) {
             ok = false;
-            emailEditText.setError("Enter a valid email address");
+            emailEditText.setError("Enter a valid email address"); // if email doesn't match email format, set an error
         }
         return ok;
     }
-
+    // check if email matches email format
     boolean isEmailValid(CharSequence email) {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
-
+    // hide soft input keyboard
     private void hideKeyboard(){
         InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(root.getApplicationWindowToken(), 0);

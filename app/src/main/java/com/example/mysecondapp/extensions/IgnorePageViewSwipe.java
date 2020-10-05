@@ -6,6 +6,8 @@ import android.view.View;
 
 import com.example.mysecondapp.MainActivity;
 
+// TouchListener that allows for horizontal swipes without triggering the viewpager
+// ie: it disables the viewpager on down touch and enables it on release
 public class IgnorePageViewSwipe implements View.OnTouchListener {
 
     private Context context;

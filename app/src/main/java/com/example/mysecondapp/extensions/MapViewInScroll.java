@@ -7,6 +7,8 @@ import android.view.MotionEvent;
 import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 
+// Mapview that ignores the view pager -> allows the user to navigate the map without triggering
+// the viewpager
 public class MapViewInScroll extends MapView {
     public MapViewInScroll(Context context) {
         super(context);

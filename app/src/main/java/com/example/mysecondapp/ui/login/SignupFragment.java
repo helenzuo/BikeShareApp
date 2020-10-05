@@ -19,7 +19,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.mysecondapp.R;
 import com.example.mysecondapp.state.User;
-
+// Signup Fragment for the user to sign up with
 public class SignupFragment extends Fragment implements View.OnClickListener {
     private EditText name, username, email, password1, password2;
     private Button createAccount;
@@ -43,7 +43,7 @@ public class SignupFragment extends Fragment implements View.OnClickListener {
 
         login.setOnClickListener(this);
         createAccount.setOnClickListener(this);
-
+        // add text watchers for all the edit texts to clear the error msg if any text is entered
         name.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -131,11 +131,12 @@ public class SignupFragment extends Fragment implements View.OnClickListener {
         return root;
     }
 
+    // checks if the string matches an accepted email format
     boolean isEmailValid(CharSequence email) {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
-
+    // public method for the LoginActivity to call if the username/emails already exist in database
     public void setErrorMessages(int errors){
         if (errors == 0){
             username.setError("Username already exists");
@@ -146,7 +147,7 @@ public class SignupFragment extends Fragment implements View.OnClickListener {
             email.setError("Member with this email already exists");
         }
     }
-
+    // Check if password meets length requirement (5 characters) and they match
     int isPasswordValid(String password1, String password2) {
         if (password1.length() < 5){
             return -1;
@@ -155,44 +156,45 @@ public class SignupFragment extends Fragment implements View.OnClickListener {
         }
         return 1;
     }
+
     @Override
     public void onClick(View v) {
-        if (v == login){
+        if (v == login){ // if login textview pressed, switch to the login fragment
             try {
                 FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
                 transaction.replace(R.id.container, new LoginFragment()); // give your fragment container id in first parameter
                 transaction.commit();
             } catch (Exception ignored) { }
-        } else {
+        } else {  // if the signup button pressed
             boolean ok = true;
-            if (name.getText().toString().trim().length() == 0) {
+            if (name.getText().toString().trim().length() == 0) {  // check if the name isn't empty
                 name.setError("Enter full name");
                 ok = false;
             }
-            if (username.getText().toString().trim().length() == 0){
+            if (username.getText().toString().trim().length() == 0){  // check if the username is empty
                 username.setError("Enter username");
                 ok = false;
             }
-            if (!isEmailValid(email.getText())) {
+            if (!isEmailValid(email.getText())) {  // check if email matches email format
                 email.setError("Enter valid email address");
                 ok = false;
             }
-            int passwordValid = isPasswordValid(password1.getText().toString(), password2.getText().toString());
-            if (passwordValid == -1){
+            int passwordValid = isPasswordValid(password1.getText().toString(), password2.getText().toString()); // check if passwords valid
+            if (passwordValid == -1){  // doesn't meet length requirement
                 password1.setError("Password must be at least 5 characters long");
                 ok = false;
-            } else if (passwordValid == -2){
+            } else if (passwordValid == -2){ // passwords do not match
                 password2.setError("Passwords do not match");
                 ok = false;
             }
-            if (ok){
+            if (ok){  // if everything checks out, send this temp user to the server to check if any users in database already taken the email/username
                 tempUser = new User(name.getText().toString(), email.getText().toString().toLowerCase().trim(), "", username.getText().toString().trim().toLowerCase(), password1.getText().toString(), "signUp");
                 LoginActivity activity = (LoginActivity) getActivity();
                 activity.sendMsg(tempUser);
             }
         }
     }
-
+    // hide keyboard and clear focus from all edittexts
     private void hideKeyboard(){
         root.clearFocus();
         InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);

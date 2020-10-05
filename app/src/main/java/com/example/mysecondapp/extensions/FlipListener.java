@@ -3,7 +3,7 @@ package com.example.mysecondapp.extensions;
 import android.animation.ValueAnimator;
 import android.view.View;
 
-
+// Animator for the card of profile (when flipping from back to front and vice versa)
 public class FlipListener implements ValueAnimator.AnimatorUpdateListener {
 
     private final View mFrontView;

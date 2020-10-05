@@ -42,6 +42,8 @@ import java.util.HashMap;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+// SearchFragment allows user to see where the stations are on map view or in a list format
+// Live info on what the occupancies of each of the stations are
 public class SearchFragment extends Fragment implements OnMapReadyCallback {
     private MapViewInScroll mapView;
     private GoogleMap googleMap;
@@ -73,25 +75,27 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
         mapView.getMapAsync(this);
     }
 
-
+    // center on current location (with animation)
     @SuppressLint("MissingPermission")
-    public void centreOnCurrentLocation(Location location) {
+    private void centreOnCurrentLocation(Location location) {
         LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         googleMap.setMyLocationEnabled(true);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 16F));
     }
-
-    public void centreOnStation(String station){
+    // center on station passed in as a name with animation. Also show marker info pop-up
+    private void centreOnStation(String station){
         Marker marker = markerMap.get(station);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 16F));
         marker.showInfoWindow();
     }
-
+    // public method for when map button clicked on the drop-down list view of stations
+    // This toggles to map view and centers on the station corresponding to the map button that was pressed
     public void stationSelectedFromList(Station station){
         radioGroup.check(R.id.mapToggle);
         centreOnStation(station.getName());
     }
-
+    // public method to reload all the map markers to reflect the new fill levels of stations
+    // called by the MainActivity after refreshing
     public void updateMarkers(){
         markerMap = new HashMap<>();
         googleMap.clear();
@@ -133,14 +137,14 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
                 // This puts the value (true/false) into the variable
                 boolean isChecked = checkedRadioButton.isChecked();
                 // If the radiobutton that has changed in check state is now checked...
-                if (isChecked && checkedRadioButton.getId() == R.id.mapToggle) {
-                    root.findViewById(R.id.listView).setVisibility(GONE);
+                if (isChecked && checkedRadioButton.getId() == R.id.mapToggle) {  // map view selected
+                    root.findViewById(R.id.listView).setVisibility(GONE);  // hide the listview and show the map view
                     refreshButton.setVisibility(VISIBLE);
                     root.findViewById(R.id.mapView).setVisibility(VISIBLE);
-                    main.swipeRefreshLayout.setEnabled(false);
+                    main.swipeRefreshLayout.setEnabled(false);  // disable refreshing by pull down when on the mapview
                     updateMarkers();
-                } else {
-                    root.findViewById(R.id.listView).setVisibility(VISIBLE);
+                } else {  // listview selected
+                    root.findViewById(R.id.listView).setVisibility(VISIBLE); // hide the mapview and show the listview
                     root.findViewById(R.id.mapView).setVisibility(GONE);
                     refreshButton.setVisibility(GONE);
                     main.swipeRefreshLayout.setEnabled(true);
@@ -151,7 +155,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
         stationListView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
-                searchBar.clearFocus();
+                searchBar.clearFocus();  // hide the keyboard and clear focus when user scrolls on the listview
                 InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(root.getApplicationWindowToken(), 0);
             }
@@ -159,39 +163,38 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int topRowVerticalPosition = (stationListView == null || stationListView.getChildCount() == 0) ? 0 : stationListView.getChildAt(0).getTop();
-                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);  // allow refresh only when at top of listview
             }
         });
 
         sortButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v) {  // use this button to reorder the stations list
                 //Creating the instance of PopupMenu
                 PopupMenu popup = new PopupMenu(getContext(), sortButton);
                 //Inflating the Popup using xml file
                 popup.getMenuInflater()
                         .inflate(R.menu.pop_up_sort_menu, popup.getMenu());
-
                 //registering popup with OnMenuItemClickListener
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()){
-                            case R.id.alpha:
+                            case R.id.alpha:  // a -> z
                                 Collections.sort(main.getStations(), new StationComparator(0));
                                 break;
-                            case R.id.alphaRev:
+                            case R.id.alphaRev:  // z -> a
                                 Collections.sort(main.getStations(), new StationComparator(1));
                                 break;
-                            case R.id.distance:
+                            case R.id.distance: // closest -> furthest
                                 Collections.sort(main.getStations(), new StationComparator(2));
                                 break;
-                            case R.id.bike:
+                            case R.id.bike:  // most bikes to least
                                 Collections.sort(main.getStations(), new StationComparator(3));
                                 break;
-                            case R.id.bikeDown:
+                            case R.id.bikeDown:  // least bikes to most
                                 Collections.sort(main.getStations(), new StationComparator(4));
                                 break;
-                            case R.id.favs:
+                            case R.id.favs:  // push favourited stations to top (this is the default sorting order)
                                 Collections.sort(main.getStations());
                                 break;
                         }
@@ -199,28 +202,27 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
                         return true;
                     }
                 });
-                popup.show(); //showing popup menu
+                popup.show(); //show popup menu when sort button pressed
             }
         });
 
         onCameraMoveListener = new GoogleMap.OnCameraMoveStartedListener() {
             @Override
-            public void onCameraMoveStarted(int i) {
+            public void onCameraMoveStarted(int i) {  // hide the "refresh" button when user is navigating on the map
                 refreshButton.animate().alpha(0.0f).setDuration(200).start();
                 refreshButton.setEnabled(false);
             }
         };
-
         googleMap.setOnCameraMoveStartedListener(onCameraMoveListener);
 
         googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
-            public void onCameraIdle() {
+            public void onCameraIdle() {  // show the refresh button when the user has stopped moving the map
                 refreshButton.animate().alpha(1.0f).setDuration(200).start();
                 refreshButton.setEnabled(true);
             }
         });
-
+        // request for the station info to be refreshed when the refresh button is clicked in the map view mode
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -228,13 +230,14 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
             }
         });
     }
-
+    // Public method called by MainActivity when first requesting refreshed info from server
+    // update the refresh button text and disable it while server has yet to respond
     public void refreshing(){
         refreshButton.setText("Refreshing...");
         refreshButton.setEnabled(false);
         googleMap.setOnCameraMoveStartedListener(null);
     }
-
+    // once the map view has finished being refresh, re-enable the refresh button
     public void refreshed(){
         refreshButton.setText("Refresh");
         refreshButton.setEnabled(true);

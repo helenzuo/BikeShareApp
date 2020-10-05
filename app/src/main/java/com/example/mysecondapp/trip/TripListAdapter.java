@@ -14,6 +14,8 @@ import com.example.mysecondapp.TimeFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
+// Adapter that is used with Trips ListView to display the previous trips that the user has taken
+// ArrayList is formed from Trip Objects
 public class TripListAdapter extends BaseAdapter {
     private ArrayList<Trip> arr;
     private int resourceLayout;

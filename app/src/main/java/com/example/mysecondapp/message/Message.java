@@ -1,5 +1,9 @@
 package com.example.mysecondapp.message;
 
+// Message class that is used to display the messages in the chatlist format listviews in the
+// booking pages
+// type = "in" or "out"
+// message is what is displayed in the chat bubbles
 public class Message {
     private String type;
     private String message;

@@ -1,5 +1,7 @@
 package com.example.mysecondapp.jsonFormat;
 
+// Object that is to be converted to JSON format to request info from the server using
+// the TCP socket
 public class BookingMessageToServer {
     private String key;
     private String id;

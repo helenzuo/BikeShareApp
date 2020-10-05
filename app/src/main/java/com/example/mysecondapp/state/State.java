@@ -3,6 +3,9 @@ package com.example.mysecondapp.state;
 import com.example.mysecondapp.station.Station;
 import com.example.mysecondapp.ui.booking.map.MapFragment;
 
+// State class contains all the important information about the booking status of the user
+// that needs to be retained in case the app is closed and reopened.
+// As well as help the flow the of the app
 public class State {
 
     public static final int START_BOOKING_STATE = 0;

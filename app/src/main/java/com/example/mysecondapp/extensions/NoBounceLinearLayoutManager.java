@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import travel.ithaka.android.horizontalpickerlib.PickerLayoutManager;
 
+// This removes the bounce effect of the snaphelper for RecyclerViews
+// We use this for the navigation spinner at the top of the app
 public class NoBounceLinearLayoutManager extends PickerLayoutManager {
 
     public NoBounceLinearLayoutManager(Context context, int orientation, boolean reverseLayout) {

@@ -3,8 +3,9 @@ package com.example.mysecondapp;
 import java.util.Calendar;
 import java.util.Locale;
 
+// Class for converting time for int in minutes to string and vice versa
 public class TimeFormat {
-
+    // convert time in minutes to String format (AM/PM)
     public String timeInString(int minutes){
         int hours = minutes/60;
         minutes = minutes % 60;
@@ -14,7 +15,7 @@ public class TimeFormat {
         }
         return String.format(Locale.getDefault(), "%d:%02d %s", hours, minutes, "AM" );
     }
-
+    // convert current time + some minutes in minutes to string format (AM/PM)
     public String currentTimeInString(int plusMinutes){
         Calendar now = Calendar.getInstance();
         int minutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE);
@@ -27,8 +28,7 @@ public class TimeFormat {
         }
         return String.format(Locale.getDefault(), "%d:%02d%s", hours, minutes, "AM" );
     }
-
-
+    // convert string format (AM/PM) time to time in minutes (int)
     public int timeInInt(String s) {
         s = s.trim();
         String[] hourMinAP = s.split(":");

@@ -10,6 +10,9 @@ import com.example.mysecondapp.ui.stationSearch.SearchFragment;
 import com.example.mysecondapp.ui.booking.BookingFragment;
 import com.example.mysecondapp.ui.profile.ProfileFragment;
 
+// Adapter associated with view pager
+// ListArray contains all the fragments that can be reached using the view pager
+// by swiping
 public class ViewPagerAdapter extends FragmentStateAdapter {
 
     private final Fragment[] childFragments;
