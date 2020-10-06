@@ -51,7 +51,7 @@
             android:id="@+id/mapLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-            <com.example.mysecondapp.extensions.MapViewInScroll
+            <com.example.BikesShare.extensions.MapViewInScroll
                 android:id="@+id/map"
                 android:layout_width="match_parent"
                 android:name="com.google.android.gms.maps.MapView"

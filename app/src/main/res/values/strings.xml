@@ -1,17 +1,5 @@
 <resources>
-    <string name="app_name">MySecondApp</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
-    <string name="edit_profile">Edit Profile</string>
-
-    <string name="user_first_name">First Name</string>
-    <string name="user_surname">Surname</string>
-    <string name="user_gender">Gender</string>
-    <string name="user_max_walk">Walkable Distance</string>
-    <string name="title_activity_maps">Map</string>
-    <string name="action_search">searchStations</string>
-    <string name="search">search</string>
+    <string name="app_name">Bike Share</string>
 
     <string name="userQueryStationDepart">Where would you like to depart from?</string>
     <string name="userQueryStationArrive">Where would you like to return this bike?</string>
@@ -39,7 +27,6 @@
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome !"</string>
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>

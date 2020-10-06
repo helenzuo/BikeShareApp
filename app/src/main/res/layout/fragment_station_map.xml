@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:layout_above="@id/toggleMapList">
 
-        <com.example.mysecondapp.station.StationSearchBar
+        <com.example.BikesShare.station.StationSearchBar
             android:id="@+id/stationSearchBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -56,7 +56,7 @@
 
     </RelativeLayout>
 
-    <com.example.mysecondapp.extensions.MapViewInScroll
+    <com.example.BikesShare.extensions.MapViewInScroll
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
