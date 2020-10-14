@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -27,7 +28,9 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 // This the start-up Activity that lets the user log-in
 // Note that even if the user has already logged in, we still enter the app through here
@@ -36,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
     private Socket clientSocket;
     private BufferedWriter out;
     private DataInputStream in;
+    private boolean ping;
 
     public LoginFragment loginFragment;
     public SignupFragment signupFragment;
@@ -82,7 +86,10 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            new LoginActivity.GetMsg(activityReference.get()).execute();  // after sending the message, listen for response from server
+            if (activityReference.get().ping)
+                new LoginActivity.GetMsg(activityReference.get()).execute();  // after sending the message, listen for response from server
+            else
+                Toast.makeText(activityReference.get(), "Server unavailable. Try again later", Toast.LENGTH_LONG).show();
         }
 
         protected Void doInBackground(String... strings) {
@@ -91,11 +98,15 @@ public class LoginActivity extends AppCompatActivity {
                 if (activity.clientSocket != null && !activity.clientSocket.isClosed()) {
                     activity.clientSocket.close();
                 }
-                activity.clientSocket = new Socket("192.168.20.11", 8080);  // computer IP address
+                SocketAddress sockAdr = new InetSocketAddress("192.168.20.11", 8080);
+                activity.clientSocket = new Socket();
+                int timeout = 2000;
+                activity.clientSocket.connect(sockAdr, timeout);
                 activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                 activity.in = new DataInputStream(activity.clientSocket.getInputStream());
                 activity.out.write(strings[0]);
                 activity.out.flush();
+                activity.ping = true;
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

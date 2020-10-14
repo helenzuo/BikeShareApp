@@ -182,7 +182,7 @@ public class BookingFragment extends Fragment implements View.OnClickListener, V
     }
     // If booking state = selected the departure station, this is called
     private void loadDepartureStationSelectionPage(){
-        if (timeSelectLayout == null) { // only do all this if this is the first time app is seeing views below..
+        if (timeSelectLayout != root.findViewById(R.id.departTimePickLayout)) { // only do all this if this is the first time app is seeing views below..
             timeSelectLayout = root.findViewById(R.id.departTimePickLayout);
             altStationLayout = root.findViewById(R.id.walkingRelativeLayout);
             distanceSelectLayout = root.findViewById(R.id.distanceSelectLayout);
@@ -273,68 +273,70 @@ public class BookingFragment extends Fragment implements View.OnClickListener, V
             root.setOnTouchListener(this);
         }
         updateScreenGraphics();
+        updateStationEditTextGraphics(stationEditText);
+
     }
     // after a departure station has been selected, prompt user to scan qr code upon arrival
     private void loadQRScannerPage(){
-        if (QRScanWaitList == null) {
-            // Animate the swipe up visual to open QR scanner
-            TextView textView = root.findViewById(R.id.textViewSlideUp);
-            Animation anim = new AlphaAnimation(0.0f, 1.0f);
-            anim.setDuration(500);
-            anim.setStartOffset(500);
-            anim.setRepeatMode(Animation.REVERSE);
-            anim.setRepeatCount(Animation.INFINITE);
-            textView.startAnimation(anim);
 
-            // Chat style list view format
-            QRScanWaitList = root.findViewById(R.id.waitQRListView);
-            QRScanWaitMsgList = new ArrayList<>();
-            final MessageListAdapter msgAdapter;
-            // contains information about booking of bike
-            QRScanWaitMsgList.add(new Message("in", r.getString(R.string.bikeReserved)));
-            QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s", main.state.getDepartingStation().getName())));
-            QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s", main.state.getDepartingStation().getAddress())));
-            QRScanWaitMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Reserved Time: %s", main.state.getDepartureTime()))));
-            QRScanWaitMsgList.add(new Message("in", r.getString(R.string.QRInstruction)));
+        // Animate the swipe up visual to open QR scanner
+        TextView textView = root.findViewById(R.id.textViewSlideUp);
+        Animation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(500);
+        anim.setStartOffset(500);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
+        textView.startAnimation(anim);
 
-            msgAdapter = new MessageListAdapter(getContext(), QRScanWaitMsgList);
-            QRScanWaitList.setAdapter(msgAdapter);
-            QRScanWaitList.setOnScrollListener(new AbsListView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(AbsListView view, int scrollState) {
+        // Chat style list view format
+        QRScanWaitList = root.findViewById(R.id.waitQRListView);
+        QRScanWaitMsgList = new ArrayList<>();
+        final MessageListAdapter msgAdapter;
+        // contains information about booking of bike
+        QRScanWaitMsgList.add(new Message("in", r.getString(R.string.bikeReserved)));
+        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Station: %s", main.state.getDepartingStation().getName())));
+        QRScanWaitMsgList.add(new Message("in", String.format(Locale.getDefault(), "Address: %s", main.state.getDepartingStation().getAddress())));
+        QRScanWaitMsgList.add(new Message("in", (String.format(Locale.getDefault(), "Reserved Time: %s", main.state.getDepartureTime()))));
+        QRScanWaitMsgList.add(new Message("in", r.getString(R.string.QRInstruction)));
 
-                }
+        msgAdapter = new MessageListAdapter(getContext(), QRScanWaitMsgList);
+        QRScanWaitList.setAdapter(msgAdapter);
+        QRScanWaitList.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
 
-                @Override
-                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                    int topRowVerticalPosition = (QRScanWaitList == null || QRScanWaitList.getChildCount() == 0) ? 0 : QRScanWaitList.getChildAt(0).getTop();
-                    main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);  // disable swipe down to refresh unless top of list
-                }
-            });
+            }
 
-            choice1Button = root.findViewById(R.id.choice1Button);  // allow user to ask for directions/cancel booking using these choice buttons
-            choice1Button.setText(String.format(Locale.getDefault(), "Get directions to %s", main.state.getDepartingStation().getName()));
-            choice2Button = root.findViewById(R.id.choice2Button);
-            choice3Button = root.findViewById(R.id.choice3Button);
-            // set onclicklisteners for the choice buttons
-            choice2Button.setOnClickListener(this);
-            choice3Button.setOnClickListener(this);
-            choice1Button.setOnClickListener(this);
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                int topRowVerticalPosition = (QRScanWaitList == null || QRScanWaitList.getChildCount() == 0) ? 0 : QRScanWaitList.getChildAt(0).getTop();
+                main.swipeRefreshLayout.setEnabled(firstVisibleItem == 0 && topRowVerticalPosition >= 0);  // disable swipe down to refresh unless top of list
+            }
+        });
 
-            root.setOnTouchListener(new OnSwipeTouchListener(getContext()) { // swipe up to open the QE scanner; set ontouchlistener
-                public void onSwipeTop() {
-                    main.startQRScanner();
-                }
+        choice1Button = root.findViewById(R.id.choice1Button);  // allow user to ask for directions/cancel booking using these choice buttons
+        choice1Button.setText(String.format(Locale.getDefault(), "Get directions to %s", main.state.getDepartingStation().getName()));
+        choice2Button = root.findViewById(R.id.choice2Button);
+        choice3Button = root.findViewById(R.id.choice3Button);
+        // set onclicklisteners for the choice buttons
+        choice2Button.setOnClickListener(this);
+        choice3Button.setOnClickListener(this);
+        choice1Button.setOnClickListener(this);
 
-                public boolean onTouch(View v, MotionEvent event) {
-                    return gestureDetector.onTouchEvent(event);
-                }
-            });
-        }
+        root.setOnTouchListener(new OnSwipeTouchListener(getContext()) { // swipe up to open the QE scanner; set ontouchlistener
+            public void onSwipeTop() {
+                main.startQRScanner();
+            }
+
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
+
     }
     // Page after QR code has been touched. Contains instructions on what to do next
     private void loadQRScannedPage(){
-        final ListView listMsg = root.findViewById(R.id.chatListView);
+        ListView listMsg = root.findViewById(R.id.chatListView);
         ArrayList<Message> listMessages;
         listMessages = new ArrayList<>();
         MessageListAdapter msgAdapter;
@@ -463,6 +465,8 @@ public class BookingFragment extends Fragment implements View.OnClickListener, V
 
         searchButton.setOnClickListener(this);
         root.setOnTouchListener(this);
+        updateStationEditTextGraphics(stationEditText);
+
     }
     // after the arrival station has been selected and dock has been booked, call this function
     private void loadDockReservedPage(){

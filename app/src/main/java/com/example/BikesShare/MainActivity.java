@@ -76,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
     private BufferedWriter out;
     private DataInputStream in;
     boolean ping = false;
+    private boolean serverRestart;
+
     boolean openingQR = false;
     public HashMap<String, Station> stationMap = new HashMap<String, Station>();
     public ViewPager2 viewPager;
@@ -239,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         // get shares preferences -> the saved state of booking status and update departure/arrival stations accordingly
         SharedPreferences pref = getSharedPreferences("LOG_IN", Context.MODE_PRIVATE);
         String state_string = pref.getString(State.STATE_KEY, "null");
-        if (!state_string.equals("null")) {
+        if (!state_string.equals("null") && !serverRestart) {
             SavedState savedState = new Gson().fromJson(state_string, SavedState.class);
             if (savedState.bookingState > State.RESERVE_BIKE_SELECTION_STATE) {
                 state.setBookingState(savedState.bookingState);
@@ -549,6 +551,7 @@ public class MainActivity extends AppCompatActivity {
                         activity.departQueryResults(result);
                         break;
                     case "QRScanned":
+                        System.out.println(result);
                         activity.QRScanned(result);
                         break;
                     case "queryArrival":
@@ -614,6 +617,13 @@ public class MainActivity extends AppCompatActivity {
                         jsonObj.getString("bike"), jsonObj.getInt("duration"));
                 trips.add(trip);
             }
+
+            if (jsonObject.getString("server").equals("serverRestart")){
+                serverRestart = true;
+            } else {
+                serverRestart = false;
+            }
+
         } catch (JSONException | IOException e){
             System.out.println(e);
         }

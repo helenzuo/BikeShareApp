@@ -3,6 +3,7 @@ package com.example.BikesShare.extensions;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -50,7 +51,9 @@ public class CustomTimePickerDialog extends TimePickerDialog {
         } catch (IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        ((LinearLayout) ((LinearLayout) mTimePicker.getChildAt(0)).getChildAt(4)).getChildAt(0).setVisibility(GONE); // hide keyboard on timepicker pop up
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            ((LinearLayout) ((LinearLayout) mTimePicker.getChildAt(0)).getChildAt(4)).getChildAt(0).setVisibility(GONE); // hide keyboard on timepicker pop up
     }
 
     @Override
