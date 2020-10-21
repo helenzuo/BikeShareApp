@@ -46,6 +46,7 @@ public class LoginActivity extends AppCompatActivity {
 
     SharedPreferences pref;
     private User user;
+    private String IPHost = "192.168.20.9";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +99,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (activity.clientSocket != null && !activity.clientSocket.isClosed()) {
                     activity.clientSocket.close();
                 }
-                SocketAddress sockAdr = new InetSocketAddress("192.168.20.11", 8080);
+                SocketAddress sockAdr = new InetSocketAddress(activity.IPHost, 8080);
                 activity.clientSocket = new Socket();
                 int timeout = 2000;
                 activity.clientSocket.connect(sockAdr, timeout);

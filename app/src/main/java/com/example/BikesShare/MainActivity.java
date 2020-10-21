@@ -91,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
     public Station assigned;
     private Context context;
 
+    private String IPHost = "192.168.20.9";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -408,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
             MainActivity activity = activityReference.get();
             if (!activity.ping) {
                 try {
-                    activity.clientSocket = new Socket("192.168.20.11", 8080); // ip address of computer
+                    activity.clientSocket = new Socket(activity.IPHost, 8080); // ip address of computer
                     activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                     activity.in = new DataInputStream(activity.clientSocket.getInputStream());
                     activity.out.write(new Gson().toJson(activity.user));
@@ -435,7 +437,7 @@ public class MainActivity extends AppCompatActivity {
             if (activity.ping) {
                 try {
                     if (!activity.clientSocket.isClosed()) activity.clientSocket.close();
-                    activity.clientSocket = new Socket("192.168.20.11", 8080);
+                    activity.clientSocket = new Socket(activity.IPHost, 8080);
                     activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                     activity.in = new DataInputStream(activity.clientSocket.getInputStream());
                     activity.out.write(new Gson().toJson(new BookingMessageToServer("quit", "", -1, -1)));
@@ -486,7 +488,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!activity.clientSocket.isClosed()) {
                         activity.clientSocket.close();
                     }
-                    activity.clientSocket = new Socket("192.168.20.11", 8080);
+                    activity.clientSocket = new Socket(activity.IPHost, 8080);
                     activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                     activity.in = new DataInputStream(activity.clientSocket.getInputStream());
                     activity.out.write(strings[0]);
@@ -514,7 +516,7 @@ public class MainActivity extends AppCompatActivity {
             MainActivity activity = activityReference.get();
             if (activity.clientSocket.isClosed()) {
                 try {
-                    activity.clientSocket = new Socket("192.168.20.11", 8080);
+                    activity.clientSocket = new Socket(activity.IPHost, 8080);
                     activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                     activity.in = new DataInputStream(activity.clientSocket.getInputStream());
                 } catch (IOException e) {
@@ -581,7 +583,7 @@ public class MainActivity extends AppCompatActivity {
             if (activity.ping) {
                 if (activity.clientSocket.isClosed()) {
                     try {
-                        activity.clientSocket = new Socket("192.168.20.11", 8080);
+                        activity.clientSocket = new Socket(activity.IPHost, 8080);
                         activity.out = new BufferedWriter(new OutputStreamWriter(activity.clientSocket.getOutputStream()));
                         activity.in = new DataInputStream(activity.clientSocket.getInputStream());
                     } catch (IOException e) {
