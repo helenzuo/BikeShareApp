@@ -46,6 +46,7 @@ import static android.view.View.VISIBLE;
 // SearchFragment allows user to see where the stations are on map view or in a list format
 // Live info on what the occupancies of each of the stations are
 public class SearchFragment extends Fragment implements OnMapReadyCallback {
+    SearchFragment searchFragment;
     private MapViewInScroll mapView;
     private GoogleMap googleMap;
     private View root;
@@ -64,6 +65,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
         // Inflate the layout for this fragment
         root = inflater.inflate(R.layout.fragment_station_map, container, false);
         main = (MainActivity) getActivity();
+        searchFragment = this;
         return root;
     }
 
@@ -199,7 +201,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback {
                                 Collections.sort(main.getStations());
                                 break;
                         }
-                        stationListAdapter.notifyDataSetChanged();
+                        stationListAdapter = new SearchListAdapter(getActivity(), R.layout.station_list_search_design, searchFragment, main.getStations());
+//                        stationListAdapter.notifyDataSetChanged();
+                        stationListView.setAdapter(stationListAdapter);
+
+//                        System.out.print(stationListAdapter.getCount());
                         return true;
                     }
                 });
